@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Logo Maker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .step-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+        .preview-canvas {
+            border: 2px dashed #d1d5db;
+            background-image:
+                linear-gradient(45deg, #f9fafb 25%, transparent 25%),
+                linear-gradient(-45deg, #f9fafb 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f9fafb 75%),
+                linear-gradient(-45deg, transparent 75%, #f9fafb 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Circular Logo Maker</h1>
+            <p class="text-gray-600 mt-2">Upload your logo, trim the borders, and create a perfect circular version.</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <!-- Step-by-step Controls -->
+            <div class="flex flex-col space-y-6">
+                <!-- Step 1: Upload -->
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 bg-indigo-600 text-white rounded-full flex items-center justify-center step-circle">
+                        <span class="font-bold text-lg">1</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Upload Your Logo</h2>
+                        <p class="text-gray-500 text-sm mb-3">Select a PNG or JPG file from your device.</p>
+                        <input type="file" id="imageLoader" accept="image/png, image/jpeg" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
+                    </div>
+                </div>
+                 <!-- Message Box -->
+                <div id="messageBox" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                    <strong class="font-bold">Oops!</strong>
+                    <span class="block sm:inline" id="messageText"></span>
+                </div>
+
+
+                <!-- Step 2: Process -->
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 bg-indigo-600 text-white rounded-full flex items-center justify-center step-circle">
+                        <span class="font-bold text-lg">2</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Process Image</h2>
+                        <p class="text-gray-500 text-sm mb-3">Trim whitespace and crop to a circle.</p>
+                        <button id="processButton" disabled class="w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+                            Process
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Download -->
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 bg-gray-400 text-white rounded-full flex items-center justify-center step-circle" id="step3-circle">
+                        <span class="font-bold text-lg">3</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-lg font-semibold text-gray-400" id="step3-title">Download</h2>
+                        <p class="text-gray-500 text-sm mb-3">Save your new circular logo as a PNG.</p>
+                        <a id="downloadLink" class="w-full block text-center px-4 py-2 bg-gray-300 text-white font-semibold rounded-lg shadow-md pointer-events-none" href="#">
+                            Download Logo
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+                 <canvas id="resultCanvas" class="preview-canvas rounded-lg max-w-full h-auto"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden canvas for processing -->
+    <canvas id="processingCanvas" style="display:none;"></canvas>
+
+    <script>
+        const imageLoader = document.getElementById('imageLoader');
+        const processButton = document.getElementById('processButton');
+        const downloadLink = document.getElementById('downloadLink');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const processingCanvas = document.getElementById('processingCanvas');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+
+        const step3Circle = document.getElementById('step3-circle');
+        const step3Title = document.getElementById('step3-title');
+
+        let originalImage = null;
+
+        // Listen for file input
+        imageLoader.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) {
+                return;
+            }
+            
+            // Check file type
+            if (!['image/png', 'image/jpeg'].includes(file.type)) {
+                showMessage('Please upload a valid PNG or JPG image.');
+                imageLoader.value = ''; // Reset file input
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                originalImage = new Image();
+                originalImage.onload = () => {
+                    // Display original image as a preview first
+                    const ctx = resultCanvas.getContext('2d');
+                    resultCanvas.width = originalImage.width;
+                    resultCanvas.height = originalImage.height;
+                    ctx.drawImage(originalImage, 0, 0);
+                    processButton.disabled = false;
+                    hideMessage();
+                };
+                originalImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Show a message to the user
+        function showMessage(message) {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Hide the message box
+        function hideMessage() {
+            messageBox.classList.add('hidden');
+        }
+
+
+        // Listen for process button click
+        processButton.addEventListener('click', () => {
+            if (!originalImage) {
+                 showMessage('Please upload an image first.');
+                 return;
+            }
+            processImage();
+        });
+
+        /**
+         * Main image processing function.
+         * It trims whitespace and then makes the image circular.
+         */
+        function processImage() {
+            // 1. Trim whitespace (or transparent pixels)
+            const trimmedBounds = trimImage(originalImage);
+
+            if (!trimmedBounds) {
+                showMessage("Couldn't find any content in the image. Please try another one.");
+                return;
+            }
+
+            // 2. Make the trimmed image circular
+            const finalCanvas = createCircularImage(originalImage, trimmedBounds);
+            
+            // 3. Display the result on the visible canvas
+            const resultCtx = resultCanvas.getContext('2d');
+            resultCanvas.width = finalCanvas.width;
+            resultCanvas.height = finalCanvas.height;
+            resultCtx.drawImage(finalCanvas, 0, 0);
+
+            // 4. Enable the download link
+            const dataUrl = finalCanvas.toDataURL('image/png');
+            downloadLink.href = dataUrl;
+            downloadLink.download = 'circular-logo.png';
+            downloadLink.classList.remove('bg-gray-300', 'pointer-events-none');
+            downloadLink.classList.add('bg-green-600', 'hover:bg-green-700');
+            
+            step3Circle.classList.remove('bg-gray-400');
+            step3Circle.classList.add('bg-indigo-600');
+            step3Title.classList.remove('text-gray-400');
+            step3Title.classList.add('text-gray-800');
+        }
+
+        /**
+         * Scans an image and returns the bounding box of the non-transparent/non-white content.
+         * @param {Image} img The source Image object.
+         * @returns {{x: number, y: number, width: number, height: number}|null} The content bounds.
+         */
+        function trimImage(img) {
+            const ctx = processingCanvas.getContext('2d', { willReadFrequently: true });
+            processingCanvas.width = img.width;
+            processingCanvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
+            const data = imageData.data;
+            let top = img.height, bottom = 0, left = img.width, right = 0;
+            let foundContent = false;
+
+            // Define a threshold for what is considered "empty"
+            // A pixel is empty if it's almost white (RGB > 240) or has low alpha
+            const isEmpty = (i) => {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
+                return (a < 10) || (r > 240 && g > 240 && b > 240);
+            }
+
+            for (let y = 0; y < img.height; y++) {
+                for (let x = 0; x < img.width; x++) {
+                    const i = (y * img.width + x) * 4;
+                    if (!isEmpty(i)) {
+                        top = Math.min(top, y);
+                        bottom = Math.max(bottom, y);
+                        left = Math.min(left, x);
+                        right = Math.max(right, x);
+                        foundContent = true;
+                    }
+                }
+            }
+
+            if (!foundContent) {
+                return null; // No content found
+            }
+
+            // Add a small padding
+            const padding = 2; 
+            left = Math.max(0, left - padding);
+            top = Math.max(0, top - padding);
+            right = Math.min(img.width, right + padding);
+            bottom = Math.min(img.height, bottom + padding);
+
+            return {
+                x: left,
+                y: top,
+                width: right - left + 1,
+                height: bottom - top + 1
+            };
+        }
+
+        /**
+         * Creates a circular version of an image based on its trimmed bounds.
+         * @param {Image} img The source Image object.
+         * @param {{x: number, y: number, width: number, height: number}} bounds The trimmed bounds.
+         * @returns {HTMLCanvasElement} A new canvas with the circular image.
+         */
+        function createCircularImage(img, bounds) {
+            const finalCanvas = document.createElement('canvas'); // Off-screen canvas
+            const ctx = finalCanvas.getContext('2d');
+
+            // The final canvas is a square with the size of the largest dimension of the trimmed content
+            const size = Math.max(bounds.width, bounds.height);
+            finalCanvas.width = size;
+            finalCanvas.height = size;
+
+            // Create a circular clipping path
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.clip(); // From now on, all drawing is clipped to this circle
+
+            // Draw the trimmed part of the original image onto the canvas.
+            // This will be centered.
+            const destX = (size - bounds.width) / 2;
+            const destY = (size - bounds.height) / 2;
+            
+            ctx.drawImage(
+                img,
+                bounds.x,       // Source X from original image
+                bounds.y,       // Source Y from original image
+                bounds.width,   // Source width
+                bounds.height,  // Source height
+                destX,          // Destination X on new canvas
+                destY,          // Destination Y on new canvas
+                bounds.width,   // Destination width
+                bounds.height   // Destination height
+            );
+
+            return finalCanvas;
+        }
+    </script>
+</body>
+</html>

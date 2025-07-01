@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" x-data="translatorApp()" x-init="startIntro()">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinguaLink</title>
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs" defer></script>
+  <style>
+    @keyframes glow {
+      0%, 100% { filter: drop-shadow(0 0 0px #fff); }
+      50% { filter: drop-shadow(0 0 30px #0ABAB5); }
+    }
+
+    @keyframes bounce-in {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes logo-spin-shrink {
+      0% {
+        height: 100vh;
+        transform: rotateY(0deg) scale(1);
+        opacity: 1;
+      }
+      60% {
+        height: 100vh;
+        transform: rotateY(540deg) scale(1);
+        opacity: 1;
+      }
+      80% {
+        height: 16vh;
+        transform: rotateY(720deg) scale(1);
+        opacity: 1;
+      }
+      100% {
+        height: 16vh;
+        transform: rotateY(720deg) scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#f5ebcb] text-gray-800 relative overflow-hidden">
+  <!-- Intro Overlay -->
+  <div x-show="showIntro" x-transition.opacity.duration.1000ms
+       class="absolute inset-0 flex items-center justify-center bg-white z-50"
+       style="backdrop-filter: blur(6px);">
+    <img src="/static/logo.png" alt="Logo"
+         style="height:100vh; width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;">
+  </div>
+
+  <!-- Main Navbar -->
+  <nav class="bg-[#0ABAB5] text-white flex items-center" style="height: 20vh; padding-left: 5px;">
+    <!-- Logo (10%) -->
+    <div class="flex items-center justify-center" style="width: 10%;">
+      <img src="/static/logo.png" alt="Intro Logo"
+         class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto"
+         style="animation: glow 2s ease-in-out infinite; max-width: 100%; height: auto; min-height: 10vh; min-width: 10vh;">
+    </div>
+    
+    <!-- Title (flex-grow) -->
+    <div class="flex items-center justify-center flex-grow">
+      <span class="block text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-center"
+        style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite; padding: 3px;">
+        LinguaLink
+      </span>
+    </div>
+    <!-- Right Section: Privacy Policy & About Us -->
+    <div class="flex items-center justify-end gap-6 pr-6">
+      <a href="/privacy"
+         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal"
+         style="font-family: 'Lucida Console', monospace; padding: 3px;">
+        Privacy Policy
+      </a>
+      <a href="/about"
+         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal"
+         style="font-family: 'Lucida Console', monospace; padding: 3px;">
+        About Us
+      </a>
+    </div>
+  </nav>
+
+  <!-- Content Container -->
+  <div class="container mx-auto" style="padding: 15px; margin-top: 0;">
+    <div class="p-4 max-w-7xl mx-auto bg-[#C9F0EE]" x-init="init()" style="padding:5px;">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="flex flex-col">
+          <label class="font-semibold mb-1">Source Language</label>
+          <select x-model="sourceLang" class="border p-2 rounded">
+            <option value="">-- Select --</option>
+            <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
+              <option :value="code" x-text="name"></option>
+            </template>
+          </select>
+            <textarea x-model="inputText"
+                rows="10"
+                maxlength="5000"
+                placeholder="Enter text"
+                class="border p-2 mt-2 rounded resize-none"></textarea>
+            <div class="text-right text-sm text-gray-600 mt-1">
+              <span x-text="inputText.length"></span>/5000 characters
+            </div>
+        </div>
+
+        <template x-for="(lang, index) in [0,1,2]" :key="index">
+          <div class="flex flex-col">
+            <label class="font-semibold mb-1">Target Language <span x-text="index+1"></span></label>
+            <select x-model="targetLangs[index]" class="border p-2 rounded">
+              <option value="">-- Select --</option>
+              <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
+                <option :value="code" x-text="name"></option>
+              </template>
+            </select>
+            <textarea rows="10" class="border p-2 mt-2 rounded resize-none bg-[#f5ebcb]"
+                      x-text="translations[targetLangs[index]] || ''" readonly></textarea>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+    <div class="text-center mt-6">
+      <button @click="translate" class="bg-[#0ABAB5] text-white px-6 py-2 rounded hover:bg-teal-600">
+        Translate
+      </button>
+    </div>
+  </div>
+
+  <!-- Facebook Ad Area -->
+  <div class="w-full h-[20vh] bg-gray-100 flex items-center justify-center mt-4">
+    <div id="goog-ad-placeholder" class="text-gray-500 italic">[Google Ad will be shown here]</div>
+  </div>
+
+  <script>
+    function setSessionCookie(name, value) {
+      document.cookie = `${name}=${value}; path=/; samesite=strict`;
+    }
+
+    function getCookie(name) {
+      const cookieArr = document.cookie.split("; ");
+      for (let i = 0; i < cookieArr.length; i++) {
+        const [key, val] = cookieArr[i].split("=");
+        if (key === name) return decodeURIComponent(val);
+      }
+      return "";
+    }
+
+    function translatorApp() {
+      return {
+        showIntro: true,
+        supportedLanguages: {},
+        sourceLang: getCookie('sourceLang') || '',
+        targetLangs: [
+          getCookie('targetLang1') || '',
+          getCookie('targetLang2') || '',
+          getCookie('targetLang3') || ''
+        ],
+        inputText: '',
+        translations: {},
+        async init() {
+          try {
+            const res = await fetch('/supported-languages');
+            if (!res.ok) throw new Error('Failed to fetch supported languages');
+            this.supportedLanguages = await res.json();
+          } catch (error) {
+            console.error('Error fetching supported languages:', error);
+            this.supportedLanguages = {
+              en: 'English',
+              es: 'Spanish',
+              fr: 'French',
+              // Add fallback languages here if needed
+            };
+          }
+        },
+        async translate() {
+          const targets = this.targetLangs.filter(lang => lang && lang !== this.sourceLang);
+          if (targets.length === 0) return alert('Please select at least one target language.');
+
+          setSessionCookie('sourceLang', this.sourceLang);
+          this.targetLangs.forEach((lang, i) => setSessionCookie(`targetLang${i+1}`, lang));
+
+          const res = await fetch('/api/translate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              text: this.inputText,
+              source: this.sourceLang,
+              targets: targets
+            })
+          });
+          const result = await res.json();
+          this.translations = result.translations || {};
+        },
+        startIntro() {
+            setTimeout(() => {
+            this.showIntro = false;
+            }, 2500); // Add delay of 2.5 seconds
+        }
+      }
+    }
+  </script>
+</body>
+</html>
