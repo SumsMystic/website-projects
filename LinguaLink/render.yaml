@@ -2,6 +2,7 @@ services:
   - type: web
     name: lingualink
     env: python
+    pythonVersion: 3.12
     region: oregon # or your preferred region
     plan: free
     buildCommand: ""
