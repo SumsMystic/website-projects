@@ -5,7 +5,7 @@ Welcome to my GitHub repository where I showcase my personal web-based projects 
 
 ---
 
-## 🌐 Project: LinguaLink
+## 🌐 My First Project: LinguaLink
 
 **LinguaLink** is a responsive and user-friendly web application that enables users to translate text into multiple languages using the Google Translate API.
 
