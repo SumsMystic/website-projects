@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from googletrans import Translator, LANGUAGES
+import os
 
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -37,4 +38,8 @@ def translate():
     return jsonify({'translations': translations})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # This line is for local development only
+    # app.run(debug=True)
+
+    # For production, use a WSGI server like Gunicorn or uWSGI
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
