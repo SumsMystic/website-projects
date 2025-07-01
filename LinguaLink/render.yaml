@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: lingualink
+    env: python
+    region: oregon # or your preferred region
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    autoDeploy: true
+
+  - type: static
+    name: lingualink-static
+    env: static
+    plan: free
+    routes:
+      - type: web_service
+        src: "/static/(.*)"
+        dest: "/static/$1"
+    autoDeploy: true
