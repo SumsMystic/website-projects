@@ -5,9 +5,9 @@ Welcome to my GitHub repository where I showcase my personal web-based projects 
 
 ---
 
-## 🌐 My First Project: LinguaLink
+## 🌐 My First Project: MultiLangSetu
 
-**LinguaLink** is a responsive and user-friendly web application that enables users to translate text into multiple languages using the Google Translate API.
+**MultiLangSetu** is a responsive and user-friendly web application that enables users to translate text into multiple languages using the Google Translate API.
 
 ### 🔧 Features:
 - Select a source language and up to three target languages.

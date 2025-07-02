@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: lingualink
+    name: multilangsetu
     env: python
     pythonVersion: 3.12
     region: oregon # or your preferred region
@@ -10,7 +10,7 @@ services:
     autoDeploy: true
 
   - type: static
-    name: lingualink-static
+    name: multilangsetu-static
     env: static
     plan: free
     routes:
