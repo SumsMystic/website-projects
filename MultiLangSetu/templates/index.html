@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MultiLangSetu</title>
+  <title>MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly</title>
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
@@ -47,12 +47,25 @@
   <meta name="keywords" content="MultiLangSetu, translation, online translator, multilingual, language tool, translate, Google Translate, translate to multiple languages simultaneously, fast translation">
   <meta name="author" content="SumsMystic">
   <meta name="robots" content="index, follow">
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly">
+  <meta property="og:description" content="MultiLangSetu is a fast, privacy-friendly online translation tool. Instantly translate text into up to three languages at once and keep your language preferences for seamless multilingual communication.">
+  <meta property="og:image" content="/static/logo.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://multilangsetu.onrender.com">
+
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly">
+  <meta name="twitter:description" content="MultiLangSetu is a fast, privacy-friendly online translation tool. Instantly translate text into up to three languages at once and keep your language preferences for seamless multilingual communication.">
+  <meta name="twitter:image" content="/static/logo.png">
+  <meta name="twitter:site" content="@SumsMystic">
   <!-- Open Graph tags for social sharing -->
   <meta property="og:title" content="MultiLangSetu - Multilingual Online Translator">
   <meta property="og:description" content="Translate text into up to three languages at once. Fast, private, and easy to use.">
   <meta property="og:image" content="/static/logo.png">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://your-domain.com/">
+  <meta property="og:url" content="https://multilangsetu.onrender.com">
 </head>
 <body class="bg-[#f5ebcb] text-gray-800 relative overflow-hidden">
   <!-- Intro Overlay -->
@@ -146,7 +159,7 @@
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" fill="none"/>
                   <rect x="3" y="3" width="13" height="13" rx="2" ry="2" stroke="currentColor" fill="none"/>
                 </svg>
-                Copy
+                <span x-text="copiedIndex === index ? 'Copied!' : 'Copy'"></span>
               </button>
             </div>
           </div>
@@ -164,7 +177,7 @@
 
   <!-- Facebook Ad Area -->
   <div class="w-full h-[20vh] bg-gray-100 flex items-center justify-center mt-4">
-    <div id="goog-ad-placeholder" class="text-gray-500 italic">[Google Ad will be shown here]</div>
+    <div id="goog-ad-placeholder" class="text-gray-500 italic">[PLACEHOLDER]</div>
   </div>
 
   <script>
