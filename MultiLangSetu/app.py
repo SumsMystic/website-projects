@@ -12,11 +12,19 @@ def home():
 
 @app.route("/privacy")
 def privacy():
-    return send_from_directory("static", "privacy.html")
+    return send_from_directory(app.static_folder, "privacy.html")
 
 @app.route("/about")
 def about():
-    return send_from_directory("static", "about.html")
+    return send_from_directory(app.static_folder, "about.html")
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory(app.static_folder, 'robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory(app.static_folder, 'sitemap.xml')
 
 @app.route('/supported-languages')
 def supported_languages():
@@ -42,4 +50,4 @@ if __name__ == '__main__':
     # app.run(debug=True)
 
     # For production, use a WSGI server like Gunicorn or uWSGI
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
