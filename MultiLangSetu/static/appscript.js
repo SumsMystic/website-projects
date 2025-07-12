@@ -24,6 +24,7 @@
         ],
         inputText: '',
         translations: {},
+        copiedIndex: null, // Track which translation was copied
         async init() {
           try {
             const res = await fetch('/supported-languages');
