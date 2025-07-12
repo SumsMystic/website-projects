@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" x-data="translatorApp()" x-init="startIntro()">
+<html lang="en" x-data="translatorApp()" x-init="init(); startIntro()">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly</title>
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
-  <link href="/static/langConverterStyle.css" rel="stylesheet">
+  <!--link href="/static/tailwind.css" rel="stylesheet"-->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
   <link rel="stylesheet" href="/static/langConverterStyle.css">
   <script src="/static/appscript.js"></script>
@@ -75,12 +76,19 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="flex flex-col">
           <label class="font-semibold mb-1">Source Language</label>
-          <select x-model="sourceLang" class="border p-2 rounded">
-            <option value="">-- Select --</option>
-            <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
-              <option :value="code" x-text="name"></option>
-            </template>
-          </select>
+          <div x-show="Object.keys(supportedLanguages).length > 0">
+            <select x-model="sourceLang" class="border p-2 rounded">
+              <option value="">-- Select --</option>
+              <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
+                <option :value="code" x-text="name"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- NEW dynamic label -->
+          <label class="mt-2 text-sm font-medium text-gray-700">
+            Source Text – <span x-text="supportedLanguages[sourceLang] || '...'"></span>
+          </label>
             <textarea x-model="inputText"
                 rows="10"
                 maxlength="5000"
@@ -93,15 +101,28 @@
 
         <template x-for="(lang, index) in [0,1,2]" :key="index">
           <div class="flex flex-col">
-            <label class="font-semibold mb-1">Target Language <span x-text="index+1"></span></label>
-            <select x-model="targetLangs[index]" class="border p-2 rounded">
-              <option value="">-- Select --</option>
-              <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
-                <option :value="code" x-text="name"></option>
-              </template>
-            </select>
-            <textarea rows="10" class="border p-2 mt-2 rounded resize-none bg-[#f5ebcb]"
-  :value="translations[targetLangs[index]] || ''" readonly></textarea>
+            <label class="font-semibold mb-1">Target Language <span x-text="index + 1"></span></label>
+            <div x-show="Object.keys(supportedLanguages).length > 0">
+              <select x-model="targetLangs[index]" class="border p-2 rounded">
+                <option value="">-- Select --</option>
+                <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
+                  <option :value="code" x-text="name"></option>
+                </template>
+              </select>
+            </div>
+        
+            <!-- Responsive Label for Textarea -->
+            <label class="mt-2 text-sm font-medium text-gray-700">
+              <span class="hidden sm:inline">Translated Text – </span>
+              <span class="inline sm:hidden">Text – </span>
+              <span x-text="supportedLanguages[targetLangs[index]] || '...'"></span>
+            </label>
+        
+            <textarea rows="10"
+                      class="border p-2 mt-1 rounded resize-none bg-[#f5ebcb]"
+                      :value="translations[targetLangs[index]] || ''"
+                      readonly></textarea>
+        
             <div class="flex items-center mt-2">
               <button
                 type="button"
@@ -117,9 +138,9 @@
                 :disabled="!(translations[targetLangs[index]] || '')"
                 :class="{'opacity-50 cursor-not-allowed': !(translations[targetLangs[index]] || '')}"
                 title="Copy translation"
-                >
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" fill="none"/>
                   <rect x="3" y="3" width="13" height="13" rx="2" ry="2" stroke="currentColor" fill="none"/>
                 </svg>
@@ -144,5 +165,10 @@
     <div id="amazon-ad-container" class="text-gray-500 italic"></div>
       <script src="/static/amazonAds.js"></script>
   </div>
+  <div id="ad-metrics" class="text-center text-xs text-gray-500 mt-4"></div>
+  <!-- Amazon Affiliate Disclaimer -->
+  <footer class="text-center text-xs text-gray-500 mt-6 mb-4 px-4">
+    As an Amazon Associate, I earn from qualifying purchases.
+  </footer>
 </body>
 </html>
