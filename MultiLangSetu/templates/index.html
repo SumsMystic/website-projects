@@ -77,33 +77,32 @@
         <div class="flex flex-col">
           <label class="font-semibold mb-1">Source Language</label>
           <div x-show="Object.keys(supportedLanguages).length > 0">
-            <select x-model="sourceLang" class="border p-2 rounded">
+            <select x-model="sourceLang" class="border p-2 rounded w-full">
               <option value="">-- Select --</option>
               <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
                 <option :value="code" x-text="name"></option>
               </template>
             </select>
           </div>
-
           <!-- NEW dynamic label -->
           <label class="mt-2 text-sm font-medium text-gray-700">
             Source Text – <span x-text="supportedLanguages[sourceLang] || '...'"></span>
           </label>
-            <textarea x-model="inputText"
-                rows="10"
-                maxlength="5000"
-                placeholder="Enter text"
-                class="border p-2 mt-2 rounded resize-none"></textarea>
-            <div class="text-right text-sm text-gray-600 mt-1">
-              <span x-text="inputText.length"></span>/5000 characters
-            </div>
+          <textarea x-model="inputText"
+              rows="10"
+              maxlength="5000"
+              placeholder="Enter text"
+              class="border p-2 mt-2 rounded resize-none"></textarea>
+          <div class="text-right text-sm text-gray-600 mt-1">
+            <span x-text="inputText.length"></span>/5000 characters
+          </div>
         </div>
 
         <template x-for="(lang, index) in [0,1,2]" :key="index">
           <div class="flex flex-col">
             <label class="font-semibold mb-1">Target Language <span x-text="index + 1"></span></label>
             <div x-show="Object.keys(supportedLanguages).length > 0">
-              <select x-model="targetLangs[index]" class="border p-2 rounded">
+              <select x-model="targetLangs[index]" class="border p-2 rounded w-full">
                 <option value="">-- Select --</option>
                 <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
                   <option :value="code" x-text="name"></option>
@@ -161,7 +160,7 @@
   
 
   <!-- Amazon Ad Area -->
-  <div class="w-full h-[20vh] bg-gray-100 flex items-center justify-center mt-4">
+  <div class="h-[15vh] bg-gray-100 flex items-center justify-center mt-4">
     <div id="amazon-ad-container" class="text-gray-500 italic"></div>
       <script src="/static/amazonAds.js"></script>
   </div>
