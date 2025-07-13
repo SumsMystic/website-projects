@@ -67,7 +67,7 @@ function renderAmazonAd() {
   `;
 
   adIndex = (adIndex + 1) % amazonAds.length;
-}
+} 
 
 function handleAdClick() {
   let count = parseInt(localStorage.getItem("adClickCount") || "0", 10);
