@@ -42,14 +42,14 @@ function renderAmazonAd() {
 
   adContainer.innerHTML = `
     <div class="max-w-xl w-full mx-auto flex flex-row gap-6 items-start p-4 border border-gray-300 rounded-lg bg-white shadow-md">
-      <div class="flex flex-col items-center space-y-2">
-        <!-- Amazon logo: responsive and scales with height -->
-        <img
-          src="/static/available_at_amazon.png"
-          alt="Available at Amazon"
-          class="h-8 w-auto"
-        />
-
+      <div class="flex flex-col items-center space-y-2 w-16">
+        <div class="h-8 aspect-[2.1]">
+          <img
+            src="/static/img/available_at_amazon.png"
+            alt="Available at Amazon"
+            class="h-full w-full object-contain"
+          />
+        </div>
       </div>
 
       <a href="${ad.url}" target="_blank" onclick="handleAdClick()" class="flex-shrink-0 w-2/5">

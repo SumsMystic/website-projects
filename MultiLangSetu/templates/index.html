@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly</title>
-  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
   <!--link href="/static/tailwind.css" rel="stylesheet"-->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
@@ -20,12 +20,12 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly">
   <meta name="twitter:description" content="MultiLangSetu is a fast, privacy-friendly online translation tool. Instantly translate text into up to three languages at once and keep your language preferences for seamless multilingual communication.">
-  <meta name="twitter:image" content="/static/og-preview.png">
+  <meta name="twitter:image" content="/static/img/og-preview.png">
   <meta name="twitter:site" content="@SumsMystic">
   <!-- Open Graph tags for social sharing -->
   <meta property="og:title" content="MultiLangSetu - Multilingual Online Translator">
   <meta property="og:description" content="Translate text into up to three languages at once. Fast, private, and easy to use.">
-  <meta property="og:image" content="https://multilangsetu.onrender.com/static/og-preview.png">
+  <meta property="og:image" content="https://multilangsetu.onrender.com/static/img/og-preview.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://multilangsetu.onrender.com">
   <meta property="og:site_name" content="Multilang Setu">
@@ -35,7 +35,7 @@
   <div x-show="showIntro" x-transition.opacity.duration.1000ms
        class="absolute inset-0 flex items-center justify-center bg-white z-50"
        style="backdrop-filter: blur(6px);">
-    <img src="/static/logo.png" alt="Logo"
+    <img src="/static/img/logo.webp" alt="Logo"
          style="height:100vh; width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;">
   </div>
 
@@ -43,7 +43,7 @@
   <nav class="bg-[#0ABAB5] text-white flex items-center" style="height: 20vh; padding-left: 5px;">
     <!-- Logo (10%) -->
     <div class="flex items-center justify-center" style="width: 10%;">
-      <img src="/static/logo.png" alt="Intro Logo"
+      <img src="/static/img/logo.webp" alt="Intro Logo"
          class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto"
          style="animation: glow 2s ease-in-out infinite; max-width: 100%; height: auto; min-height: 10vh; min-width: 10vh;">
     </div>
@@ -75,9 +75,9 @@
     <div class="p-4 max-w-7xl mx-auto bg-[#C9F0EE]" x-init="init()" style="padding:5px;">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="flex flex-col">
-          <label class="font-semibold mb-1">Source Language</label>
+          <label for="sourceLang" class="font-semibold mb-1">Source Language</label>
           <div x-show="Object.keys(supportedLanguages).length > 0">
-            <select x-model="sourceLang" class="border p-2 rounded w-full">
+            <select id="sourceLang" x-model="sourceLang" class="border p-2 rounded w-full">
               <option value="">-- Select --</option>
               <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
                 <option :value="code" x-text="name"></option>
@@ -85,10 +85,10 @@
             </select>
           </div>
           <!-- NEW dynamic label -->
-          <label class="mt-2 text-sm font-medium text-gray-700">
+          <label for="sourceText" class="mt-2 text-sm font-medium text-gray-700">
             Source Text – <span x-text="supportedLanguages[sourceLang] || '...'"></span>
           </label>
-          <textarea x-model="inputText"
+          <textarea id="sourceText" x-model="inputText"
               rows="10"
               maxlength="5000"
               placeholder="Enter text"
@@ -100,9 +100,9 @@
 
         <template x-for="(lang, index) in [0,1,2]" :key="index">
           <div class="flex flex-col">
-            <label class="font-semibold mb-1">Target Language <span x-text="index + 1"></span></label>
+            <label :for="'targetLang' + index" class="font-semibold mb-1">Target Language <span x-text="index + 1"></span></label>
             <div x-show="Object.keys(supportedLanguages).length > 0">
-              <select x-model="targetLangs[index]" class="border p-2 rounded w-full">
+              <select :id="'targetLang' + index" x-model="targetLangs[index]" class="border p-2 rounded w-full">
                 <option value="">-- Select --</option>
                 <template x-for="[code, name] in Object.entries(supportedLanguages)" :key="code">
                   <option :value="code" x-text="name"></option>
@@ -111,13 +111,14 @@
             </div>
         
             <!-- Responsive Label for Textarea -->
-            <label class="mt-2 text-sm font-medium text-gray-700">
+            <label :for="'targetText' + index" class="mt-2 text-sm font-medium text-gray-700">
               <span class="hidden sm:inline">Translated Text – </span>
               <span class="inline sm:hidden">Text – </span>
               <span x-text="supportedLanguages[targetLangs[index]] || '...'"></span>
             </label>
         
-            <textarea rows="10"
+            <textarea :id="'targetText' + index" 
+                      rows="10"
                       class="border p-2 mt-1 rounded resize-none bg-[#f5ebcb]"
                       :value="translations[targetLangs[index]] || ''"
                       readonly></textarea>
