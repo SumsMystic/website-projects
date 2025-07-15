@@ -30,6 +30,7 @@ const amazonAds = [
   {
     title: "Join Amazon Prime – Free Delivery & More",
     url: "https://www.amazon.in/amazonprime?tag=sumsmystic-21&linkCode=ll2&linkId=a1c07d6ee3acd7344b0a22be277c4435",
+    img: "/static/img/amazon-placeholder.webp",
     description: "Free fast delivery, Prime Video & exclusive deals."
   }
 ];
@@ -45,7 +46,7 @@ function renderAmazonAd() {
       <div class="flex flex-col items-center space-y-2 w-16">
         <div class="h-8 aspect-[2.1]">
           <img
-            src="/static/img/available_at_amazon.png"
+            src="/static/img/available_at_amazon.webp"
             alt="Available at Amazon"
             class="h-full w-full object-contain"
           />
@@ -54,7 +55,7 @@ function renderAmazonAd() {
 
       <a href="${ad.url}" target="_blank" onclick="handleAdClick()" class="flex-shrink-0 w-2/5">
         <img src="${ad.img}" alt="${ad.alt}" class="w-full h-32 object-contain rounded-md" loading="lazy"
-          onerror="this.src='/static/img/amazon-placeholder.png'; this.onerror=null;" />
+          onerror="this.src='/static/img/amazon-placeholder.webp'; this.onerror=null;" />
       </a>
 
       <div class="flex-grow">

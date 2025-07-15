@@ -11,12 +11,12 @@
 
 @keyframes logo-spin-shrink {
   0% {
-    height: 100vh;
+    height: 60vh;
     transform: rotateY(0deg) scale(1);
     opacity: 1;
   }
   60% {
-    height: 100vh;
+    height: 40vh;
     transform: rotateY(540deg) scale(1);
     opacity: 1;
   }
@@ -26,7 +26,7 @@
     opacity: 1;
   }
   100% {
-    height: 16vh;
+    height: 8vh;
     transform: rotateY(720deg) scale(1);
     opacity: 1;
   }

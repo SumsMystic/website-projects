@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly</title>
   <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+  <link rel="preload" as="image" href="/static/img/logo-intro.webp" type="image/webp" />
   <!--link href="/static/tailwind.css" rel="stylesheet"-->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
   <link rel="stylesheet" href="/static/langConverterStyle.css">
   <script src="/static/appscript.js"></script>
@@ -33,38 +34,46 @@
 <body class="bg-[#f5ebcb] text-gray-800 relative min-h-screen overflow-auto">
   <!-- Intro Overlay -->
   <div x-show="showIntro" x-transition.opacity.duration.1000ms
-       class="absolute inset-0 flex items-center justify-center bg-white z-50"
-       style="backdrop-filter: blur(6px);">
-    <img src="/static/img/logo.webp" alt="Logo"
-         style="height:100vh; width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;">
+      class="absolute inset-0 flex items-center justify-center bg-white z-50"
+      style="backdrop-filter: blur(6px);">
+    <img
+      src="/static/img/logo-intro.webp"
+      alt="Logo"
+      fetchpriority="high"
+      width="300" height="300"
+      style="width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;" />
   </div>
 
   <!-- Main Navbar -->
-  <nav class="bg-[#0ABAB5] text-white flex items-center" style="height: 20vh; padding-left: 5px;">
+  <nav class="bg-[#0ABAB5] text-black flex items-center" style="height: 20vh; padding-left: 5px;">
     <!-- Logo (10%) -->
     <div class="flex items-center justify-center" style="width: 10%;">
-      <img src="/static/img/logo.webp" alt="Intro Logo"
-         class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto"
-         style="animation: glow 2s ease-in-out infinite; max-width: 100%; height: auto; min-height: 10vh; min-width: 10vh;">
+      <img
+        src="/static/img/logo-header.webp"
+        alt="Intro Logo"
+        fetchpriority="high"
+        width="96" height="96"
+        class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto"
+        style="animation: glow 2s ease-in-out infinite; max-width: 100%; min-height: 10vh; min-width: 10vh;" />
     </div>
     
     <!-- Title (flex-grow) -->
     <div class="flex items-center justify-center flex-grow">
       <span class="block text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-center"
-        style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite; padding: 3px;">
+        style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite; padding: 5px;">
         MultiLangSetu
       </span>
     </div>
     <!-- Right Section: Privacy Policy & About Us -->
     <div class="flex items-center justify-end gap-6 pr-6">
       <a href="/privacy"
-         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal"
-         style="font-family: 'Lucida Console', monospace; padding: 3px;">
+         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black"
+         style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">
         Privacy Policy
       </a>
       <a href="/about"
-         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal"
-         style="font-family: 'Lucida Console', monospace; padding: 3px;">
+         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black"
+         style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">
         About Us
       </a>
     </div>
@@ -126,7 +135,7 @@
             <div class="flex items-center mt-2">
               <button
                 type="button"
-                class="flex items-center gap-1 text-[#0ABAB5] hover:text-teal-700 text-sm font-medium px-2 py-1 rounded focus:outline-none"
+                class="flex items-center gap-1 text-teal-900 font-bold drop-shadow-sm hover:text-teal-700 text-sm font-medium px-2 py-1 rounded focus:outline-none"
                 @click="
                   const text = translations[targetLangs[index]] || '';
                   if (text) {
@@ -154,7 +163,7 @@
   </div>
 
   <div class="text-center mt-1">
-    <button @click="translate" class="bg-[#0ABAB5] text-white px-6 py-2 rounded hover:bg-teal-600">
+    <button @click="translate" class="bg-[#0ABAB5] text-black font-bold px-6 py-2 rounded hover:bg-teal-600">
       Translate
     </button>
   </div>
@@ -165,9 +174,9 @@
     <div id="amazon-ad-container" class="max-w-5xl mx-auto text-gray-500"></div>
     <script src="/static/amazonads.js"></script>
   </div>
-  <div id="ad-metrics" class="text-center text-xs text-gray-500 mt-1"></div>
+  <div id="ad-metrics" class="text-center text-xs text-black mt-1"></div>
   <!-- Amazon Affiliate Disclaimer -->
-  <footer class="text-center text-xs text-gray-500">
+  <footer class="text-center text-xs text-gray-800">
     As an Amazon Associate, I earn from qualifying purchases.
   </footer>
 </body>
