@@ -14,6 +14,7 @@ function getCookie(name) {
 function translatorApp() {
   return {
     showIntro: true,
+    loaded: false,
     supportedLanguages: {},
     sourceLang: getCookie('sourceLang') || '',
     targetLangs: [
@@ -39,6 +40,10 @@ function translatorApp() {
           // Add fallback languages here if needed
         };
       }
+      // ✅ Mark data as ready
+      this.loaded = true;
+      console.log("Cookies:", getCookie('sourceLang'), getCookie('targetLang1'));
+      console.log("Initial State:", this.sourceLang, this.targetLangs);
     },
 
     async translate() {
