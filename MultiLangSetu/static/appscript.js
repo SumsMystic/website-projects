@@ -16,15 +16,11 @@ function translatorApp() {
     showIntro: true,
     loaded: false,
     supportedLanguages: {},
-    sourceLang: getCookie('sourceLang') || '',
-    targetLangs: [
-      getCookie('targetLang1') || '',
-      getCookie('targetLang2') || '',
-      getCookie('targetLang3') || ''
-    ],
+    sourceLang: '',
+    targetLangs: ['', '', ''],
     inputText: '',
     translations: {},
-    copiedIndex: null, // Track which translation was copied
+    copiedIndex: null,
 
     async init() {
       try {
@@ -36,11 +32,18 @@ function translatorApp() {
         this.supportedLanguages = {
           en: 'English',
           es: 'Spanish',
-          fr: 'French',
-          // Add fallback languages here if needed
+          fr: 'French'
         };
       }
-      // ✅ Mark data as ready
+
+      // Now that supportedLanguages are available, safely apply cookies
+      this.sourceLang = getCookie('sourceLang') || '';
+      this.targetLangs = [
+        getCookie('targetLang1') || '',
+        getCookie('targetLang2') || '',
+        getCookie('targetLang3') || ''
+      ];
+
       this.loaded = true;
       console.log("Cookies:", getCookie('sourceLang'), getCookie('targetLang1'));
       console.log("Initial State:", this.sourceLang, this.targetLangs);
