@@ -1,87 +1,54 @@
 <!DOCTYPE html>
-<html lang="en" x-data="translatorApp()" x-init="init(); startIntro()">
+<html lang="en" x-data="translatorApp()" x-init="init(); startIntro()" x-cloak>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly</title>
   <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
-  <link rel="preload" as="image" href="/static/img/logo-intro.webp" type="image/webp" />
+  <link rel="preload" as="image" href="/static/img/logo-intro.webp" type="image/webp">
   <!--link href="/static/tailwind.css" rel="stylesheet"-->
   <script src="https://cdn.tailwindcss.com" defer></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
   <link rel="stylesheet" href="/static/langConverterStyle.css">
   <script src="/static/appscript.js"></script>
-  <meta name="google-site-verification" content="3UBJ8DbLp-UdW2fhuBAAxAW_nhlgs7QFZFrSjzS5Ej8" />
+  <style>[x-cloak] { display: none !important; }</style>
+  <meta name="google-site-verification" content="3UBJ8DbLp-UdW2fhuBAAxAW_nhlgs7QFZFrSjzS5Ej8">
   <meta name="description" content="MultiLangSetu is a fast, privacy-friendly online translation tool. Instantly translate text into up to three languages at once and keep your language preferences for seamless multilingual communication.">
   <meta name="keywords" content="MultiLangSetu, translation, online translator, multilingual, language tool, translate, Google Translate, translate to multiple languages simultaneously, fast translation">
   <meta name="author" content="SumsMystic">
   <meta name="robots" content="index, follow">
-
-  <!-- Twitter Card Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly">
   <meta name="twitter:description" content="MultiLangSetu is a fast, privacy-friendly online translation tool. Instantly translate text into up to three languages at once and keep your language preferences for seamless multilingual communication.">
-  <meta name="twitter:image" content="/static/img/og-preview.png">
+  <meta name="twitter:image" content="/static/img/og-preview.webp">
   <meta name="twitter:site" content="@SumsMystic">
-  <!-- Open Graph tags for social sharing -->
   <meta property="og:title" content="MultiLangSetu - Multilingual Online Translator">
   <meta property="og:description" content="Translate text into up to three languages at once. Fast, private, and easy to use.">
-  <meta property="og:image" content="https://multilangsetu.onrender.com/static/img/og-preview.png">
+  <meta property="og:image" content="https://multilangsetu.onrender.com/static/img/og-preview.webp">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://multilangsetu.onrender.com">
   <meta property="og:site_name" content="Multilang Setu">
 </head>
 <body class="bg-[#f5ebcb] text-gray-800 relative min-h-screen overflow-auto">
-  <!-- Intro Overlay -->
-  <div x-show="showIntro" x-transition.opacity.duration.1000ms
-      class="absolute inset-0 flex items-center justify-center bg-white z-50"
-      style="backdrop-filter: blur(6px);">
-    <img
-      src="/static/img/logo-intro.webp"
-      alt="Logo"
-      fetchpriority="high"
-      width="300" height="300"
-      style="width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;" />
+  <div x-show="showIntro" x-transition.opacity.duration.1000ms x-cloak class="absolute inset-0 flex items-center justify-center bg-white z-50" style="backdrop-filter: blur(6px);">
+    <img src="/static/img/logo-intro.webp" alt="Logo" fetchpriority="high" width="300" height="300" style="width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;">
   </div>
-
-  <!-- Main Navbar -->
   <nav class="bg-[#0ABAB5] text-black flex items-center" style="height: 20vh; padding-left: 5px;">
-    <!-- Logo (10%) -->
     <div class="flex items-center justify-center" style="width: 10%;">
-      <img
-        src="/static/img/logo-header.webp"
-        alt="Intro Logo"
-        fetchpriority="high"
-        width="96" height="96"
-        class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto"
-        style="animation: glow 2s ease-in-out infinite; max-width: 100%; min-height: 10vh; min-width: 10vh;" />
+      <img src="/static/img/logo-header.webp" alt="Intro Logo" fetchpriority="high" width="96" height="96" class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto" style="animation: glow 2s ease-in-out infinite; max-width: 100%; min-height: 10vh; min-width: 10vh;">
     </div>
-    
-    <!-- Title (flex-grow) -->
     <div class="flex items-center justify-center flex-grow">
-      <span class="block text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-center"
-        style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite; padding: 5px;">
+      <span class="block text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-center" style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite; padding: 5px;">
         MultiLangSetu
       </span>
     </div>
-    <!-- Right Section: Privacy Policy & About Us -->
     <div class="flex items-center justify-end gap-6 pr-6">
-      <a href="/privacy"
-         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black"
-         style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">
-        Privacy Policy
-      </a>
-      <a href="/about"
-         class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black"
-         style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">
-        About Us
-      </a>
+      <a href="/privacy" class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black" style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">Privacy Policy</a>
+      <a href="/about" class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black" style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">About Us</a>
     </div>
   </nav>
-
-  <!-- Content Container -->
   <div class="container mx-auto" style="padding: 15px; margin-top: 0;">
-    <div class="p-4 max-w-7xl mx-auto bg-[#C9F0EE]" x-init="init()" style="padding:5px;">
+    <div class="p-4 max-w-7xl mx-auto bg-[#C9F0EE]" style="padding:5px; min-height: auto;" x-cloak>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="flex flex-col">
           <label for="sourceLang" class="font-semibold mb-1">Source Language</label>
@@ -92,22 +59,13 @@
                 <option :value="code" x-text="name"></option>
               </template>
             </select>
-          </template>
           </div>
-          <!-- NEW dynamic label -->
-          <label for="sourceText" class="mt-2 text-sm font-medium text-gray-700">
-            Source Text – <span x-text="supportedLanguages[sourceLang] || '...'"></span>
-          </label>
-          <textarea id="sourceText" x-model="inputText"
-              rows="10"
-              maxlength="5000"
-              placeholder="Enter text"
-              class="border p-2 mt-2 rounded resize-none"></textarea>
+          <label for="sourceText" class="mt-2 text-sm font-medium text-gray-700">Source Text – <span x-text="supportedLanguages[sourceLang] || '...'"></span></label>
+          <textarea id="sourceText" x-model="inputText" rows="10" maxlength="5000" placeholder="Enter text" class="border p-2 mt-2 rounded resize-none"></textarea>
           <div class="text-right text-sm text-gray-600 mt-1">
             <span x-text="inputText.length"></span>/5000 characters
           </div>
         </div>
-
         <template x-for="(lang, index) in [0,1,2]" :key="index">
           <div class="flex flex-col">
             <label :for="'targetLang' + index" class="font-semibold mb-1">Target Language <span x-text="index + 1"></span></label>
@@ -119,38 +77,22 @@
                 </template>
               </select>
             </div>
-        
-            <!-- Responsive Label for Textarea -->
             <label :for="'targetText' + index" class="mt-2 text-sm font-medium text-gray-700">
               <span class="hidden sm:inline">Translated Text – </span>
               <span class="inline sm:hidden">Text – </span>
               <span x-text="supportedLanguages[targetLangs[index]] || '...'"></span>
             </label>
-        
-            <textarea :id="'targetText' + index" 
-                      rows="10"
-                      class="border p-2 mt-1 rounded resize-none bg-[#f5ebcb]"
-                      :value="translations[targetLangs[index]] || ''"
-                      readonly></textarea>
-        
+            <textarea :id="'targetText' + index" rows="10" class="border p-2 mt-1 rounded resize-none bg-[#f5ebcb]" :value="translations[targetLangs[index]] || ''" readonly></textarea>
             <div class="flex items-center mt-2">
-              <button
-                type="button"
-                class="flex items-center gap-1 text-teal-900 font-bold drop-shadow-sm hover:text-teal-700 text-sm font-medium px-2 py-1 rounded focus:outline-none"
-                @click="
-                  const text = translations[targetLangs[index]] || '';
-                  if (text) {
-                    navigator.clipboard.writeText(text);
-                    copiedIndex = index;
-                    setTimeout(() => copiedIndex = null, 1200);
-                  }
-                "
-                :disabled="!(translations[targetLangs[index]] || '')"
-                :class="{'opacity-50 cursor-not-allowed': !(translations[targetLangs[index]] || '')}"
-                title="Copy translation"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <button type="button" class="flex items-center gap-1 text-teal-900 font-bold drop-shadow-sm hover:text-teal-700 text-sm font-medium px-2 py-1 rounded focus:outline-none" @click="
+                const text = translations[targetLangs[index]] || '';
+                if (text) {
+                  navigator.clipboard.writeText(text);
+                  copiedIndex = index;
+                  setTimeout(() => copiedIndex = null, 1200);
+                }
+              " :disabled="!(translations[targetLangs[index]] || '')" :class="{'opacity-50 cursor-not-allowed': !(translations[targetLangs[index]] || '')}" title="Copy translation">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" fill="none"/>
                   <rect x="3" y="3" width="13" height="13" rx="2" ry="2" stroke="currentColor" fill="none"/>
                 </svg>
@@ -162,21 +104,14 @@
       </div>
     </div>
   </div>
-
   <div class="text-center mt-1">
-    <button @click="translate" class="bg-[#0ABAB5] text-black font-bold px-6 py-2 rounded hover:bg-teal-600">
-      Translate
-    </button>
+    <button @click="translate" class="bg-[#0ABAB5] text-black font-bold px-6 py-2 rounded hover:bg-teal-600">Translate</button>
   </div>
-  
-
-  <!-- Amazon Ad Area -->
   <div class="bg-gray-100 px-4 py-4 mt-2">
     <div id="amazon-ad-container" class="max-w-5xl mx-auto text-gray-500"></div>
     <script src="/static/amazonads.js"></script>
   </div>
   <div id="ad-metrics" class="text-center text-xs text-black mt-1"></div>
-  <!-- Amazon Affiliate Disclaimer -->
   <footer class="text-center text-xs text-gray-800">
     As an Amazon Associate, I earn from qualifying purchases.
   </footer>
