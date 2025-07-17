@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MultiLangSetu - Free Online Multilingual Translator | Translate Text Instantly</title>
   <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
-  <!--link rel="preload" as="image" href="/static/img/logo-intro.webp" type="image/webp"-->
-  <!--link href="/static/tailwind.css" rel="stylesheet"-->
   <script src="https://cdn.tailwindcss.com" defer></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
-  <link rel="stylesheet" href="/static/langConverterStyle.css">
+  <link rel="preload" href="/static/langConverterStyle.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/static/langConverterStyle.css"></noscript>
   <script src="/static/appscript.js"></script>
   <style>[x-cloak] { display: none !important; }</style>
   <meta name="google-site-verification" content="3UBJ8DbLp-UdW2fhuBAAxAW_nhlgs7QFZFrSjzS5Ej8">
@@ -33,25 +32,42 @@
   <div x-show="showIntro" x-transition.opacity.duration.1000ms x-cloak class="absolute inset-0 flex items-center justify-center bg-white z-50" style="backdrop-filter: blur(6px);">
     <img src="/static/img/logo-intro.webp" alt="Logo" fetchpriority="high" width="300" height="300" style="width:auto; animation: logo-spin-shrink 2.5s cubic-bezier(0.77,0,0.175,1) forwards, glow 2s ease-in-out infinite;">
   </div>
-  <nav class="bg-[#0ABAB5] text-black flex items-center" style="height: 20vh; padding-left: 5px;">
-    <div class="flex items-center justify-center" style="width: 10%;">
-      <img src="/static/img/logo-header.webp" alt="Intro Logo" fetchpriority="high" width="96" height="96" class="mx-auto h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto" style="animation: glow 2s ease-in-out infinite; max-width: 100%; min-height: 10vh; min-width: 10vh;">
+  <nav class="bg-[#0ABAB5] text-black flex items-center justify-between px-4" style="min-height: 20vh;">
+    <!-- Left: Logo -->
+    <div class="flex items-center justify-center" style="width: auto;">
+      <img src="/static/img/logo-header.webp" alt="Intro Logo" fetchpriority="high" class="h-[12vh] md:h-[14vh] lg:h-[16vh] w-auto max-h-[16vh]" style="animation: glow 2s ease-in-out infinite;">
     </div>
-    <div class="flex flex-col items-center justify-center flex-grow">
-  <span class="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-center mt-1"
-        style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite;">
-    MultiLangSetu
-  </span>
-  <h1 class="text-center text-base sm:text-lg md:text-xl font-semibold mt-2 pb-1" style="font-family: Georgia, serif; color: #013737;">
-    Translate text into multiple languages instantly
-  </h1>
-  <p class="text-center text-sm mt-1 max-w-2xl mx-auto pb-2" style="font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 400; color: #022f2f;">
-    Free and simple multilingual translator that converts one text into several languages at once.
-  </p>
-</div>
-    <div class="flex items-center justify-end gap-6 pr-6">
-      <a href="/privacy" class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black" style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">Privacy Policy</a>
-      <a href="/about" class="hover:underline text-center text-base md:text-2xl lg:text-2xl font-medium break-words whitespace-normal text-black" style="font-family: 'Lucida Handwriting', cursive; font-weight: 400; padding: 5px;">About Us</a>
+    <!-- Center: Title + Description -->
+    <div class="flex flex-col items-center justify-center text-center flex-grow">
+      <span class="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mt-1"
+            style="font-family: 'Lucida Handwriting', cursive; animation: glow 2s ease-in-out infinite;">
+        MultiLangSetu
+      </span>
+      <h1 class="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold mt-1 pb-1"
+          style="font-family: Georgia, serif; color: #013737;">
+        Translate text into multiple languages instantly
+      </h1>
+      <p class="text-sm sm:text-base md:text-lg max-w-2xl mx-auto"
+        style="font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 400; color: #022f2f;">
+        Free and simple multilingual translator that converts one text into several languages at once.
+      </p>
+    </div>
+    <!-- Right: Links -->
+    <div class="flex flex-wrap justify-end items-center gap-x-4 gap-y-1 pr-2 text-right">
+      <div>
+        <a href="/privacy"
+          class="hover:underline text-sm sm:text-base md:text-lg lg:text-xl font-medium text-black"
+          style="font-family: 'Lucida Handwriting', cursive; padding: 5px;">
+          Privacy Policy
+        </a>
+      </div>
+      <div>
+        <a href="/about"
+          class="hover:underline text-sm sm:text-base md:text-lg lg:text-xl font-medium text-black"
+          style="font-family: 'Lucida Handwriting', cursive; padding: 5px;">
+          About Us
+        </a>
+      </div>
     </div>
   </nav>
   <div class="container mx-auto" style="padding: 15px; margin-top: 0;">
