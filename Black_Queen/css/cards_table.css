@@ -180,47 +180,161 @@
 /* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
     .playing-table-container {
-        width: 95vw;
-        height: 90vh;
-        padding: 5px;
-        border-radius: 15px;
+        width: 98vw; /* Use more of the viewport width */
+        height: 95vh; /* Use more of the viewport height */
+        padding: 1vw; /* Overall container padding in vw */
+        border-radius: 10px; /* Slightly smaller border radius */
+        /* Adjusted grid-template-rows to allow more flexibility for player areas */
+        grid-template-rows: 7% 20% 13% 14% 13% 18% 7%;
+        gap: 0.5vw; /* Reduce gap between grid items using vw */
     }
 
     .table-item {
-        font-size: 0.8em; /* Smaller font on small screens */
-        padding: 3px;
+        font-size: 0.7em; /* Still using relative em for general items, can change to vw if needed */
+        padding: 0.5vw; /* Reduce general padding using vw */
     }
 
+    /* Center Area responsive adjustments */
     .center-area {
-        font-size: 1.2em;
+        font-size: 1.1em !important; 
+        padding: 0.55vw !important;
     }
 
-    /* Adjust vertical text for better readability on small screens if needed */
-    .east-cards, .west-cards {
-        font-size: 0.7em;
+    .bidding-interface {
+        gap: 2vw !important; /* Increased from 0.8vw by ~10% */
+        padding: 0.8vw !important; /* Increased from 0.8vw by ~10% */
     }
+
+    .bidding-status {
+        font-size: 3.25vw !important; /* Increased from 2.5vw by ~10% */
+        margin-bottom: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+    }
+
+    .current-player-turn {
+        font-size: 2.5vw !important; /* Increased from 2vw by ~10% */
+        margin-bottom: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+    }
+
+    .highest-bid-label {
+        font-size: 2.2vw !important; /* Increased from 1.8vw by ~10% */
+        margin-bottom: 0 !important;
+    }
+
+    .highest-bid-display {
+        font-size: 3.3vw !important; /* Increased from 3vw by ~10% */
+    }
+
+    .highest-bidder-name {
+        font-size: 2.2vw !important; /* Increased from 2vw by ~10% */
+        margin-left: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+    }
+
+    .message-box {
+        font-size: 2vw !important; /* Increased from 1.7vw by ~10% */
+        min-height: 2vw !important; /* Increased from 2vw by ~10% */
+    }
+
 
     /* Mobile responsiveness for North and South cards */
     .north-cards .hand, .south-cards .hand {
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-wrap: nowrap; /* Ensure cards stay on one line */
-        overflow-x: auto; /* Allow horizontal scrolling if necessary */
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        min-height: unset; /* Allow vertical shrinking if needed */
     }
 
     .north-cards .hand .card, .south-cards .hand .card {
-        /* Make cards scale down to fit the container */
-        width: 10vw; /* Adjusted: Smaller width for mobile */
-        height: calc(10vw * 90 / 64); /* Maintain aspect ratio */
-        margin-left: 0; /* Reset margin-left for individual cards on mobile */
+        width: 8vw; /* Card width in vw */
+        height: calc(8vw * 90 / 64); /* Maintain aspect ratio */
+        margin-left: 0;
     }
 
     .north-cards .hand .card:not(:first-child),
     .south-cards .hand .card:not(:first-child) {
-        /* Apply negative margin for overlap on mobile */
-        margin-left: -5vw; /* Adjusted for smaller cards, fine-tune as needed */
+        margin-left: -4vw; /* Adjust overlap for smaller cards using vw */
+    }
+
+    /* East and West cards - similar adjustments */
+    .east-cards .hand, .west-cards .hand {
+        min-width: unset; /* Allow horizontal shrinking if needed */
+    }
+
+    .east-cards .hand .card, .west-cards .hand .card {
+        width: 8vw; /* Match horizontal cards for consistency in size reduction */
+        height: calc(8vw * 90 / 64);
+    }
+
+    .east-cards .hand .card:not(:first-child),
+    .west-cards .hand .card:not(:first-child) {
+        margin-top: -5vw; /* Adjust vertical overlap for smaller cards using vw */
+    }
+
+
+    /* --- CRITICAL CHANGES FOR PLAYER NAME AND BUTTONS --- */
+
+    /* Player Name containers: Ensure they stack vertically and use minimal space */
+    .north-name, .east-name, .west-name, .south-name {
+        flex-direction: column; /* Stack name and buttons vertically by default */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content horizontally */
+        padding: 0.5vw !important; /* Increased padding, forcefully applied */
+        min-height: unset; /* Allow vertical shrinkage */
+        min-width: unset; /* Allow horizontal shrinkage */
+    }
+
+    /* Player name text within the container */
+    .player-name {
+        font-size: 2.3vw !important; /* Adjusted font size for player name */
+        white-space: nowrap; /* Prevent wrapping */
+        overflow: hidden; /* Hide overflow */
+        text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        width: 100%; /* Take full width of its parent flex container */
+        margin-bottom: 0.3vw !important; /* Adjusted space below name before buttons */
+        padding: 0 0.3vw !important; /* Adjusted horizontal padding for player name text */
+        line-height: 1; /* Ensure text takes minimal vertical space */
+        box-sizing: border-box; /* Include padding in width calculation */
+    }
+
+    /* Player-specific Bid Control Containers (General for North/South) */
+    .player-bid-controls {
+        flex-direction: row; /* Keep buttons side-by-side for North/South */
+        flex-wrap: wrap; /* Allow buttons to wrap to a new line */
+        justify-content: center; /* Center buttons within their control area */
+        gap: 0.5vw !important; /* Ensured gap between buttons, forcefully applied */
+        width: 100%; /* Ensure it takes full available width within the parent name container */
+        margin-top: 0; /* No top margin needed if player name has margin-bottom */
+        min-height: unset; /* Allow vertical shrinkage */
+    }
+
+    /* Specific adjustment for EAST and WEST players: Bid/Pass buttons stack vertically */
+    .east-name .player-bid-controls,
+    .west-name .player-bid-controls {
+        flex-direction: column !important; /* Stack buttons vertically for East/West, forcefully applied */
+        gap: 0.5vw !important; /* Ensure gap between stacked buttons, forcefully applied */
+    }
+
+    /* General Bid Button Styling within small screens */
+    .bid-button, .pass-button {
+        padding: 0.6vw 1.2vw !important; /* Adjusted viewport units for padding, forcefully applied */
+        font-size: 1.7vw !important; /* Adjusted viewport units for font size, forcefully applied */
+        flex-grow: 1; /* Allow them to grow to fill space */
+        flex-basis: auto; /* Let content determine base size, then grow/shrink */
+        min-width: unset !important; /* Ensure no minimum width prevents shrinking, forcefully applied */
+        max-width: 20% !important; /* Set max-width as requested for North/South, forcefully applied */
+        height: auto; /* Allow height to adjust based on padding/font-size */
+        line-height: 1; /* Ensure line height is very compact */
+        white-space: nowrap; /* Prevent text wrapping inside button */
+        box-sizing: border-box; /* Include padding in width/height calculation */
+        border-radius: 0.4vw !important; /* Adjusted border-radius with viewport, forcefully applied */
+    }
+
+    /* Specific button styling for EAST and WEST when stacked vertically */
+    .east-name .bid-button, .east-name .pass-button,
+    .west-name .bid-button, .west-name .pass-button {
+        max-width: 100% !important; /* Allow buttons to take full width when stacked vertically, forcefully applied */
     }
 }
 
@@ -268,14 +382,23 @@
 
 /* Player-specific Bid Control Containers */
 .player-bid-controls {
-    display: flex; /* Always display as flex */
-    opacity: 1; /* Always visible */
-    pointer-events: auto; /* Always interactive */
+    /* Removed !important flags to allow JS to control visibility */
+    display: flex; /* Default to flex, JS will add/remove 'active' */
+    opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Disable interaction when hidden */
     align-items: center;
     gap: 5px;
     position: static; /* Ensure it's not absolutely positioned */
     top: auto;
     transform: none;
+}
+
+/* Class to enable controls (will be added by JS) */
+.player-bid-controls.active {
+    display: flex; /* Show as flex when active */
+    opacity: 1; /* Ensure opacity is 1 */
+    pointer-events: auto; /* Enable interaction */
+    transition: opacity 0.3s ease-in-out; /* Add transition for fade effect */
 }
 
 /* CARD STYLING - Existing style */
