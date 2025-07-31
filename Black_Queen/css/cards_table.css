@@ -1,0 +1,420 @@
+/* TABLE LAYOUT */
+.playing-table-container {
+  display: grid;
+  /* Define 3 columns with specified percentages */
+  grid-template-columns: 20% 60% 20%;
+  /* Updated: Define 7 rows with adjusted percentages summing to 100% */
+  grid-template-rows: 8% 20% 13% 14% 13% 18% 8%; /* Adjusted row heights for better balance and no clipping */
+  width: 60vw; /* Updated: Changed from 90vw to 60vw */
+  max-width: 1200px;
+  height: 70vh; /* Updated: Changed from 80vh to 70vh */
+  max-height: 800px;
+  background-color: #28a745; /* Green table color */
+  border: 16px solid #1e7e34; /* Darker green border */
+  border-radius: 20px; /* Rounded corners for the table */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Soft shadow */
+  gap: 5px; /* Small gap between grid items */
+  padding: 10px; /* Inner padding for the grid */
+  margin: 1rem auto; /* Keep existing margin for centering */
+  box-sizing: border-box;
+  position: relative; /* Keep existing position */
+  overflow: hidden; /* Re-added overflow: hidden */
+}
+
+/* General styling for all grid items */
+.table-item {
+    display: flex; /* Make all table items flex containers */
+    justify-content: center; /* Default center for content */
+    align-items: center;
+    color: white; /* White text for visibility on green */
+    font-weight: bold;
+    text-align: center;
+    border-radius: 8px; /* Rounded corners for all sections */
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+/* Specific grid area definitions */
+
+/* Player Name Areas (North, East, West, South) */
+.north-name, .east-name, .west-name, .south-name {
+    background-color: #1a6d2f; /* Solid darker green background */
+    display: flex; /* Explicitly make them flex containers */
+    align-items: center; /* Vertically center items */
+    justify-content: space-between; /* Distribute items with space between them */
+    padding: 5px 15px; /* Add horizontal padding for button space */
+}
+
+/* North Name */
+.north-name {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 1 / 2; /* First row */
+}
+
+/* North Cards */
+.north-cards {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 2 / 3; /* Second row */
+    background-color: rgba(255, 255, 255, 0.1); /* Lighter for card areas */
+    border: 1px dashed rgba(255, 255, 255, 0.5); /* Dashed border for card area */
+    min-height: 100px; /* Ensure enough height for cards */
+}
+
+/* East Name */
+.east-name {
+    grid-column: 3 / 4; /* Third column */
+    grid-row: 2 / 3; /* Second row */
+    background-color: rgba(0, 0, 0, 0.2);
+    flex-direction: row; /* Ensure horizontal layout for name and buttons */
+}
+
+/* East Cards (spanning multiple rows) */
+.east-cards {
+    grid-column: 3 / 4; /* Third column */
+    grid-row: 3 / 7; /* Spans rows 3, 4, 5, 6 */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    min-width: 80px; /* Ensure enough width for vertical cards */
+}
+
+/* West Name */
+.west-name {
+    grid-column: 1 / 2; /* First column */
+    grid-row: 6 / 7; /* Sixth row */
+    background-color: rgba(0, 0, 0, 0.2);
+    flex-direction: row; /* Ensure horizontal layout for name and buttons */
+}
+
+/* West Cards (spanning multiple rows) */
+.west-cards {
+    grid-column: 1 / 2; /* First column */
+    grid-row: 2 / 6; /* Spans rows 2, 3, 4, 5 */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    min-width: 80px; /* Ensure enough width for vertical cards */
+}
+
+/* Center Area */
+.center-area {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 3 / 6; /* Rows 3, 4, 5 */
+    background-color: rgba(255, 255, 255, 0.05); /* Very subtle background for center */
+    border: 2px dashed rgba(255, 255, 255, 0.3); /* Dashed border for center */
+    font-size: 1.5em; /* Larger text for center */
+    color: rgba(255, 255, 255, 0.7);
+    display: flex; /* Ensure center area is a flex container */
+    flex-direction: column; /* Stack content vertically */
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+}
+
+/* Bidding Interface (central display) */
+.bidding-interface {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: white;
+}
+
+.bidding-status {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.current-player-turn {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.highest-bid-label {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.highest-bid-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffcc00; /* Yellowish color for bid amount */
+}
+
+.highest-bidder-name { /* Styling for the bidder name next to the bid */
+    font-size: 1rem;
+    color: #aaffaa; /* Light green for bidder name */
+    margin-left: 5px;
+}
+
+.highest-bid-info { /* Container for bid and bidder name */
+    display: flex;
+    align-items: baseline; /* Align text baselines */
+}
+
+.message-box {
+    font-size: 0.8rem;
+    color: #ffcc00;
+    min-height: 1.2rem; /* Ensure space even if no message */
+}
+
+
+/* South Cards */
+.south-cards {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 6 / 7; /* Sixth row */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    min-height: 100px; /* Ensure enough height for cards */
+}
+
+/* South Name */
+.south-name {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 7 / 8; /* Seventh row */
+    background-color: #1a6d2f; /* Solid darker green background */
+    padding-bottom: 0; /* Removed explicit padding-bottom, relying on row height and flex centering */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .playing-table-container {
+        width: 95vw;
+        height: 90vh;
+        padding: 5px;
+        border-radius: 15px;
+    }
+
+    .table-item {
+        font-size: 0.8em; /* Smaller font on small screens */
+        padding: 3px;
+    }
+
+    .center-area {
+        font-size: 1.2em;
+    }
+
+    /* Adjust vertical text for better readability on small screens if needed */
+    .east-cards, .west-cards {
+        font-size: 0.7em;
+    }
+
+    /* Mobile responsiveness for North and South cards */
+    .north-cards .hand, .south-cards .hand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap; /* Ensure cards stay on one line */
+        overflow-x: auto; /* Allow horizontal scrolling if necessary */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+
+    .north-cards .hand .card, .south-cards .hand .card {
+        /* Make cards scale down to fit the container */
+        width: 10vw; /* Adjusted: Smaller width for mobile */
+        height: calc(10vw * 90 / 64); /* Maintain aspect ratio */
+        margin-left: 0; /* Reset margin-left for individual cards on mobile */
+    }
+
+    .north-cards .hand .card:not(:first-child),
+    .south-cards .hand .card:not(:first-child) {
+        /* Apply negative margin for overlap on mobile */
+        margin-left: -5vw; /* Adjusted for smaller cards, fine-tune as needed */
+    }
+}
+
+/* PLAYER NAMES - Existing style, applies to the span inside the new structure */
+.player-name {
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 100%;
+  padding: 4px;
+  flex-grow: 1; /* Allow it to take available space */
+  text-align: center; /* Center the text within its space */
+  white-space: nowrap; /* Prevent name from wrapping */
+  position: static; /* Ensure it's not absolutely positioned */
+  transform: none;
+  left: auto;
+  z-index: auto;
+}
+
+/* General Bid Button Styling (applies to all bid/pass buttons) */
+.bid-button, .pass-button {
+  padding: 6px 12px; /* Increased padding by ~30% from 4px 8px */
+  background-color: #0056b3; /* A blue shade for bid buttons */
+  color: white;
+  border: none;
+  border-radius: 4px; /* Slightly less rounded than main buttons */
+  font-size: 0.85rem; /* Increased font size by ~30% from 0.75rem */
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease; /* Added opacity transition */
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+  height: fit-content; /* Ensure buttons only take content height */
+}
+
+.bid-button:hover {
+  background-color: #003d80;
+}
+
+.pass-button {
+  background-color: #dc3545; /* Red shade for pass button */
+}
+
+.pass-button:hover {
+  background-color: #a71d2a;
+}
+
+/* Player-specific Bid Control Containers */
+.player-bid-controls {
+    display: flex; /* Always display as flex */
+    opacity: 1; /* Always visible */
+    pointer-events: auto; /* Always interactive */
+    align-items: center;
+    gap: 5px;
+    position: static; /* Ensure it's not absolutely positioned */
+    top: auto;
+    transform: none;
+}
+
+/* CARD STYLING - Existing style */
+.card {
+  height: 90px; /* Original height */
+  width: 64px;  /* Original width */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  border: none; /* Removed debugging border */
+  border-radius: 4px; /* Slightly rounded corners for cards */
+  box-sizing: border-box; /* Ensure border is part of the element's size, not adding to it */
+  background-clip: padding-box; /* Ensure background image is clipped to the padding box, so it doesn't go under the border */
+}
+
+/* CARD STACKING - Applied to the .hand div inside the new card area containers */
+.north-cards .hand, .south-cards .hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px; /* Increased min-height to ensure space for cards */
+  border: none; /* Removed debugging border */
+}
+
+/* Overlap for horizontal cards (North and South) */
+.north-cards .hand .card:not(:first-child),
+.south-cards .hand .card:not(:first-child) {
+  margin-left: -40px; /* Adjust this value for desired overlap */
+}
+
+/* Ensure cards stack correctly (later cards on top) */
+.north-cards .hand .card:nth-child(n),
+.south-cards .hand .card:nth-child(n) {
+    z-index: calc(var(--card-index, 0) + 1);
+}
+
+
+.east-cards .hand, .west-cards .hand {
+  display: flex;
+  flex-direction: column; /* Stack vertically */
+  align-items: center; /* Center cards horizontally within the hand */
+  justify-content: center; /* Center cards vertically within the hand */
+  height: 100%; /* Ensure hand takes full height of its container */
+  width: 100%; /* Ensure hand takes full width of its container */
+  min-width: 90px; /* Increased min-width to ensure space for cards */
+  border: none; /* Removed debugging border */
+}
+
+/* Overlap for vertical cards (East and West) */
+.east-cards .hand .card:not(:first-child),
+.west-cards .hand .card:not(:first-child) {
+  /* Adjusted margin-top to create overlap along the longer side (height) */
+  margin-top: -60px; /* This value can be adjusted to control the overlap amount */
+}
+
+/* --- Modal Styles --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+}
+
+.modal-content {
+    background-color: #333;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 80%; /* Could be responsive */
+    max-width: 400px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #0ABAB5; /* Navbar color */
+}
+
+.modal-content button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin: 0 5px; /* Space between buttons */
+}
+
+.modal-content #bid-dropdown {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #444;
+    color: white;
+    font-size: 1rem;
+    width: 100%; /* This will be adjusted for max-width */
+    max-width: 200px; /* Added: Limit dropdown width */
+    box-sizing: border-box; /* Include padding/border in width */
+    align-self: center; /* Added: Center dropdown */
+}
+
+/* Specific button styles for modals */
+#confirm-bid-btn, #confirm-pass-btn {
+    background-color: #28a745; /* Green for confirm */
+}
+#confirm-bid-btn:hover, #confirm-pass-btn:hover {
+    background-color: #1e7e34;
+}
+
+#cancel-bid-btn, #cancel-pass-btn {
+    background-color: #dc3545; /* Red for cancel */
+}
+#cancel-bid-btn:hover, #cancel-pass-btn:hover {
+    background-color: #a71d2a;
+}
+
+/* New style for modal buttons container to control their width */
+.modal-content .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    width: 100%; /* Take full width of modal content */
+}
+
+.modal-content .modal-buttons button {
+    flex-grow: 0; /* Prevent buttons from stretching */
+    flex-shrink: 1; /* Allow them to shrink if needed */
+    width: auto; /* Allow content to dictate width */
+    max-width: 120px; /* Limit button width */
+}

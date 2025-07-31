@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://multilangsetu.onrender.com/sitemap.xml

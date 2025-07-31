@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Black Queen</title>
+  <!-- NAVBAR STYLES -->
+  <link rel="stylesheet" href="./css/navbar.css">
+  <!-- TABLE & GAME STYLES -->
+  <link rel="stylesheet" href="./css/cards_table.css">
+  <!-- CARD BASE STYLES - NEWLY ADDED -->
+  <link rel="stylesheet" href="./css/cards.css">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar-bq">
+    <!-- Left: Logo -->
+    <div class="navbar-logo">
+      <img src="./img/black_queen_backside_default.webp" alt="Black Queen Logo" class="bq-logo" />
+    </div>
+
+    <!-- Center: Title -->
+    <div class="navbar-title-links-wrapper">
+      <div class="navbar-title">
+        <span class="title-text">Black Queen</span>
+        <h1 class="subtitle-text">A strategic 4-player card game</h1>
+      </div>
+
+      <!-- Right: Links -->
+      <div class="navbar-links-bq">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="about.html">About Us</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CARD TABLE - Updated to use the new grid layout -->
+  <div class="playing-table-container">
+    <!-- North Player Name Area -->
+    <div class="table-item north-name">
+      <span class="player-name">North</span>
+      <div class="player-bid-controls north-controls">
+        <button id="north-bid-btn" class="bid-button">Bid</button>
+        <button id="north-pass-btn" class="pass-button">Pass</button>
+      </div>
+    </div>
+    <!-- North Player Cards Hand Area -->
+    <div class="table-item north-cards"><div class="hand"></div></div>
+
+    <!-- East Player Name Area -->
+    <div class="table-item east-name">
+      <span class="player-name">East</span>
+      <div class="player-bid-controls east-controls">
+        <button id="east-bid-btn" class="bid-button">Bid</button>
+        <button id="east-pass-btn" class="pass-button">Pass</button>
+      </div>
+    </div>
+    <!-- East Player Cards Hand Area -->
+    <div class="table-item east-cards"><div class="hand"></div></div>
+
+    <!-- West Player Cards Hand Area -->
+    <div class="table-item west-cards"><div class="hand"></div></div>
+
+    <!-- Center Playing Area -->
+    <div class="table-item center-area">
+      <!-- Bidding Interface (central display) -->
+      <div id="bidding-interface" class="bidding-interface">
+        <h2 id="bidding-status" class="bidding-status">Bidding Starts!</h2>
+        <p id="current-player-turn" class="current-player-turn"></p>
+        <div class="highest-bid-info">
+          <p class="highest-bid-label">Current Bid:</p>
+          <span id="highest-bid-display" class="highest-bid-display">170</span>
+          <span id="highest-bidder-name" class="highest-bidder-name"></span>
+        </div>
+        <p id="message-box" class="message-box"></p>
+      </div>
+    </div>
+
+    <!-- West Player Name Area -->
+    <div class="table-item west-name">
+      <span class="player-name">West</span>
+      <div class="player-bid-controls west-controls">
+        <button id="west-bid-btn" class="bid-button">Bid</button>
+        <button id="west-pass-btn" class="pass-button">Pass</button>
+      </div>
+    </div>
+
+    <!-- South Player Cards Hand Area -->
+    <div class="table-item south-cards"><div class="hand"></div></div>
+    <!-- South Player Name Area -->
+    <div class="table-item south-name">
+      <span class="player-name">You (South)</span>
+      <div class="player-bid-controls south-controls">
+        <button id="south-bid-btn" class="bid-button">Bid</button>
+        <button id="south-pass-btn" class="pass-button">Pass</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button id="shuffle-deck-btn">Shuffle</button>
+    <button id="deal-cards-btn">Deal & Start Game</button>
+  </div>
+
+  <!-- Custom Bid Dropdown Modal -->
+  <div id="bid-modal" class="modal">
+    <div class="modal-content">
+      <h3>Select Your Bid</h3>
+      <select id="bid-dropdown"></select>
+      <div class="modal-buttons"> <!-- Added this div for button grouping -->
+        <button id="confirm-bid-btn">Confirm Bid</button>
+        <button id="cancel-bid-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Pass Confirmation Modal -->
+  <div id="pass-confirm-modal" class="modal">
+    <div class="modal-content">
+      <h3>Confirm Pass</h3>
+      <p>Are you sure you want to pass?</p>
+      <div class="modal-buttons"> <!-- Added this div for button grouping -->
+        <button id="confirm-pass-btn">Yes, Pass</button>
+        <button id="cancel-pass-btn">No, Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/game_logic.js"></script> <!-- game_logic.js must be loaded FIRST -->
+  <script src="js/script.js"></script>     <!-- script.js must be loaded SECOND -->
+</body>
+</html>

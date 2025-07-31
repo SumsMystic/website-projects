@@ -1,0 +1,10 @@
+|			|   North Name   	|         	|			<-- 8%
+| 			|   North Cards		| East Name	|			<-- 27%
+| West CD 	|     				| East CD 	|			<-- 10%
+| West CD 	|     Center     	| East CD 	|			<-- 10%
+| West CD 	|     				| East CD 	|			<-- 10%
+| West Name	|   South Cards		|  			|			<-- 27%
+|         	|   South Name   	|         	|			<-- 8%
+
+
+|    25%	|   	50%			|    25%	|    				

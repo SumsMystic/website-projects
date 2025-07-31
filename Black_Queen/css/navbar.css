@@ -1,0 +1,186 @@
+/* === Base Styles === */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #222;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+/* === Black Queen Custom Navbar === */
+.navbar-title-links-wrapper {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.navbar-bq {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0ABAB5;
+  color: black;
+  padding: 0.5rem 1rem;
+  min-height: 18vh;
+}
+
+/* Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+}
+
+.bq-logo {
+  height: 16vh; /* Set to 90% of navbar's 18vh min-height (0.9 * 18vh = 16.2vh) */
+  max-height: 16vh; /* Keep max-height to prevent excessive growth, though 16.2vh is close */
+  width: auto; /* Maintain aspect ratio */
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Center title and description */
+.navbar-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.title-text {
+  font-family: 'Lucida Handwriting', cursive;
+  font-weight: bold;
+  font-size: 2rem;
+  margin-top: 0.5rem;
+  animation: glow 2s ease-in-out infinite;
+}
+
+.subtitle-text {
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+  color: #013737;
+  margin-top: 0.2rem;
+  padding-bottom: 0.2rem;
+}
+
+/* Right-side links */
+.navbar-links-bq {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.navbar-links-bq a {
+  font-family: 'Lucida Handwriting', cursive;
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  text-decoration: none;
+  padding: 4px 12px;
+}
+
+.navbar-links-bq a:hover {
+  text-decoration: underline;
+}
+
+/* Glow animation */
+@keyframes glow {
+  0%   { text-shadow: 0 0 3px #ffffff; }
+  50%  { text-shadow: 0 0 10px #ffffff; }
+  100% { text-shadow: 0 0 3px #ffffff; }
+}
+
+/* === Buttons === */
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.3rem;
+  gap: 1rem;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #004d00;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #007a00;
+}
+
+/* === Responsive Layout === */
+@media (max-width: 768px) {
+  .navbar-bq {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .navbar-title-links-wrapper {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .navbar-links-bq {
+    flex-direction: column;
+    align-items: center;
+    margin-left: 0;
+  }
+
+  .title-text {
+    font-size: 1.6rem;
+  }
+
+  .subtitle-text {
+    font-size: 1rem;
+  }
+
+  .bq-logo {
+    height: 10vh;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+  /* Override background utility classes for dark mode */
+  .bg-f5ebcb, .bg-\[\#f5ebcb\] {
+    background-color: #1e1e1e !important;
+  }
+  .bg-C9F0EE, .bg-\[\#C9F0EE\] {
+    background-color: #2c2c2c !important;
+  }
+  .text-gray-800 {
+    color: #e0e0e0 !important;
+  }
+}
+
+/* === Footer === */
+.footer { 
+  text-align: center;
+  padding: 1rem;
+  background-color: #003300;
+  color: white;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
