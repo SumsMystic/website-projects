@@ -196,27 +196,27 @@
 
     /* Center Area responsive adjustments */
     .center-area {
-        font-size: 1.1em !important; 
-        padding: 0.55vw !important;
+        font-size: 0.88em !important; /* Increased from 0.8em by ~10% */
+        padding: 0.55vw !important; /* Increased from 0.5vw by ~10% */
     }
 
     .bidding-interface {
-        gap: 2vw !important; /* Increased from 0.8vw by ~10% */
-        padding: 0.8vw !important; /* Increased from 0.8vw by ~10% */
+        gap: 0.88vw !important; /* Increased from 0.8vw by ~10% */
+        padding: 0.88vw !important; /* Increased from 0.8vw by ~10% */
     }
 
     .bidding-status {
-        font-size: 3.25vw !important; /* Increased from 2.5vw by ~10% */
-        margin-bottom: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+        font-size: 2.75vw !important; /* Increased from 2.5vw by ~10% */
+        margin-bottom: 0.55vw !important;
     }
 
     .current-player-turn {
-        font-size: 2.5vw !important; /* Increased from 2vw by ~10% */
-        margin-bottom: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+        font-size: 2.2vw !important; /* Increased from 2vw by ~10% */
+        margin-bottom: 0.55vw !important;
     }
 
     .highest-bid-label {
-        font-size: 2.2vw !important; /* Increased from 1.8vw by ~10% */
+        font-size: 1.98vw !important; /* Increased from 1.8vw by ~10% */
         margin-bottom: 0 !important;
     }
 
@@ -226,12 +226,12 @@
 
     .highest-bidder-name {
         font-size: 2.2vw !important; /* Increased from 2vw by ~10% */
-        margin-left: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+        margin-left: 0.55vw !important;
     }
 
     .message-box {
-        font-size: 2vw !important; /* Increased from 1.7vw by ~10% */
-        min-height: 2vw !important; /* Increased from 2vw by ~10% */
+        font-size: 1.87vw !important; /* Increased from 1.7vw by ~10% */
+        min-height: 2.2vw !important; /* Increased from 2vw by ~10% */
     }
 
 
@@ -280,7 +280,7 @@
         flex-direction: column; /* Stack name and buttons vertically by default */
         justify-content: center; /* Center content vertically */
         align-items: center; /* Center content horizontally */
-        padding: 0.5vw !important; /* Increased padding, forcefully applied */
+        padding: 0.5vw !important;
         min-height: unset; /* Allow vertical shrinkage */
         min-width: unset; /* Allow horizontal shrinkage */
     }
@@ -303,7 +303,7 @@
         flex-direction: row; /* Keep buttons side-by-side for North/South */
         flex-wrap: wrap; /* Allow buttons to wrap to a new line */
         justify-content: center; /* Center buttons within their control area */
-        gap: 0.5vw !important; /* Ensured gap between buttons, forcefully applied */
+        gap: 0.5vw !important;
         width: 100%; /* Ensure it takes full available width within the parent name container */
         margin-top: 0; /* No top margin needed if player name has margin-bottom */
         min-height: unset; /* Allow vertical shrinkage */
@@ -312,122 +312,128 @@
     /* Specific adjustment for EAST and WEST players: Bid/Pass buttons stack vertically */
     .east-name .player-bid-controls,
     .west-name .player-bid-controls {
-        flex-direction: column !important; /* Stack buttons vertically for East/West, forcefully applied */
-        gap: 0.5vw !important; /* Ensure gap between stacked buttons, forcefully applied */
+        flex-direction: column !important; /* Stack buttons vertically for East/West */
+        gap: 0.5vw !important;
     }
 
     /* General Bid Button Styling within small screens */
     .bid-button, .pass-button {
-        padding: 0.6vw 1.2vw !important; /* Adjusted viewport units for padding, forcefully applied */
-        font-size: 1.7vw !important; /* Adjusted viewport units for font size, forcefully applied */
+        padding: 0.6vw 1.2vw !important;
+        font-size: 1.7vw !important;
         flex-grow: 1; /* Allow them to grow to fill space */
         flex-basis: auto; /* Let content determine base size, then grow/shrink */
-        min-width: unset !important; /* Ensure no minimum width prevents shrinking, forcefully applied */
-        max-width: 20% !important; /* Set max-width as requested for North/South, forcefully applied */
+        min-width: unset !important; /* Ensure no minimum width prevents shrinking */
+        max-width: 20% !important; /* Set max-width as requested for North/South */
         height: auto; /* Allow height to adjust based on padding/font-size */
         line-height: 1; /* Ensure line height is very compact */
         white-space: nowrap; /* Prevent text wrapping inside button */
         box-sizing: border-box; /* Include padding in width/height calculation */
-        border-radius: 0.4vw !important; /* Adjusted border-radius with viewport, forcefully applied */
+        border-radius: 0.4vw !important;
     }
 
     /* Specific button styling for EAST and WEST when stacked vertically */
     .east-name .bid-button, .east-name .pass-button,
     .west-name .bid-button, .west-name .pass-button {
-        max-width: 100% !important; /* Allow buttons to take full width when stacked vertically, forcefully applied */
+        max-width: 100% !important; /* Allow buttons to take full width when stacked vertically */
     }
 }
 
-/* PLAYER NAMES - Existing style, applies to the span inside the new structure */
+/* PLAYER NAMES */
 .player-name {
   color: white;
   font-weight: bold;
   font-size: 1rem;
   line-height: 100%;
   padding: 4px;
-  flex-grow: 1; /* Allow it to take available space */
-  text-align: center; /* Center the text within its space */
-  white-space: nowrap; /* Prevent name from wrapping */
-  position: static; /* Ensure it's not absolutely positioned */
+  flex-grow: 1;
+  text-align: center;
+  white-space: nowrap;
+  position: static;
   transform: none;
   left: auto;
   z-index: auto;
 }
 
-/* General Bid Button Styling (applies to all bid/pass buttons) */
+/* General Bid Button Styling */
 .bid-button, .pass-button {
-  padding: 6px 12px; /* Increased padding by ~30% from 4px 8px */
-  background-color: #0056b3; /* A blue shade for bid buttons */
+  padding: 6px 12px;
+  background-color: #0056b3;
   color: white;
   border: none;
-  border-radius: 4px; /* Slightly less rounded than main buttons */
-  font-size: 0.85rem; /* Increased font size by ~30% from 0.75rem */
+  border-radius: 4px;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, opacity 0.2s ease; /* Added opacity transition */
-  flex-shrink: 0; /* Prevent buttons from shrinking */
-  height: fit-content; /* Ensure buttons only take content height */
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  flex-shrink: 0;
+  height: fit-content;
 }
 
-.bid-button:hover {
+.bid-button:hover:not([disabled]) {
   background-color: #003d80;
 }
 
 .pass-button {
-  background-color: #dc3545; /* Red shade for pass button */
+  background-color: #dc3545;
 }
 
-.pass-button:hover {
+.pass-button:hover:not([disabled]) {
   background-color: #a71d2a;
 }
 
+/* --- STYLES FOR DISABLED BUTTONS --- */
+.bid-button[disabled],
+.pass-button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+}
+/* --- END STYLES --- */
+
 /* Player-specific Bid Control Containers */
 .player-bid-controls {
-    /* Removed !important flags to allow JS to control visibility */
-    display: flex; /* Default to flex, JS will add/remove 'active' */
-    opacity: 0; /* Hidden by default */
-    pointer-events: none; /* Disable interaction when hidden */
+    display: flex;
     align-items: center;
     gap: 5px;
-    position: static; /* Ensure it's not absolutely positioned */
+    position: static;
     top: auto;
     transform: none;
+    transition: opacity 0.3s ease-in-out;
 }
 
-/* Class to enable controls (will be added by JS) */
+/* Class to enable controls (no longer used for visibility, but could be used for other effects) */
 .player-bid-controls.active {
-    display: flex; /* Show as flex when active */
-    opacity: 1; /* Ensure opacity is 1 */
-    pointer-events: auto; /* Enable interaction */
-    transition: opacity 0.3s ease-in-out; /* Add transition for fade effect */
+    opacity: 1;
+    pointer-events: auto;
 }
 
-/* CARD STYLING - Existing style */
+/* CARD STYLING */
 .card {
-  height: 90px; /* Original height */
-  width: 64px;  /* Original width */
+  height: 90px;
+  width: 64px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   position: relative;
-  border: none; /* Removed debugging border */
-  border-radius: 4px; /* Slightly rounded corners for cards */
-  box-sizing: border-box; /* Ensure border is part of the element's size, not adding to it */
-  background-clip: padding-box; /* Ensure background image is clipped to the padding box, so it doesn't go under the border */
+  border: none;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-clip: padding-box;
 }
 
-/* CARD STACKING - Applied to the .hand div inside the new card area containers */
+/* CARD STACKING */
 .north-cards .hand, .south-cards .hand {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 90px; /* Increased min-height to ensure space for cards */
-  border: none; /* Removed debugging border */
+  min-height: 90px;
+  border: none;
 }
 
 /* Overlap for horizontal cards (North and South) */
 .north-cards .hand .card:not(:first-child),
 .south-cards .hand .card:not(:first-child) {
-  margin-left: -40px; /* Adjust this value for desired overlap */
+  margin-left: -40px;
 }
 
 /* Ensure cards stack correctly (later cards on top) */
@@ -439,35 +445,34 @@
 
 .east-cards .hand, .west-cards .hand {
   display: flex;
-  flex-direction: column; /* Stack vertically */
-  align-items: center; /* Center cards horizontally within the hand */
-  justify-content: center; /* Center cards vertically within the hand */
-  height: 100%; /* Ensure hand takes full height of its container */
-  width: 100%; /* Ensure hand takes full width of its container */
-  min-width: 90px; /* Increased min-width to ensure space for cards */
-  border: none; /* Removed debugging border */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  min-width: 90px;
+  border: none;
 }
 
 /* Overlap for vertical cards (East and West) */
 .east-cards .hand .card:not(:first-child),
 .west-cards .hand .card:not(:first-child) {
-  /* Adjusted margin-top to create overlap along the longer side (height) */
-  margin-top: -60px; /* This value can be adjusted to control the overlap amount */
+  margin-top: -60px;
 }
 
 /* --- Modal Styles --- */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-content {
@@ -476,7 +481,7 @@
     padding: 20px;
     border: 1px solid #888;
     border-radius: 10px;
-    width: 80%; /* Could be responsive */
+    width: 80%;
     max-width: 400px;
     text-align: center;
     color: white;
@@ -488,7 +493,7 @@
 
 .modal-content h3 {
     margin-top: 0;
-    color: #0ABAB5; /* Navbar color */
+    color: #0ABAB5;
 }
 
 .modal-content button {
@@ -496,7 +501,7 @@
     border-radius: 5px;
     cursor: pointer;
     font-size: 0.9rem;
-    margin: 0 5px; /* Space between buttons */
+    margin: 0 5px;
 }
 
 .modal-content #bid-dropdown {
@@ -506,22 +511,22 @@
     background-color: #444;
     color: white;
     font-size: 1rem;
-    width: 100%; /* This will be adjusted for max-width */
-    max-width: 200px; /* Added: Limit dropdown width */
-    box-sizing: border-box; /* Include padding/border in width */
-    align-self: center; /* Added: Center dropdown */
+    width: 100%;
+    max-width: 200px;
+    box-sizing: border-box;
+    align-self: center;
 }
 
 /* Specific button styles for modals */
 #confirm-bid-btn, #confirm-pass-btn {
-    background-color: #28a745; /* Green for confirm */
+    background-color: #28a745;
 }
 #confirm-bid-btn:hover, #confirm-pass-btn:hover {
     background-color: #1e7e34;
 }
 
 #cancel-bid-btn, #cancel-pass-btn {
-    background-color: #dc3545; /* Red for cancel */
+    background-color: #dc3545;
 }
 #cancel-bid-btn:hover, #cancel-pass-btn:hover {
     background-color: #a71d2a;
@@ -531,13 +536,13 @@
 .modal-content .modal-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Space between buttons */
-    width: 100%; /* Take full width of modal content */
+    gap: 10px;
+    width: 100%;
 }
 
 .modal-content .modal-buttons button {
-    flex-grow: 0; /* Prevent buttons from stretching */
-    flex-shrink: 1; /* Allow them to shrink if needed */
-    width: auto; /* Allow content to dictate width */
-    max-width: 120px; /* Limit button width */
+    flex-grow: 0;
+    flex-shrink: 1;
+    width: auto;
+    max-width: 120px;
 }

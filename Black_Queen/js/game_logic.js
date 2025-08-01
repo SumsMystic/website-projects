@@ -1,24 +1,22 @@
 // Ensure players array is accessible (from script.js)
-// Assuming script.js is loaded first and `players` is global.
-// If not, you might need to export/import or pass it.
-const players = ["north", "east", "south", "west"]; // Explicitly define players array here
+const players = ["north", "east", "south", "west"];
 
-let currentPlayerIndex; // Will be set by startBidding
+let currentPlayerIndex;
 let highestBid = 170;
 let highestBidder = null;
 const MIN_BID = 170;
-const MAX_BID = 280; // Total game points
+const MAX_BID = 280;
 const BID_INCREMENT = 5;
-let passedPlayers = new Set(); // To keep track of who has passed in the current bidding round
+let passedPlayers = new Set();
 
-// DOM Elements - Declared globally, but assigned inside DOMContentLoaded
+// DOM Elements
 let biddingStatusDisplay;
 let currentPlayerTurnDisplay;
 let highestBidDisplay;
 let highestBidderNameDisplay;
 let messageBox;
 
-// Modals and their elements - Declared globally, but assigned inside DOMContentLoaded
+// Modals and their elements
 let bidModal;
 let bidDropdown;
 let confirmBidBtn;
@@ -28,34 +26,24 @@ let passConfirmModal;
 let confirmPassBtn;
 let cancelPassBtn;
 
-// Player-specific bid control elements - Declared globally, but assigned inside DOMContentLoaded
-let playerBidControls = {};
+// Player-specific bid control elements
 let bidButtons = {};
 let passButtons = {};
 
-
 /**
  * Formats a player's name for display.
- * For hardcoded players, it capitalizes the first letter.
- * For "south", it returns "You (South)".
- * When custom player names are implemented, this function will simply return the name as-is.
- * @param {string} name - The player's internal name (e.g., "north", "south", or a custom name like "SuMeet").
+ * @param {string} name - The player's internal name.
  * @returns {string} The display-friendly name.
  */
 function formatPlayerDisplayName(name) {
-    // This logic is for the current hardcoded player names.
-    // When custom player names are implemented, we will store them as-is
-    // and this function would simply return `name` directly.
     if (name === "south") {
         return "You (South)";
     }
-    // For now, capitalize first letter if it's a simple direction name
     return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 /**
  * Displays a message in a specified HTML element.
- * This function is crucial for providing feedback to the user.
  * @param {string} msg - The message to display.
  * @param {string} elementId - The ID of the HTML element to display the message in.
  */
@@ -74,10 +62,10 @@ function startBidding(initialBidderIndex) {
     console.log("Bidding started!");
     highestBid = MIN_BID;
     highestBidder = null;
-    passedPlayers.clear(); // Clear passed players for new round
-    currentPlayerIndex = initialBidderIndex; // Set initial bidder
+    passedPlayers.clear(); // Clear passed players for a NEW bidding round
+    currentPlayerIndex = initialBidderIndex;
     updateBiddingUI();
-    activatePlayerControls();
+    updatePlayerBidControls(players[currentPlayerIndex]);
     displayMessage("Bidding has begun!", "message-box");
 }
 
@@ -88,30 +76,47 @@ function updateBiddingUI() {
     if (biddingStatusDisplay) biddingStatusDisplay.textContent = "Bidding in Progress";
     if (currentPlayerTurnDisplay) currentPlayerTurnDisplay.textContent = `It's ${formatPlayerDisplayName(players[currentPlayerIndex])}'s turn to bid.`;
     if (highestBidDisplay) highestBidDisplay.textContent = highestBid.toString();
-    if (highestBidderNameDisplay) highestBidderNameDisplay.textContent = highestBidder ? `(${formatPlayerDisplayName(highestBidder).substring(0, 15)})` : ""; // Truncate to 15 chars
+    if (highestBidderNameDisplay) highestBidderNameDisplay.textContent = highestBidder ? `(${formatPlayerDisplayName(highestBidder).substring(0, 15)})` : "";
 }
 
 /**
- * Activates the bid/pass controls for the current player and hides others.
- * This function relies on the 'active' class in CSS to show/hide controls.
+ * Updates the disabled status of bid/pass buttons for all players.
+ * Only the current player's buttons will be enabled.
+ * @param {string} activePlayerId - The identifier of the player whose turn it is.
  */
-function activatePlayerControls() {
-    // Modified: Make all bid/pass controls always visible and enabled.
+function updatePlayerBidControls(activePlayerId) {
+    // Determine if the current player is the last one in the bidding
+    const isForcedBidder = passedPlayers.size === players.length - 1;
+
     for (const player of players) {
-        const controls = playerBidControls[player];
-        if (controls) {
-            controls.classList.add('active'); // Always add 'active' to show
-            bidButtons[player].disabled = false; // Always enable
-            passButtons[player].disabled = false; // Always enable
+        const bidBtn = bidButtons[player];
+        const passBtn = passButtons[player];
+
+        if (bidBtn && passBtn) {
+            // Check if it's the current player's turn and they haven't passed
+            if (player === activePlayerId && !passedPlayers.has(player)) {
+                bidBtn.removeAttribute('disabled');
+                
+                // If this player is the only one left, disable their Pass button
+                if (isForcedBidder) {
+                    passBtn.setAttribute('disabled', 'true');
+                } else {
+                    passBtn.removeAttribute('disabled');
+                }
+
+            } else {
+                bidBtn.setAttribute('disabled', 'true');
+                passBtn.setAttribute('disabled', 'true');
+            }
         }
     }
 }
 
 /**
- * Populates the bid dropdown with valid bid amounts based on the highest bid.
+ * Populates the bid dropdown with valid bid amounts.
  */
 function populateBidDropdown() {
-    bidDropdown.innerHTML = ''; // Clear previous options
+    bidDropdown.innerHTML = '';
     let hasValidBids = false;
     for (let bid = highestBid + BID_INCREMENT; bid <= MAX_BID; bid += BID_INCREMENT) {
         const option = document.createElement('option');
@@ -120,15 +125,11 @@ function populateBidDropdown() {
         bidDropdown.appendChild(option);
         hasValidBids = true;
     }
-    // Select the first valid bid by default
     if (hasValidBids) {
         bidDropdown.value = bidDropdown.options[0].value;
     } else {
-        // If no valid bids are possible (e.g., highestBid is already MAX_BID - 5)
         displayMessage("No higher bids possible. You must pass.", "message-box");
-        hideBidModal(); // Hide the modal if it was shown
-        // Optionally, automatically trigger a pass for this player
-        // passBid(players[currentPlayerIndex]);
+        hideBidModal();
     }
 }
 
@@ -137,8 +138,8 @@ function populateBidDropdown() {
  */
 function showBidModal() {
     populateBidDropdown();
-    if (bidDropdown.options.length > 0) { // Only show if there are valid bids
-        bidModal.style.display = 'flex'; // Use flex to center the modal
+    if (bidDropdown.options.length > 0) {
+        bidModal.style.display = 'flex';
     }
 }
 
@@ -153,7 +154,7 @@ function hideBidModal() {
  * Shows the pass confirmation modal.
  */
 function showPassConfirmModal() {
-    passConfirmModal.style.display = 'flex'; // Use flex to center the modal
+    passConfirmModal.style.display = 'flex';
 }
 
 /**
@@ -169,131 +170,107 @@ function hidePassConfirmModal() {
  * @param {number} bidAmount - The amount the player wants to bid.
  */
 function placeBid(player, bidAmount) {
-    if (player !== players[currentPlayerIndex]) {
-        displayMessage("It's not your turn!", "message-box");
-        return;
+    if (bidAmount > highestBid) {
+        highestBid = bidAmount;
+        highestBidder = player;
+        displayMessage(`${formatPlayerDisplayName(player)} bids ${bidAmount}!`, "message-box");
+        advanceTurn();
+    } else {
+        displayMessage("Bid must be higher than current highest bid.", "message-box");
+        if (player === players[currentPlayerIndex]) {
+            showBidModal();
+        }
     }
-
-    // Validate bid amount (should already be valid from dropdown, but good for safety)
-    if (bidAmount < highestBid + BID_INCREMENT || bidAmount % BID_INCREMENT !== 0 || bidAmount > MAX_BID) {
-        displayMessage(`Invalid bid. Must be between ${highestBid + BID_INCREMENT} and ${MAX_BID}, and a multiple of ${BID_INCREMENT}.`, "message-box");
-        return;
-    }
-
-    highestBid = bidAmount;
-    highestBidder = player;
-    passedPlayers.clear(); // A new bid resets the "pass" state for all players
-    displayMessage(`${formatPlayerDisplayName(player)} bids ${bidAmount}.`, "message-box");
-    hideBidModal(); // Hide modal after bid
-
-    moveToNextPlayer();
 }
 
 /**
- * Handles a player passing their turn.
+ * Handles a player choosing to pass.
  * @param {string} player - The name of the player passing.
  */
 function passBid(player) {
-    if (player !== players[currentPlayerIndex]) {
-        displayMessage("It's not your turn!", "message-box");
-        return;
+    // Check if the player is the forced bidder
+    if (passedPlayers.size === players.length - 1 && player === players[currentPlayerIndex]) {
+        displayMessage(`You must bid. Passing is not allowed as you are the last player.`, "message-box");
+        hidePassConfirmModal();
+        return; // Exit the function to prevent the pass
     }
 
-    passedPlayers.add(player); // Add player to the set of passed players
+    passedPlayers.add(player);
     displayMessage(`${formatPlayerDisplayName(player)} passes.`, "message-box");
-    hidePassConfirmModal(); // Hide modal after pass
-
-    // Modified: Do not disable the passed player's buttons immediately
-    /*
-    const controls = playerBidControls[player];
-    if (controls) {
-        controls.classList.remove('active');
-        bidButtons[player].disabled = true;
-        passButtons[player].disabled = true;
-    }
-    */
-
-    const activePlayers = players.filter(p => !passedPlayers.has(p));
-
-    if (activePlayers.length === 1) {
-        // One player remaining, they win
-        highestBidder = activePlayers[0];
-        // If no one ever bid higher than MIN_BID, the winner is forced to take MIN_BID
-        if (highestBidder === null || highestBid === MIN_BID) { // Check if highestBidder is null OR if bid is still MIN_BID
-             highestBid = MIN_BID; // Ensure it's MIN_BID if no one actually bid higher
-        }
-        biddingStatusDisplay.textContent = `Bidding ends! ${formatPlayerDisplayName(highestBidder)} wins with ${highestBid}.`;
-        displayMessage(`${formatPlayerDisplayName(highestBidder)} wins the bid!`, "message-box");
-        endBiddingPhase();
-    } else if (activePlayers.length === 0) {
-        // All players have passed (this scenario should be caught by activePlayers.length === 1 if highestBidder is set)
-        // This specific case handles if ALL players passed without anyone making a bid above MIN_BID.
-        highestBid = MIN_BID; // Forced bid
-        highestBidder = players[currentPlayerIndex]; // The player who just passed is forced
-        displayMessage(`${formatPlayerDisplayName(highestBidder)} is forced to bid ${MIN_BID}.`, "message-box");
-        biddingStatusDisplay.textContent = `All passed. ${formatPlayerDisplayName(highestBidder)} wins with ${highestBid}.`;
-        endBiddingPhase();
+    
+    // Check if bidding is over BEFORE advancing the turn.
+    if (passedPlayers.size === players.length - 1 && highestBidder) {
+        displayMessage(`${formatPlayerDisplayName(highestBidder)} wins the bid with ${highestBid}!`, "message-box");
+        endBiddingRound();
+    } else if (passedPlayers.size === players.length && !highestBidder) {
+        displayMessage("All players passed on the minimum bid. Redealing cards...", "message-box");
+        endBiddingRound(true);
     } else {
-        moveToNextPlayer();
+        advanceTurn();
     }
 }
 
-
 /**
- * Moves the turn to the next player in a clockwise direction, skipping passed players.
+ * Advances the turn to the next player in the bidding sequence.
  */
-function moveToNextPlayer() {
+function advanceTurn() {
     let nextPlayerFound = false;
-    let loopCount = 0; // To prevent infinite loops in case of logic error
+    let originalCurrentPlayerIndex = currentPlayerIndex;
 
-    do {
+    for (let i = 0; i < players.length; i++) {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-        loopCount++;
+        const nextPlayer = players[currentPlayerIndex];
 
-        // If we've checked all players and none are active, bidding should end.
-        if (loopCount > players.length) {
-            // This scenario means everyone has passed, and the endBiddingPhase should have been called.
-            // This is a failsafe.
-            console.warn("moveToNextPlayer: No active players found after full loop. Ending bidding.");
-            endBiddingPhase(); // Force end bidding if no active player is found
-            return;
-        }
-
-        if (!passedPlayers.has(players[currentPlayerIndex])) {
+        if (!passedPlayers.has(nextPlayer)) {
             nextPlayerFound = true;
+            break;
         }
-    } while (!nextPlayerFound);
 
-    updateBiddingUI();
-    activatePlayerControls(); // Re-activate controls to ensure all are visible
-}
-
-
-/**
- * Ends the bidding phase and prepares for the next game phase.
- * (Placeholder for future game logic)
- */
-function endBiddingPhase() {
-    console.log("Bidding phase ended.");
-    // Modified: Do not hide or disable all bidding controls
-    /*
-    for (const player of players) {
-        const controls = playerBidControls[player];
-        if (controls) {
-            controls.classList.remove('active');
-            bidButtons[player].disabled = true;
-            passButtons[player].disabled = true;
+        if (currentPlayerIndex === originalCurrentPlayerIndex) {
+            break;
         }
     }
-    */
-    biddingStatusDisplay.textContent = `Bid winner: ${formatPlayerDisplayName(highestBidder)} with ${highestBid}.`;
-    currentPlayerTurnDisplay.textContent = "Time to declare Trump and Partner!";
-    // Further logic for Trump/Partner declaration will go here
+
+    if (!nextPlayerFound) {
+        console.log("No next active player found. Bidding should be concluded.");
+        endBiddingRound();
+    } else {
+        updateBiddingUI();
+        updatePlayerBidControls(players[currentPlayerIndex]);
+    }
 }
 
-// Event Listeners for bidding buttons and modals
+/**
+ * Ends the bidding round.
+ * @param {boolean} [redeal=false] - Optional. If true, indicates cards need to be redealt.
+ */
+function endBiddingRound(redeal = false) {
+    console.log("Bidding round ended.");
+    // Disable all controls
+    updatePlayerBidControls(null);
+    if (redeal) {
+        setTimeout(() => {
+            alert("All players passed on minimum bid. Redealing cards!");
+            if (typeof dealCards === 'function') {
+                dealCards();
+                startBidding(0);
+            } else {
+                console.error("dealCards function not found. Cannot redeal.");
+            }
+        }, 1500);
+    } else {
+        biddingStatusDisplay.textContent = `Bidding Concluded!`;
+        if (highestBidder) {
+            currentPlayerTurnDisplay.textContent = `${formatPlayerDisplayName(highestBidder)} won the bid with ${highestBid}!`;
+        } else {
+            currentPlayerTurnDisplay.textContent = "No bids placed.";
+        }
+    }
+}
+
+// Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Assign DOM elements once the document is loaded
+    // Assign DOM elements
     biddingStatusDisplay = document.getElementById('bidding-status');
     currentPlayerTurnDisplay = document.getElementById('current-player-turn');
     highestBidDisplay = document.getElementById('highest-bid-display');
@@ -309,71 +286,84 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmPassBtn = document.getElementById('confirm-pass-btn');
     cancelPassBtn = document.getElementById('cancel-pass-btn');
 
-    playerBidControls = {
-        north: document.querySelector('.north-controls'),
-        east: document.querySelector('.east-controls'),
-        south: document.querySelector('.south-controls'),
-        west: document.querySelector('.west-controls')
-    };
-
-    bidButtons = {
-        north: document.getElementById('north-bid-btn'),
-        east: document.getElementById('east-bid-btn'),
-        south: document.getElementById('south-bid-btn'),
-        west: document.getElementById('west-bid-btn')
-    };
-
-    passButtons = {
-        north: document.getElementById('north-pass-btn'),
-        east: document.getElementById('east-pass-btn'),
-        south: document.getElementById('south-pass-btn'),
-        west: document.getElementById('west-pass-btn')
-    };
-
-    // Attach event listeners to all player bid/pass buttons
+    // Populate player-specific button references by ID
     for (const player of players) {
-        if (bidButtons[player]) {
-            bidButtons[player].addEventListener('click', () => {
-                // Only show modal if it's their turn - this can remain as it controls modal, not button visibility
-                if (player === players[currentPlayerIndex]) {
-                    showBidModal();
-                } else {
-                    displayMessage("It's not your turn!", "message-box");
-                }
-            });
-        }
-        if (passButtons[player]) {
-            passButtons[player].addEventListener('click', () => {
-                // Only show modal if it's their turn - this can remain as it controls modal, not button visibility
-                if (player === players[currentPlayerIndex]) {
-                    showPassConfirmModal();
-                } else {
-                    displayMessage("It's not your turn!!", "message-box");
-                }
-            });
+        const bidBtn = document.getElementById(`${player}-bid-btn`);
+        const passBtn = document.getElementById(`${player}-pass-btn`);
+
+        if (bidBtn && passBtn) {
+            bidButtons[player] = bidBtn;
+            passButtons[player] = passBtn;
+        } else {
+            console.error(`Could not find bid/pass buttons for player: ${player}`);
         }
     }
 
+    // Attach event listeners to all player Bid/Pass buttons
+    players.forEach(player => {
+        const bidBtn = bidButtons[player];
+        const passBtn = passButtons[player];
+
+        if (bidBtn) {
+            bidBtn.addEventListener('click', () => {
+                if (player === players[currentPlayerIndex]) {
+                    showBidModal();
+                } else {
+                    displayMessage(`It's not ${formatPlayerDisplayName(player)}'s turn.`, "message-box");
+                }
+            });
+        }
+        if (passBtn) {
+            passBtn.addEventListener('click', () => {
+                if (player === players[currentPlayerIndex]) {
+                    showPassConfirmModal();
+                } else {
+                    displayMessage(`It's not ${formatPlayerDisplayName(player)}'s turn.`, "message-box");
+                }
+            });
+        }
+    });
+
     // Modal button event listeners
-    if (confirmBidBtn) confirmBidBtn.addEventListener('click', () => {
-        const selectedBid = parseInt(bidDropdown.value, 10);
-        placeBid(players[currentPlayerIndex], selectedBid);
-    });
+    if (confirmBidBtn) {
+        confirmBidBtn.addEventListener('click', () => {
+            const bidAmount = parseInt(bidDropdown.value, 10);
+            if (!isNaN(bidAmount)) {
+                placeBid(players[currentPlayerIndex], bidAmount);
+                hideBidModal();
+            } else {
+                displayMessage("Please select a valid bid.", "message-box");
+            }
+        });
+    }
 
-    if (cancelBidBtn) cancelBidBtn.addEventListener('click', () => {
-        hideBidModal();
-        displayMessage("Bid cancelled.", "message-box");
-    });
+    if (cancelBidBtn) {
+        cancelBidBtn.addEventListener('click', () => {
+            hideBidModal();
+            displayMessage("Bid cancelled.", "message-box");
+        });
+    }
 
-    if (confirmPassBtn) confirmPassBtn.addEventListener('click', () => {
-        passBid(players[currentPlayerIndex]);
-    });
+    if (confirmPassBtn) {
+        confirmPassBtn.addEventListener('click', () => {
+            passBid(players[currentPlayerIndex]);
+            hidePassConfirmModal();
+        });
+    }
 
-    if (cancelPassBtn) cancelPassBtn.addEventListener('click', () => {
-        hidePassConfirmModal();
-        displayMessage("Pass cancelled.", "message-box");
-    });
+    if (cancelPassBtn) {
+        cancelPassBtn.addEventListener('click', () => {
+            hidePassConfirmModal();
+            displayMessage("Pass cancelled.", "message-box");
+        });
+    }
 
-    // Ensure initial state shows all controls
-    activatePlayerControls();
+    // Initial state: Disable all controls until bidding starts
+    updatePlayerBidControls(null);
 });
+
+// Expose functions globally
+window.startBidding = startBidding;
+window.updateBiddingUI = updateBiddingUI;
+window.placeBid = placeBid;
+window.passBid = passBid;
