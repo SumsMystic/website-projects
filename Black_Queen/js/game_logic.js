@@ -2,8 +2,9 @@
 const players = ["north", "east", "south", "west"];
 
 let currentPlayerIndex;
-let highestBid = 170;
+let highestBid = 0;
 let highestBidder = null;
+let currentTrumpSuit = null;
 const MIN_BID = 170;
 const MAX_BID = 280;
 const BID_INCREMENT = 5;
@@ -25,6 +26,11 @@ let cancelBidBtn;
 let passConfirmModal;
 let confirmPassBtn;
 let cancelPassBtn;
+
+// New Trump Modal Elements
+let trumpModal;
+let suitSelectionContainer;
+let confirmTrumpBtn;
 
 // Player-specific bid control elements
 let bidButtons = {};
@@ -60,9 +66,9 @@ function displayMessage(msg, elementId) {
  */
 function startBidding(initialBidderIndex) {
     console.log("Bidding started!");
-    highestBid = MIN_BID;
+    highestBid = 0;
     highestBidder = null;
-    passedPlayers.clear(); // Clear passed players for a NEW bidding round
+    passedPlayers.clear();
     currentPlayerIndex = initialBidderIndex;
     updateBiddingUI();
     updatePlayerBidControls(players[currentPlayerIndex]);
@@ -75,7 +81,7 @@ function startBidding(initialBidderIndex) {
 function updateBiddingUI() {
     if (biddingStatusDisplay) biddingStatusDisplay.textContent = "Bidding in Progress";
     if (currentPlayerTurnDisplay) currentPlayerTurnDisplay.textContent = `It's ${formatPlayerDisplayName(players[currentPlayerIndex])}'s turn to bid.`;
-    if (highestBidDisplay) highestBidDisplay.textContent = highestBid.toString();
+    if (highestBidDisplay) highestBidDisplay.textContent = highestBidder ? highestBid.toString() : "0";
     if (highestBidderNameDisplay) highestBidderNameDisplay.textContent = highestBidder ? `(${formatPlayerDisplayName(highestBidder).substring(0, 15)})` : "";
 }
 
@@ -85,7 +91,6 @@ function updateBiddingUI() {
  * @param {string} activePlayerId - The identifier of the player whose turn it is.
  */
 function updatePlayerBidControls(activePlayerId) {
-    // Determine if the current player is the last one in the bidding
     const isForcedBidder = passedPlayers.size === players.length - 1;
 
     for (const player of players) {
@@ -93,11 +98,9 @@ function updatePlayerBidControls(activePlayerId) {
         const passBtn = passButtons[player];
 
         if (bidBtn && passBtn) {
-            // Check if it's the current player's turn and they haven't passed
             if (player === activePlayerId && !passedPlayers.has(player)) {
                 bidBtn.removeAttribute('disabled');
                 
-                // If this player is the only one left, disable their Pass button
                 if (isForcedBidder) {
                     passBtn.setAttribute('disabled', 'true');
                 } else {
@@ -117,14 +120,23 @@ function updatePlayerBidControls(activePlayerId) {
  */
 function populateBidDropdown() {
     bidDropdown.innerHTML = '';
+    let startBid = highestBid;
+    
+    if (!highestBidder) {
+        startBid = MIN_BID;
+    } else {
+        startBid = highestBid + BID_INCREMENT;
+    }
+
     let hasValidBids = false;
-    for (let bid = highestBid + BID_INCREMENT; bid <= MAX_BID; bid += BID_INCREMENT) {
+    for (let bid = startBid; bid <= MAX_BID; bid += BID_INCREMENT) {
         const option = document.createElement('option');
         option.value = bid;
         option.textContent = bid;
         bidDropdown.appendChild(option);
         hasValidBids = true;
     }
+
     if (hasValidBids) {
         bidDropdown.value = bidDropdown.options[0].value;
     } else {
@@ -165,6 +177,20 @@ function hidePassConfirmModal() {
 }
 
 /**
+ * Shows the trump selection modal.
+ */
+function showTrumpSelectionModal() {
+    trumpModal.style.display = 'flex';
+}
+
+/**
+ * Hides the trump selection modal.
+ */
+function hideTrumpSelectionModal() {
+    trumpModal.style.display = 'none';
+}
+
+/**
  * Handles a player placing a bid.
  * @param {string} player - The name of the player placing the bid.
  * @param {number} bidAmount - The amount the player wants to bid.
@@ -188,17 +214,15 @@ function placeBid(player, bidAmount) {
  * @param {string} player - The name of the player passing.
  */
 function passBid(player) {
-    // Check if the player is the forced bidder
     if (passedPlayers.size === players.length - 1 && player === players[currentPlayerIndex]) {
         displayMessage(`You must bid. Passing is not allowed as you are the last player.`, "message-box");
         hidePassConfirmModal();
-        return; // Exit the function to prevent the pass
+        return;
     }
 
     passedPlayers.add(player);
     displayMessage(`${formatPlayerDisplayName(player)} passes.`, "message-box");
     
-    // Check if bidding is over BEFORE advancing the turn.
     if (passedPlayers.size === players.length - 1 && highestBidder) {
         displayMessage(`${formatPlayerDisplayName(highestBidder)} wins the bid with ${highestBid}!`, "message-box");
         endBiddingRound();
@@ -214,27 +238,18 @@ function passBid(player) {
  * Advances the turn to the next player in the bidding sequence.
  */
 function advanceTurn() {
-    let nextPlayerFound = false;
-    let originalCurrentPlayerIndex = currentPlayerIndex;
+    const activePlayers = players.filter(player => !passedPlayers.has(player));
+    const nextPlayerIndex = (players.indexOf(players[currentPlayerIndex]) + 1) % players.length;
+    let nextPlayerId = players[nextPlayerIndex];
 
-    for (let i = 0; i < players.length; i++) {
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-        const nextPlayer = players[currentPlayerIndex];
-
-        if (!passedPlayers.has(nextPlayer)) {
-            nextPlayerFound = true;
-            break;
-        }
-
-        if (currentPlayerIndex === originalCurrentPlayerIndex) {
-            break;
-        }
+    while (passedPlayers.has(nextPlayerId) && players.indexOf(nextPlayerId) !== players.indexOf(players[currentPlayerIndex])) {
+        nextPlayerId = players[(players.indexOf(nextPlayerId) + 1) % players.length];
     }
-
-    if (!nextPlayerFound) {
-        console.log("No next active player found. Bidding should be concluded.");
+    
+    if (activePlayers.length === 1 && highestBidder) {
         endBiddingRound();
     } else {
+        currentPlayerIndex = players.indexOf(nextPlayerId);
         updateBiddingUI();
         updatePlayerBidControls(players[currentPlayerIndex]);
     }
@@ -245,8 +260,7 @@ function advanceTurn() {
  * @param {boolean} [redeal=false] - Optional. If true, indicates cards need to be redealt.
  */
 function endBiddingRound(redeal = false) {
-    console.log("Bidding round ended.");
-    // Disable all controls
+    console.log("Bidding round ended. Winner:", highestBidder);
     updatePlayerBidControls(null);
     if (redeal) {
         setTimeout(() => {
@@ -262,6 +276,14 @@ function endBiddingRound(redeal = false) {
         biddingStatusDisplay.textContent = `Bidding Concluded!`;
         if (highestBidder) {
             currentPlayerTurnDisplay.textContent = `${formatPlayerDisplayName(highestBidder)} won the bid with ${highestBid}!`;
+            // CRITICAL FIX: Ensure the bidding UI is updated with the final bid amount before showing the modal
+            if (highestBidDisplay) {
+                highestBidDisplay.textContent = highestBid.toString();
+            }
+            if (highestBidderNameDisplay) {
+                highestBidderNameDisplay.textContent = `(${formatPlayerDisplayName(highestBidder).substring(0, 15)})`;
+            }
+            showTrumpSelectionModal();
         } else {
             currentPlayerTurnDisplay.textContent = "No bids placed.";
         }
@@ -285,6 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
     passConfirmModal = document.getElementById('pass-confirm-modal');
     confirmPassBtn = document.getElementById('confirm-pass-btn');
     cancelPassBtn = document.getElementById('cancel-pass-btn');
+
+    // New Trump Modal Element Assignments
+    trumpModal = document.getElementById('trump-modal');
+    suitSelectionContainer = document.getElementById('suit-selection-container');
+    confirmTrumpBtn = document.getElementById('confirm-trump-btn');
 
     // Populate player-specific button references by ID
     for (const player of players) {
@@ -355,6 +382,39 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelPassBtn.addEventListener('click', () => {
             hidePassConfirmModal();
             displayMessage("Pass cancelled.", "message-box");
+        });
+    }
+
+    // NEW LOGIC FOR TRUMP MODAL
+    if (suitSelectionContainer) {
+        suitSelectionContainer.addEventListener('click', (event) => {
+            let target = event.target;
+            while (target && !target.classList.contains('suit-option')) {
+                target = target.parentNode;
+            }
+
+            if (target) {
+                document.querySelectorAll('.suit-option').forEach(suit => {
+                    suit.classList.remove('selected');
+                });
+                target.classList.add('selected');
+                
+                const selectedSuit = target.getAttribute('data-suit');
+                currentTrumpSuit = selectedSuit;
+                confirmTrumpBtn.removeAttribute('disabled');
+            }
+        });
+    }
+
+    if (confirmTrumpBtn) {
+        confirmTrumpBtn.addEventListener('click', () => {
+            if (currentTrumpSuit) {
+                displayMessage(`${formatPlayerDisplayName(highestBidder)} has selected ${currentTrumpSuit} as trump!`, "message-box");
+                hideTrumpSelectionModal();
+                // TODO: Add logic for the next phase (Partner Card Modal)
+            } else {
+                displayMessage("Please select a trump suit.", "message-box");
+            }
         });
     }
 

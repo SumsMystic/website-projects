@@ -127,6 +127,28 @@
     </div>
   </div>
 
+  <div id="trump-modal" class="modal">
+    <div class="modal-content">
+        <h3>Choose a Trump Suit</h3>
+        <p>You won the bid! Select the trump suit for this round.</p>
+        <div id="suit-selection-container" class="suit-selection-container">
+            <div class="suit-option" data-suit="clubs">
+                <img src="./img/Clubs.webp" alt="Clubs">
+            </div>
+            <div class="suit-option" data-suit="diamonds">
+                <img src="./img/Diamonds.webp" alt="Diamonds">
+            </div>
+            <div class="suit-option" data-suit="hearts">
+                <img src="./img/Hearts.webp" alt="Hearts">
+            </div>
+            <div class="suit-option" data-suit="spades">
+                <img src="./img/Spades.webp" alt="Spades">
+            </div>
+        </div>
+        <button id="confirm-trump-btn" class="bid-button" disabled>Confirm Trump Suit</button>
+      </div>
+  </div>
+
   <script src="js/game_logic.js"></script> <!-- game_logic.js must be loaded FIRST -->
   <script src="js/script.js"></script>     <!-- script.js must be loaded SECOND -->
 </body>
