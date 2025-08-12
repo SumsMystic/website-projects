@@ -149,7 +149,46 @@
       </div>
   </div>
 
+  <div id="partner-modal" class="modal">
+    <div class="modal-content">
+        <!-- Step 1: Suit Selection -->
+        <div id="partner-step1" class="partner-step">
+            <h3>Choose Partner Card - Step 1</h3>
+            <p>Select the suit of the card held by your desired partner.</p>
+            <div id="partner-suit-selection" class="suit-selection-container">
+                <div class="suit-option" data-suit="clubs">
+                    <img src="./img/Clubs.webp" alt="Clubs">
+                </div>
+                <div class="suit-option" data-suit="diamonds">
+                    <img src="./img/Diamonds.webp" alt="Diamonds">
+                </div>
+                <div class="suit-option" data-suit="hearts">
+                    <img src="./img/Hearts.webp" alt="Hearts">
+                </div>
+                <div class="suit-option" data-suit="spades">
+                    <img src="./img/Spades.webp" alt="Spades">
+                </div>
+            </div>
+            <button id="next-to-rank-btn" class="bid-button" disabled>Next: Select Rank</button>
+        </div>
+
+        <!-- Step 2: Rank Selection -->
+        <div id="partner-step2" class="partner-step" style="display: none;">
+            <h3>Choose Partner Card - Step 2</h3>
+            <p id="selected-suit-text">Select the rank of the <span id="suit-name"></span> card:</p>
+            <div id="partner-rank-selection" class="rank-selection-container">
+                <!-- Rank cards will be populated here -->
+            </div>
+            <div class="modal-buttons">
+                <button id="back-to-suit-btn" class="pass-button">Back</button>
+                <button id="confirm-partner-btn" class="bid-button" disabled>Confirm Partner Card</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
   <script src="js/game_logic.js"></script> <!-- game_logic.js must be loaded FIRST -->
   <script src="js/script.js"></script>     <!-- script.js must be loaded SECOND -->
+  <script src="js/partner_selection.js"></script> <!-- partner_selection.js must be loaded LAST -->
 </body>
 </html>

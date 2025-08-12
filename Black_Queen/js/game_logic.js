@@ -411,12 +411,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentTrumpSuit) {
                 displayMessage(`${formatPlayerDisplayName(highestBidder)} has selected ${currentTrumpSuit} as trump!`, "message-box");
                 hideTrumpSelectionModal();
-                // TODO: Add logic for the next phase (Partner Card Modal)
+                
+                // Show partner selection modal after a brief delay
+                setTimeout(() => {
+                    showPartnerSelectionModal();
+                }, 1500);
             } else {
                 displayMessage("Please select a trump suit.", "message-box");
             }
         });
     }
+
+    // ADD this to your existing DOMContentLoaded event listener
+    // Add this line inside the existing DOMContentLoaded event listener, after the trump modal initialization:
+    initializePartnerSelectionEvents();
 
     // Initial state: Disable all controls until bidding starts
     updatePlayerBidControls(null);
