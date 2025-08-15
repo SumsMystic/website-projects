@@ -1,0 +1,165 @@
+/* Partner Modal Specific Styles */
+#partner-modal.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+#partner-modal .modal-content {
+  background-color: #333;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 400px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.partner-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+/* Suit Selection Container */
+.partner-suit-selection,
+.suit-selection-container {
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.suit-option {
+  width: 60px;
+  height: 60px;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: 5px;
+}
+
+.suit-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.suit-option.selected {
+  border-color: #ffcc00;
+  transform: scale(1.1);
+}
+
+.suit-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Rank Selection Container */
+.rank-selection-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Rank Card Options */
+.rank-option {
+  width: 50px;
+  height: 70px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: white;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rank-option.selected {
+  border-color: #ffcc00;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.rank-option:hover {
+  transform: scale(1.02);
+  border-color: rgba(255, 204, 0, 0.7);
+}
+
+/* Responsive adjustments for rank selection */
+@media (max-width: 768px) {
+  .rank-selection-container {
+    max-height: 200px;
+    gap: 5px;
+    padding: 5px;
+  }
+  .rank-option {
+    width: 40px;
+    height: 56px;
+  }
+  #partner-modal .modal-content {
+    width: 95%;
+    max-width: none;
+    padding: 15px;
+  }
+  .partner-step h3 {
+    font-size: 1.1rem;
+  }
+  .partner-step p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Button styling for partner modal */
+#next-to-rank-btn, #confirm-partner-btn {
+  background-color: #28a745;
+  min-width: 140px;
+}
+#next-to-rank-btn:hover, #confirm-partner-btn:hover {
+  background-color: #1e7e34;
+}
+#back-to-suit-btn {
+  background-color: #6c757d;
+  min-width: 80px;
+}
+#back-to-suit-btn:hover {
+  background-color: #545b62;
+}
+#next-to-rank-btn[disabled], #confirm-partner-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Suit name styling */
+#suit-name {
+  color: #ffcc00;
+  font-weight: bold;
+  text-transform: capitalize;
+}

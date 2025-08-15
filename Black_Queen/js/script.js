@@ -83,6 +83,8 @@ function displayCards() {
             hands[player].forEach((card, index) => {
                 const cardDiv = document.createElement('div');
                 cardDiv.classList.add('card');
+                cardDiv.classList.add('card-pop-hover');   // Added 'card-pop-hover' class for hover effect
+                
                 // CORRECTED: Use .svg extension and full rank name
                 cardDiv.style.backgroundImage = `url('./img/${card.rank}_of_${card.suit}.svg')`;
                 cardDiv.style.setProperty('--card-index', index); // Set custom property for z-index
@@ -118,4 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error("Deal button not found!");
     }
+});
+
+// After cards are rendered
+document.querySelectorAll('.hand .card').forEach(card => {
+  card.classList.add('card-pop-hover');
 });

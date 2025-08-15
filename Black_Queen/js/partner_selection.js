@@ -192,10 +192,34 @@ function initializePartnerSelectionEvents() {
     }
 
     if (confirmPartnerBtn) {
-        confirmPartnerBtn.addEventListener('click', confirmPartnerCard);
+        confirmPartnerBtn.addEventListener('click', () => {
+            confirmPartnerCard();
+            partnerModal.style.display = 'none';
+            window.dispatchEvent(new Event('partnerSelectionComplete'));
+
+            // Clear center table area messages
+            const centerTableArea = document.getElementById('center-table-area');
+            if (centerTableArea) {
+                centerTableArea.innerHTML = '';
+            }
+
+            /*
+            // Display played cards in the absolute center of the table
+            // (Assuming you have a function or logic to get the played cards)
+            if (centerTableArea && typeof getPlayedCardsHtml === 'function') {
+                centerTableArea.innerHTML = getPlayedCardsHtml();
+                centerTableArea.style.display = 'flex';
+                centerTableArea.style.justifyContent = 'center';
+                centerTableArea.style.alignItems = 'center';
+            }
+            */
+        });
     }
 }
 
 // Expose functions globally
 window.showPartnerSelectionModal = showPartnerSelectionModal;
 window.hidePartnerSelectionModal = hidePartnerSelectionModal;
+
+// Ensure event listeners are initialized after DOM is loaded
+document.addEventListener('DOMContentLoaded', initializePartnerSelectionEvents);
