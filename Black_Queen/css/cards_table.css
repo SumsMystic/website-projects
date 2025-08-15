@@ -39,10 +39,12 @@
 /* Player Name Areas (North, East, West, South) */
 .north-name, .east-name, .west-name, .south-name {
     background-color: #1a6d2f; /* Solid darker green background */
-    display: flex; /* Explicitly make them flex containers */
-    align-items: center; /* Vertically center items */
-    justify-content: space-between; /* Distribute items with space between them */
-    padding: 5px 15px; /* Add horizontal padding for button space */
+    display: flex;
+    flex-direction: row; /* CRITICAL: Stack items vertically */
+    align-items: center;    /* Center items horizontally within the column */
+    justify-content: center; /* Center content vertically within the container */
+    padding: 10px 20px; /* Adjust padding slightly */
+    gap: 10px; /* Add a small gap between stacked items */
 }
 
 /* North Name */
@@ -65,7 +67,7 @@
     grid-column: 3 / 4; /* Third column */
     grid-row: 2 / 3; /* Second row */
     background-color: rgba(0, 0, 0, 0.2);
-    flex-direction: row; /* Ensure horizontal layout for name and buttons */
+    flex-direction: column; /* Ensure horizontal layout for name and buttons */
 }
 
 /* East Cards (spanning multiple rows) */
@@ -82,7 +84,7 @@
     grid-column: 1 / 2; /* First column */
     grid-row: 6 / 7; /* Sixth row */
     background-color: rgba(0, 0, 0, 0.2);
-    flex-direction: row; /* Ensure horizontal layout for name and buttons */
+    flex-direction: column; /* Ensure horizontal layout for name and buttons */
 }
 
 /* West Cards (spanning multiple rows) */
@@ -106,6 +108,43 @@
     flex-direction: column; /* Stack content vertically */
     justify-content: center; /* Center content vertically */
     align-items: center; /* Center content horizontally */
+}
+
+#center-played-cards {
+    grid-area: 3 / 2 / 5 / 3; /* Position in the center of the 3x3 grid */
+    position: relative; /* CRITICAL: Enables absolute positioning of children */
+    display: flex; /* Use flexbox for initial centering of absolute children */
+    justify-content: center;
+    align-items: center;
+    overflow: visible; /* Ensure cards don't spill outside the container */
+    opacity: 1; /* Start visible now */
+    pointer-events: none; /* Prevent clicks on a hidden element */
+    transition: opacity 0.5s ease-in-out; /* Smooth transition */
+}
+
+/* Base styles for all cards played into the center */
+#center-played-cards .card {
+    position: absolute; /* Make cards positionable within #center-played-cards */
+    transform-origin: center center; /* Ensure rotation happens around the center */
+    transition: transform 0.3s ease-out, z-index 0.1s ease-out; /* Smooth transitions for movement/stacking */
+    /* The width and height are already defined in cards.css for .card */
+}
+
+/* Styles for North and South played cards (maintain upright orientation) 
+#center-played-cards .card.played-card-north-south {
+     No additional CSS rotation needed here; JS will handle translation. 
+}
+
+
+/* Styles for East and West played cards (rotate 90 degrees)
+#center-played-cards .card.played-card-east-west {
+    transform: rotate(90deg); /* Rotate East/West cards 
+}
+*/
+
+/* Add a class to hide the bidding interface */
+.bidding-interface.hidden {
+    display: none;
 }
 
 /* Bidding Interface (central display) */
@@ -297,6 +336,22 @@
         line-height: 1; /* Ensure text takes minimal vertical space */
         box-sizing: border-box; /* Include padding in width calculation */
     }
+    .player-score {
+        font-size: 1.8vw !important; /* Adjust font size for mobile */
+        padding: 0.5vw 1.2vw !important; /* Adjust padding for mobile */
+    }
+
+    /* Style for player scores */
+    .player-score {
+        font-size: 0.8rem;
+        color: #ffcc00; /* Yellowish color for score */
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 3px 8px;
+        border-radius: 5px;
+        margin-top: 2px; /* Small margin to separate from adjacent elements */
+        margin-bottom: 2px; /* Small margin to separate from adjacent elements */
+        white-space: nowrap; /* Prevent score text from wrapping */
+    }
 
     /* Player-specific Bid Control Containers (General for North/South) */
     .player-bid-controls {
@@ -421,7 +476,7 @@
   background-clip: padding-box;
 }
 
-/* CARD STACKING */
+/* CARD STACKING FOR HANDS */
 .north-cards .hand, .south-cards .hand {
   display: flex;
   align-items: center;
@@ -430,13 +485,13 @@
   border: none;
 }
 
-/* Overlap for horizontal cards (North and South) */
+/* Overlap for horizontal cards (North and South) in hands */
 .north-cards .hand .card:not(:first-child),
 .south-cards .hand .card:not(:first-child) {
   margin-left: -40px;
 }
 
-/* Ensure cards stack correctly (later cards on top) */
+/* Ensure cards stack correctly (later cards on top) in hands */
 .north-cards .hand .card:nth-child(n),
 .south-cards .hand .card:nth-child(n) {
     z-index: calc(var(--card-index, 0) + 1);
@@ -454,11 +509,29 @@
   border: none;
 }
 
-/* Overlap for vertical cards (East and West) */
+/* Overlap for vertical cards (East and West) in hands */
 .east-cards .hand .card:not(:first-child),
 .west-cards .hand .card:not(:first-child) {
   margin-top: -60px;
 }
+
+/* --- NEW STYLES FOR PLAYED CARDS IN CENTER --- */
+/* Base styles for cards played to the center area */
+#center-played-cards .card {
+    transition: transform 0.2s ease-out, z-index 0.1s ease-out; /* Smooth transitions for movement/stacking */
+    /* Position: absolute and transform: translate/rotate will be set by JS */
+}
+
+/* Orientation for North/South played cards (default, no extra rotation) */
+#center-played-cards .card.played-card-north-south {
+    /* Cards maintain their upright orientation */
+}
+
+/* Orientation for East/West played cards (rotated) */
+#center-played-cards .card.played-card-east-west {
+    /* Rotation will be applied by JS using transform, combining with stacking translate */
+}
+
 
 /* --- Modal Styles --- */
 .modal {

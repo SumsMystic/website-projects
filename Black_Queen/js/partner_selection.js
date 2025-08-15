@@ -203,16 +203,12 @@ function initializePartnerSelectionEvents() {
                 centerTableArea.innerHTML = '';
             }
 
-            /*
-            // Display played cards in the absolute center of the table
-            // (Assuming you have a function or logic to get the played cards)
-            if (centerTableArea && typeof getPlayedCardsHtml === 'function') {
-                centerTableArea.innerHTML = getPlayedCardsHtml();
-                centerTableArea.style.display = 'flex';
-                centerTableArea.style.justifyContent = 'center';
-                centerTableArea.style.alignItems = 'center';
+            // After partner selection is confirmed, start the first trick!
+            if (typeof window.startTrick === 'function') {
+                window.startTrick();
+            } else {
+                console.error("startTrick function not found. Cannot begin game play.");
             }
-            */
         });
     }
 }
@@ -222,4 +218,4 @@ window.showPartnerSelectionModal = showPartnerSelectionModal;
 window.hidePartnerSelectionModal = hidePartnerSelectionModal;
 
 // Ensure event listeners are initialized after DOM is loaded
-document.addEventListener('DOMContentLoaded', initializePartnerSelectionEvents);
+// document.addEventListener('DOMContentLoaded', initializePartnerSelectionEvents);

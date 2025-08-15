@@ -40,3 +40,23 @@
 .card-spin-fly-center-animate {
     animation: card-spin-fly-center 0.7s cubic-bezier(.4,1.4,.6,1) forwards;
 }
+
+/* Keyframes for the glowing effect */
+@keyframes player-hand-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.4); /* Subtle glow */
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.8), 0 0 30px rgba(255, 204, 0, 0.6); /* Brighter glow */
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.4); /* Return to subtle */
+  }
+}
+
+/* Class to apply the glow to the player's hand */
+.hand.active-player-glow {
+    animation: player-hand-glow 1.5s infinite alternate; /* Apply animation */
+    border: 2px solid #ffcc00; /* Add a distinct border */
+    transition: border 0.3s ease-in-out; /* Smooth border transition */
+}

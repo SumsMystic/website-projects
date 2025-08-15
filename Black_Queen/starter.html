@@ -48,6 +48,7 @@
       <!-- North Player Name Area -->
       <div class="table-item north-name">
         <span class="player-name">North</span>
+        <span id="north-score" class="player-score">Score: 0</span>
         <div class="player-bid-controls north-controls">
           <button id="north-bid-btn" class="bid-button">Bid</button>
           <button id="north-pass-btn" class="pass-button">Pass</button>
@@ -63,6 +64,7 @@
           <button id="east-bid-btn" class="bid-button">Bid</button>
           <button id="east-pass-btn" class="pass-button">Pass</button>
         </div>
+        <span id="east-score" class="player-score">Score: 0</span>
       </div>
       <!-- East Player Cards Hand Area -->
       <div class="table-item east-cards"><div class="hand"></div></div>
@@ -74,6 +76,7 @@
       <div class="table-item center-area">
         <!-- Bidding Interface (central display) -->
         <div id="bidding-interface" class="bidding-interface">
+          <!-- This div is to be displayed for showing bidding details, trump selection & partner selection -->
           <h2 id="bidding-status" class="bidding-status">Bidding Starts!</h2>
           <p id="current-player-turn" class="current-player-turn"></p>
           <div class="highest-bid-info">
@@ -82,6 +85,9 @@
             <span id="highest-bidder-name" class="highest-bidder-name"></span>
           </div>
           <p id="message-box" class="message-box"></p>
+        </div>
+        <!-- This div is to be displayed once the partner selection is done to display only played cards -->
+        <div id="center-played-cards">
         </div>
       </div>
 
@@ -92,6 +98,7 @@
           <button id="west-bid-btn" class="bid-button">Bid</button>
           <button id="west-pass-btn" class="pass-button">Pass</button>
         </div>
+        <span id="west-score" class="player-score">Score: 0</span>
       </div>
 
       <!-- South Player Cards Hand Area -->
@@ -99,6 +106,7 @@
       <!-- South Player Name Area -->
       <div class="table-item south-name">
         <span class="player-name">You (South)</span>
+        <span id="south-score" class="player-score">Score: 0</span>
         <div class="player-bid-controls south-controls">
           <button id="south-bid-btn" class="bid-button">Bid</button>
           <button id="south-pass-btn" class="pass-button">Pass</button>
@@ -199,7 +207,9 @@
     <script src="js/game_logic.js"></script> <!-- game_logic.js must be loaded FIRST -->
     <script src="js/script.js"></script>     <!-- script.js must be loaded SECOND -->
     <script src="js/partner_selection.js"></script> <!-- partner_selection.js must be loaded Next -->
+    <script src="js/game_play.js"></script> <!-- game_play.js must be loaded next -->
     <script src="js/card_play_animations.js"></script> <!-- card_play_animations.js must be loaded Next -->
+    <script src="js/trick_logics.js"></script> <!-- trick_logics.js must be loaded last -->
   </div>
 </body>
 </html>
