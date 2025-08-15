@@ -5,7 +5,7 @@
  * @param {string} player - The name of the player who played the card.
  */
 function playCardInTrick(cardElem, player) {
-    console.log(`${window.formatPlayerDisplayName(player)} played: ${cardElem.dataset.rank} of ${cardElem.dataset.suit}`); // <--- MODIFIED: Use window.formatPlayerDisplayName
+    console.log(`${window.formatPlayerDisplayName(player)} played: ${cardElem.dataset.rank} of ${cardElem.dataset.suit}`);
 
     // CRITICAL: Call playCardToCenter from game_play.js to move the card
     // from temporary body placement to the center played cards area
@@ -27,41 +27,40 @@ function playCardInTrick(cardElem, player) {
     const playedCardRank = cardElem.dataset.rank;
 
     // If it's the first card of the trick, set the lead suit
-    if (window.cardsInCurrentTrick === 0) { // <--- MODIFIED: Use window.cardsInCurrentTrick
-        window.leadSuitForTrick = playedCardSuit; // <--- MODIFIED: Use window.leadSuitForTrick
+    if (window.cardsInCurrentTrick === 0) {
+        window.leadSuitForTrick = playedCardSuit;
     }
 
     // Rule: Check if trump is broken
     // Trump is broken if a trump card is played when the lead suit is NOT trump,
     // and the player HAD a card of the lead suit but chose to play trump (sluffing trump).
     // OR if a player *leads* with trump after it was previously broken.
-    if (!window.trumpBroken) { // <--- MODIFIED: Use window.trumpBroken
-        if (playedCardSuit === window.currentTrumpSuit && window.leadSuitForTrick !== window.currentTrumpSuit) { // <--- MODIFIED: Use window.currentTrumpSuit and window.leadSuitForTrick
+    if (!window.trumpBroken) {
+        if (playedCardSuit === window.currentTrumpSuit && window.leadSuitForTrick !== window.currentTrumpSuit) {
             // If a trump card is played, and it's not the lead suit, trump is now broken.
             // This assumes the play was valid (i.e., player didn't have lead suit, or it's allowed to play trump)
-            window.trumpBroken = true; // <--- MODIFIED: Update global trumpBroken
-            window.displayMessage("Trump has been broken!", "message-box"); // <--- MODIFIED: Use window.displayMessage
+            window.trumpBroken = true;
+            window.displayMessage("Trump has been broken!", "message-box");
         }
     }
 
 
-    // Remove the played card from the player's hand DOM.
-    // This removeChild call was likely intended for the initial removal from the player's hand before the animation, ...
-    // ... but the animation function (animateCardToCenter) already handles that.
-    // cardElem.parentNode.removeChild(cardElem);
+    // Remove the played card from the player's hand DOM
+    // cardElem.parentNode.removeChild(cardElem); // This line was causing the card to vanish.
+    // It's removed from the hand array below, which is sufficient.
 
     // Remove the played card from the player's hands array
     // (This part is crucial for AI and game state accuracy)
     // IMPORTANT: window.hands is assumed to be initialized in script.js
-    if (window.hands && window.hands[player]) { // <--- MODIFIED: Use window.hands
-        window.hands[player] = window.hands[player].filter(card => !(card.rank === playedCardRank && card.suit === playedCardSuit)); // <--- MODIFIED: Use window.hands
+    if (window.hands && window.hands[player]) {
+        window.hands[player] = window.hands[player].filter(card => !(card.rank === playedCardRank && card.suit === playedCardSuit));
     } else {
         console.warn(`window.hands or window.hands[${player}] is undefined. Cannot remove card from hand array.`);
     }
 
 
     // Add the card to the current trick's array
-    window.currentTrick.push({ // <--- MODIFIED: Use window.currentTrick
+    window.currentTrick.push({
         card: {
             rank: playedCardRank,
             suit: playedCardSuit
@@ -69,24 +68,24 @@ function playCardInTrick(cardElem, player) {
         player: player,
         element: cardElem // Keep a reference to the element for trick evaluation/collection
     });
-    window.cardsInCurrentTrick++; // <--- MODIFIED: Use window.cardsInCurrentTrick
+    window.cardsInCurrentTrick++;
 
     // Disable current player's cards immediately after playing
-    window.updatePlayerCardInteractions(null, null); // <--- MODIFIED: Use window.updatePlayerCardInteractions
+    window.updatePlayerCardInteractions(null, null);
 
     // Check if the trick is complete (all 4 players have played)
-    if (window.cardsInCurrentTrick === window.players.length) { // <--- MODIFIED: Use window.cardsInCurrentTrick and window.players
-        window.displayMessage("All cards played for the trick!", "message-box"); // <--- MODIFIED: Use window.displayMessage
+    if (window.cardsInCurrentTrick === window.players.length) {
+        window.displayMessage("All cards played for the trick!", "message-box");
         // Evaluate trick winner after a short delay to let the last card animation settle
         setTimeout(evaluateTrick, 700);
     } else {
         // Advance to the next player's turn in the trick
         advanceTrickTurn();
-        const nextPlayer = window.players[window.currentPlayerIndex]; // <--- MODIFIED: Use window.players and window.currentPlayerIndex
-        window.displayMessage(`${window.formatPlayerDisplayName(nextPlayer)}'s turn to play.`, "message-box"); // <--- MODIFIED: Use window.displayMessage and window.formatPlayerDisplayName
+        const nextPlayer = window.players[window.currentPlayerIndex];
+        window.displayMessage(`${window.formatPlayerDisplayName(nextPlayer)}'s turn to play.`, "message-box");
         
         // Enable next player's cards, passing the lead suit for suit-following rule
-        window.updatePlayerCardInteractions(nextPlayer, window.leadSuitForTrick); // <--- MODIFIED: Use window.updatePlayerCardInteractions and window.leadSuitForTrick
+        window.updatePlayerCardInteractions(nextPlayer, window.leadSuitForTrick);
     }
 }
 
@@ -97,9 +96,33 @@ function playCardInTrick(cardElem, player) {
 function advanceTrickTurn() {
     // This is a simplified turn order. In a real game, it follows lead player.
     // For now, it just goes clockwise from the previous player.
-    window.currentPlayerIndex = (window.currentPlayerIndex + 1) % window.players.length; // <--- MODIFIED: Use window.currentPlayerIndex and window.players
+    window.currentPlayerIndex = (window.currentPlayerIndex + 1) % window.players.length;
     // Skip players who have already played in this trick (if logic becomes more complex)
     // For a simple 4-card trick, this sequential advance is usually fine.
+}
+
+/**
+ * Calculates the points for a given card based on the game's scoring rules.
+ * @param {object} card - The card object {suit: string, rank: string}.
+ * @returns {number} The point value of the card.
+ */
+function getCardPoints(card) {
+    const { rank, suit } = card;
+    if (rank === 'ace') {
+        return 20;
+    } else if (rank === 'jack' || rank === 'king') {
+        return 10;
+    } else if (rank === 'queen') {
+        if (suit === 'spades') { // Queen of Spades (Black Queen)
+            return 30;
+        }
+        return 10; // Other Queens
+    } else if (rank === '10') {
+        return 10;
+    } else if (rank === '5') {
+        return 5;
+    }
+    return 0; // All other cards (2,3,4,6,7,8,9)
 }
 
 /**
@@ -110,11 +133,11 @@ function advanceTrickTurn() {
  * IMPORTANT: This evaluation also handles points for specific cards like Black Queen.
  */
 function evaluateTrick() {
-    console.log("Evaluating trick:", window.currentTrick); // <--- MODIFIED: Use window.currentTrick
+    console.log("Evaluating trick:", window.currentTrick);
 
-    let winningCardInfo = window.currentTrick[0]; // <--- MODIFIED: Use window.currentTrick
-    const leadSuit = window.currentTrick[0].card.suit; // <--- MODIFIED: Use window.currentTrick
-    const trumpSuit = window.currentTrumpSuit; // <--- MODIFIED: Use window.currentTrumpSuit
+    let winningCardInfo = window.currentTrick[0];
+    const leadSuit = window.currentTrick[0].card.suit;
+    const trumpSuit = window.currentTrumpSuit;
 
     // Define card rank order for comparison (higher number is better)
     const rankOrder = {
@@ -123,8 +146,8 @@ function evaluateTrick() {
     };
 
     // Iterate through played cards to find the winner
-    for (let i = 1; i < window.currentTrick.length; i++) { // <--- MODIFIED: Use window.currentTrick
-        const currentCardInfo = window.currentTrick[i]; // <--- MODIFIED: Use window.currentTrick
+    for (let i = 1; i < window.currentTrick.length; i++) {
+        const currentCardInfo = window.currentTrick[i];
         const currentCard = currentCardInfo.card;
         const winningCard = winningCardInfo.card;
 
@@ -167,42 +190,21 @@ function evaluateTrick() {
         }
     }
 
-    window.trickWinner = winningCardInfo.player; // <--- MODIFIED: Use window.trickWinner
-    let trickPoints = 1; // Base points for winning a trick
+    window.trickWinner = winningCardInfo.player;
+    let trickPointsEarned = 0; // Initialize points for this trick
 
-    // Check for special cards for scoring (e.g., Black Queen)
-    // Assuming Black Queen (Queen of Spades) costs 13 points if taken.
-    const blackQueenCard = { rank: 'queen', suit: 'spades' };
-    let blackQueenWasPlayed = false;
-
-    window.currentTrick.forEach(playedCard => { // <--- MODIFIED: Use window.currentTrick
-        if (playedCard.card.rank === blackQueenCard.rank && playedCard.card.suit === blackQueenCard.suit) {
-            blackQueenWasPlayed = true;
-            // Black Queen points are usually assigned to the *winner of the trick* if they take it.
-            // Or to the player who *played* it if they don't take it (if that's a rule).
-            // In many games, the person who *takes* the Black Queen gets 13 penalty points.
-            // For simplicity, let's say the winner of the trick receives the Black Queen points/penalties.
-            // Adjust this based on actual Black Queen game scoring rules.
-            // Here, we'll assign the 13 points to the winner, making them a "bad" trick to win.
-            // If it's a penalty, the score would *decrease*
-            // If the game is "points-based" and Black Queen is +13 to winner, then:
-            // trickPoints += 13;
-        }
+    // Calculate total points from all cards in the current trick
+    window.currentTrick.forEach(playedCard => {
+        trickPointsEarned += getCardPoints(playedCard.card); // Use the new getCardPoints function
     });
 
-    // For games like Hearts, the Queen of Spades (Black Queen) is typically -13 points for the person who *takes* it.
-    // Let's implement it as a penalty for the trick winner.
-    if (blackQueenWasPlayed) {
-        trickPoints = -13; // Penalty for taking the trick with Black Queen
-        window.displayMessage(`Oh no! ${window.formatPlayerDisplayName(window.trickWinner)} took the Black Queen and gets ${trickPoints} points!`, "message-box"); // <--- MODIFIED: Use window.displayMessage and window.formatPlayerDisplayName and window.trickWinner
-    } else {
-        window.displayMessage(`${window.formatPlayerDisplayName(window.trickWinner)} won Trick ${window.trickCount + 1} with the ${winningCardInfo.card.rank} of ${winningCardInfo.card.suit}!`, "message-box"); // <--- MODIFIED: Use window.displayMessage, window.formatPlayerDisplayName, window.trickWinner, window.trickCount
-    }
+    window.playersScores[window.trickWinner] += trickPointsEarned; // Add the accumulated points to the trick winner's score
 
-    window.playersScores[window.trickWinner] += trickPoints; // <--- MODIFIED: Use window.playersScores and window.trickWinner
-    window.trickCount++; // <--- MODIFIED: Use window.trickCount
+    window.displayMessage(`${window.formatPlayerDisplayName(window.trickWinner)} won Trick ${window.trickCount + 1} and gained ${trickPointsEarned} points! Total: ${window.playersScores[window.trickWinner]}`, "message-box");
 
-    window.updateScoresDisplay(); // <--- MODIFIED: Use window.updateScoresDisplay
+    window.trickCount++;
+
+    window.updateScoresDisplay();
 
     // Clear center cards (face down) and start next trick after a delay
     setTimeout(() => {
@@ -210,7 +212,7 @@ function evaluateTrick() {
             window.clearCenterPlayedCards(true);
         }
 
-        if (window.trickCount < 13) { // <--- MODIFIED: Use window.trickCount
+        if (window.trickCount < 13) { // Assuming 13 tricks in a game
             window.startTrick(); // Call the global startTrick
         } else {
             window.endGame(); // Call the global endGame
@@ -226,7 +228,7 @@ function evaluateTrick() {
  * @param {string | null} leadSuit - The suit led in the current trick, or null if it's the lead player's turn.
  */
 function updatePlayerCardInteractions(activePlayer, leadSuit) {
-    window.players.forEach(player => { // <--- MODIFIED: Use window.players
+    window.players.forEach(player => {
         const handElement = document.querySelector(`.${player}-cards .hand`);
         if (handElement) {
             // Apply/remove glow effect to the hand container
@@ -237,9 +239,9 @@ function updatePlayerCardInteractions(activePlayer, leadSuit) {
             }
 
             // Get the actual cards in the player's hand (from JS hands object)
-            const cardsInHand = window.hands ? window.hands[player] : []; // <--- MODIFIED: Use window.hands, add fallback
+            const cardsInHand = window.hands ? window.hands[player] : [];
             const hasLeadSuit = leadSuit ? cardsInHand.some(card => card.suit === leadSuit) : false;
-            const hasTrump = cardsInHand.some(card => card.suit === window.currentTrumpSuit); // <--- MODIFIED: Use window.currentTrumpSuit
+            const hasTrump = cardsInHand.some(card => card.suit === window.currentTrumpSuit);
 
             handElement.querySelectorAll('.card').forEach(cardElem => {
                 const cardSuit = cardElem.dataset.suit;
@@ -263,11 +265,11 @@ function updatePlayerCardInteractions(activePlayer, leadSuit) {
                     } else { // It's the lead player's turn (leadSuit is null)
                         // Rule 1: Cannot lead with trump if trump is not broken AND player has non-trump cards.
                         // The Black Queen (Queen of Spades) is an exception: it can ALWAYS be played.
-                        if (cardSuit === window.currentTrumpSuit && !window.trumpBroken && hasTrump && (cardsInHand.length > 1 || !isBlackQueen)) { // <--- MODIFIED: Use window.currentTrumpSuit and window.trumpBroken
+                        if (cardSuit === window.currentTrumpSuit && !window.trumpBroken && hasTrump && (cardsInHand.length > 1 || !isBlackQueen)) {
                             // If the player only has trump cards, they must lead with trump.
                             // If player has non-trump cards, they cannot lead with trump unless trump is broken.
                             // The check for "hasTrump" is important to distinguish from a player having ONLY non-trump.
-                            const hasNonTrumpCards = cardsInHand.some(card => card.suit !== window.currentTrumpSuit); // <--- MODIFIED: Use window.currentTrumpSuit
+                            const hasNonTrumpCards = cardsInHand.some(card => card.suit !== window.currentTrumpSuit);
                             if (hasNonTrumpCards && !isBlackQueen) { // Cannot lead with trump if non-trump available and trump not broken (unless it's the Black Queen)
                                 cardElem.style.pointerEvents = 'none';
                                 cardElem.classList.remove('card-playable');
