@@ -280,12 +280,7 @@ function updatePlayerCardInteractions(activePlayer, leadSuit) {
                             }
                         }
                     }
-
-                    // Rule: Black Queen (Queen of Spades) can always be played, overriding other restrictions.
-                    if (isBlackQueen) {
-                        cardElem.style.pointerEvents = 'auto';
-                        cardElem.classList.add('card-playable');
-                    }
+                    
 
                 } else {
                     // Disable all cards for inactive players

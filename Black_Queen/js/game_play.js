@@ -27,6 +27,9 @@ function playCardToCenter(cardElem, player) {
     cardElem.style.zIndex = '';           // z-index will be set dynamically below for stacking
     cardElem.style.transform = '';        // Clear any existing inline transforms
 
+    // ADDED: Make the card non-clickable once it's in the center area
+    cardElem.style.pointerEvents = 'none';
+
     // Remove old orientation classes before adding new ones
     cardElem.classList.remove('played-card-north-south', 'played-card-east-west');
 
