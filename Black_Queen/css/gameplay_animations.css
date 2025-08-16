@@ -40,13 +40,13 @@
 
 /* Specific pop-out for East player's cards (vertical column, pops LEFT) */
 .east-cards .hand .card.card-pop-hover:hover {
-    transform: scale(1.05) translateX(-10px); /* MODIFIED: Pops left instead of up */
+    transform: scale(1.05) translateX(-10px); /* Pops left instead of up */
     transform-origin: right center; /* Hinge from the right side */
 }
 
 /* Specific pop-out for West player's cards (vertical column, pops RIGHT) */
 .west-cards .hand .card.card-pop-hover:hover {
-    transform: scale(1.05) translateX(10px); /* MODIFIED: Pops right instead of up */
+    transform: scale(1.05) translateX(10px); /* Pops right instead of up */
     transform-origin: left center; /* Hinge from the left side */
 }
 
@@ -57,31 +57,31 @@
 }
 
 /* Keyframes for the glowing effect */
-@keyframes glow {
+@keyframes player-hand-glow {
     0% {
-        box-shadow: 0 0 7px rgba(255, 204, 0, 0.4);
+        box-shadow: 0 0 5px rgba(255, 204, 0, 0.4);
     }
     50% {
-        box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+        box-shadow: 0 0 30px rgba(255, 204, 0, 0.4);
     }
     100% {
-        box-shadow: 0 0 7px rgba(255, 204, 0, 0.4);
+        box-shadow: 0 0 5px rgba(255, 204, 0, 0.4);
     }
 }
 
-/* Apply the glowing effect to the active player's hand */
-.hand.active-player-glow {
-    animation: player-hand-glow 1.5s infinite alternate; /* Apply animation */
+/* Apply the glowing effect to the active player's *card area* (the parent div) */
+/* MODIFIED: Target the .player-cards container instead of .hand */
+.north-cards.active-player-glow,
+.south-cards.active-player-glow,
+.east-cards.active-player-glow,
+.west-cards.active-player-glow {
+    animation: player-hand-glow 2.5s infinite alternate; /* Apply animation */
     border: 4px solid #ffcc00; /* Add a distinct border */
     transition: border 0.3s ease-in-out; /* Smooth border transition */
+    border-radius: 8px; /* Rounded corners for the glow border line */
 }
 
-/* Styles for cards played to the center, by player position 
-.played-card-north-south {
-    /* No specific rotation here as it's handled by JS, but if you need other styles for N/S cards 
-}
-
-.played-card-east-west {
-    /* No specific rotation here as it's handled by JS, but if you need other styles for E/W cards 
-}
-    */
+/* Styles for cards played to the center, by player position */
+/* (These comments remain, assuming they are part of your original file structure) */
+/* .played-card-north-south { } */
+/* .played-card-east-west { } */

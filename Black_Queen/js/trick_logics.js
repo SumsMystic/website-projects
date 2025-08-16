@@ -229,13 +229,17 @@ function evaluateTrick() {
  */
 function updatePlayerCardInteractions(activePlayer, leadSuit) {
     window.players.forEach(player => {
-        const handElement = document.querySelector(`.${player}-cards .hand`);
-        if (handElement) {
-            // Apply/remove glow effect to the hand container
+        // MODIFIED: Select the outer player card container for the glow
+        const playerCardArea = document.querySelector(`.${player}-cards`); 
+        // Keep selecting the inner handElement for individual card interaction logic
+        const handElement = playerCardArea ? playerCardArea.querySelector('.hand') : null; // Get the inner hand for card logic
+
+        if (playerCardArea && handElement) { // Ensure both elements exist
+            // Apply/remove glow effect to the outer player card area
             if (player === activePlayer) {
-                handElement.classList.add('active-player-glow'); // Add glow
+                playerCardArea.classList.add('active-player-glow'); // Apply glow to the outer div
             } else {
-                handElement.classList.remove('active-player-glow'); // Remove glow
+                playerCardArea.classList.remove('active-player-glow'); // Remove glow from the outer div
             }
 
             // Get the actual cards in the player's hand (from JS hands object)
