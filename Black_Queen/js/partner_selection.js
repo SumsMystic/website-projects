@@ -9,8 +9,8 @@ let backToSuitBtn;
 let confirmPartnerBtn;
 let suitNameDisplay;
 
-let selectedPartnerSuit = null;
-let selectedPartnerRank = null;
+window.selectedPartnerSuit = null; // MODIFIED: Expose globally
+window.selectedPartnerRank = null; // MODIFIED: Expose globally
 
 // All ranks in order for partner selection
 const partnerRanks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"];
@@ -154,7 +154,7 @@ function initializePartnerSelectionEvents() {
                 
                 // Select new suit
                 target.classList.add('selected');
-                selectedPartnerSuit = target.getAttribute('data-suit');
+                window.selectedPartnerSuit = target.getAttribute('data-suit');
                 nextToRankBtn.removeAttribute('disabled');
             }
         });
@@ -176,7 +176,7 @@ function initializePartnerSelectionEvents() {
                 
                 // Select new rank
                 target.classList.add('selected');
-                selectedPartnerRank = target.getAttribute('data-rank');
+                window.selectedPartnerRank = target.getAttribute('data-rank');
                 confirmPartnerBtn.removeAttribute('disabled');
             }
         });
@@ -201,6 +201,11 @@ function initializePartnerSelectionEvents() {
             const centerTableArea = document.getElementById('center-table-area');
             if (centerTableArea) {
                 centerTableArea.innerHTML = '';
+            }
+
+            // After partner selection is confirmed, update the persistent game info displays
+            if (typeof window.updateGameInfoDisplays === 'function') {
+                window.updateGameInfoDisplays(); // ADDED: Call this to update the display
             }
 
             // After partner selection is confirmed, start the first trick!

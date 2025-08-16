@@ -1,4 +1,16 @@
 /* TABLE LAYOUT */
+.play-area-container {
+    display: flex; /* Use flexbox for the main play area container */
+    flex-direction: row; /* ADDED: Default to row direction for desktop-first */
+    justify-content: center;
+    align-items: center; /* Center items vertically within the flex container */
+    gap: 20px; /* Space between table and sidebar */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    padding: 10px;
+    max-width: 1500px; /* MODIFIED: Increased max-width to prevent wrapping */
+    margin: 1rem auto;
+}
+
 .playing-table-container {
   display: grid;
   /* Define 3 columns with specified percentages */
@@ -124,17 +136,16 @@
 
 /* Base styles for all cards played into the center */
 #center-played-cards .card {
-    position: absolute; /* Make cards positionable within #center-played-cards */
-    transform-origin: center center; /* Ensure rotation happens around the center */
-    transition: transform 0.3s ease-out, z-index 0.1s ease-out; /* Smooth transitions for movement/stacking */
-    /* The width and height are already defined in cards.css for .card */
+    transition: transform 0.2s ease-out, z-index 0.1s ease-out; /* Smooth transitions for movement/stacking */
+    /* position: absolute and transform: translate/rotate will be set by JS */
 }
 
-/* Styles for North and South played cards (maintain upright orientation) 
+/* Styles for North and South played cards (maintain upright orientation) */
+/*
 #center-played-cards .card.played-card-north-south {
      No additional CSS rotation needed here; JS will handle translation. 
 }
-
+*/
 
 /* Styles for East and West played cards (rotate 90 degrees)
 #center-played-cards .card.played-card-east-west {
@@ -216,16 +227,1341 @@
     padding-bottom: 0; /* Removed explicit padding-bottom, relying on row height and flex centering */
 }
 
-/* Responsive adjustments for smaller screens */
-@media (max-width: 768px) {
+
+/* NEW: Styles for the game info sidebar (desktop) */
+.game-info-sidebar {
+    width: 250px; /* Fixed width for the sidebar */
+    background-color: #1e7e34; /* Darker green background */
+    border: 8px solid #1a6d2f; /* Even darker border */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 1.1em;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Hide by default on smaller screens (will be explicitly shown by JS/media query) */
+    display: none; /* Changed to none for mobile-first, JS/MQ will turn it on */
+}
+
+.game-info-sidebar h3 {
+    margin-top: 0;
+    color: #ffcc00; /* Gold-like color for heading */
+    text-align: center;
+    font-size: 1.4em;
+    border-bottom: 1px solid rgba(255, 204, 0, 0.3);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.game-info-sidebar p {
+    margin: 0;
+    padding: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-info-sidebar span {
+    font-weight: bold;
+    color: #ffd700; /* Brighter gold for values */
+}
+
+
+/* NEW: Styles for the game info mobile display */
+.game-info-mobile-display {
+    width: 90%;
+    max-width: 500px;
+    background-color: #1e7e34;
+    border: 8px solid #1a6d2f;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px; /* Space from buttons/table above */
+    text-align: center;
+    /* Show by default on smaller screens (mobile-first) */
+    display: flex;
+}
+
+.game-info-mobile-display h3 {
+    margin-top: 0;
+    color: #ffcc00;
+    font-size: 1.2em;
+    border-bottom: 1px solid rgba(255, 204, 0, 0.3);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.game-info-mobile-display p {
+    margin: 0;
+    padding: 3px 0;
+}
+
+.game-info-mobile-display span {
+    font-weight: bold;
+    color: #ffd700;
+}
+
+
+/* Media Queries for Responsiveness */
+@media (min-width: 1024px) { /* For larger screens (desktops) */
+    .play-area-container {
+        flex-direction: row; /* Layout side-by-side */
+        align-items: center; /* Align table and sidebar at the top */
+    }
+
     .playing-table-container {
-        width: 98vw; /* Use more of the viewport width */
-        height: 95vh; /* Use more of the viewport height */
+        width: 60vw; /* Keep table width */
+        max-width: 900px; /* Adjust max-width if needed for overall layout */
+    }
+
+    .game-info-sidebar {
+        display: flex; /* Show desktop sidebar */
+    }
+
+    .game-info-mobile-display {
+        display: none; /* Hide mobile display */
+    }
+}
+
+@media (max-width: 1023px) { /* For tablets and smaller screens */
+    .play-area-container {
+        flex-direction: column; /* Stack vertically */
+        align-items: center; /* Center items when stacked */
+    }
+
+    .playing-table-container {
+        width: 95vw; /* Make table wider on smaller screens */
+        height: 75vh; /* Adjust height for smaller screens */
         padding: 1vw; /* Overall container padding in vw */
         border-radius: 10px; /* Slightly smaller border radius */
         /* Adjusted grid-template-rows to allow more flexibility for player areas */
         grid-template-rows: 7% 20% 13% 14% 13% 18% 7%;
         gap: 0.5vw; /* Reduce gap between grid items using vw */
+    }
+
+    .game-info-sidebar {
+        display: none; /* Hide desktop sidebar */
+    }
+
+    .game-info-mobile-display {
+        display: flex; /* Show mobile display */
+    }
+
+    .table-item {
+        font-size: 0.7em; /* Still using relative em for general items, can change to vw if needed */
+        padding: 0.5vw; /* Reduce general padding using vw */
+    }
+
+    /* Center Area responsive adjustments */
+    .center-area {
+        font-size: 0.88em !important; /* Increased from 0.8em by ~10% */
+        padding: 0.55vw !important; /* Increased from 0.5vw by ~10% */
+    }
+
+    .bidding-interface {
+        gap: 0.88vw !important; /* Increased from 0.8vw by ~10% */
+        padding: 0.88vw !important; /* Increased from 0.8vw by ~10% */
+    }
+
+    .bidding-status {
+        font-size: 2.75vw !important; /* Increased from 2.5vw by ~10% */
+        margin-bottom: 0.55vw !important;
+    }
+
+    .current-player-turn {
+        font-size: 2.2vw !important; /* Increased from 2vw by ~10% */
+        margin-bottom: 0.55vw !important;
+    }
+
+    .highest-bid-label {
+        font-size: 1.98vw !important; /* Increased from 1.8vw by ~10% */
+        margin-bottom: 0 !important;
+    }
+
+    .highest-bid-display {
+        font-size: 3.3vw !important; /* Increased from 3vw by ~10% */
+    }
+
+    .highest-bidder-name {
+        font-size: 2.2vw !important; /* Increased from 2vw by ~10% */
+        margin-left: 0.55vw !important;
+    }
+
+    .message-box {
+        font-size: 1.87vw !important; /* Increased from 1.7vw by ~10% */
+        min-height: 2.2vw !important; /* Increased from 2vw by ~10% */
+    }
+
+
+    /* Mobile responsiveness for North and South cards */
+    .north-cards .hand, .south-cards .hand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        min-height: unset; /* Allow vertical shrinking if needed */
+    }
+
+    .north-cards .hand .card, .south-cards .hand .card {
+        width: 8vw; /* Card width in vw */
+        height: calc(8vw * 90 / 64); /* Maintain aspect ratio */
+        margin-left: 0;
+    }
+
+    .north-cards .hand .card:not(:first-child),
+    .south-cards .hand .card:not(:first-child) {
+        margin-left: -4vw; /* Adjust overlap for smaller cards using vw */
+    }
+
+    /* East and West cards - similar adjustments */
+    .east-cards .hand, .west-cards .hand {
+        min-width: unset; /* Allow horizontal shrinking if needed */
+    }
+
+    .east-cards .hand .card, .west-cards .hand .card {
+        width: 8vw; /* Match horizontal cards for consistency in size reduction */
+        height: calc(8vw * 90 / 64);
+    }
+
+    .east-cards .hand .card:not(:first-child),
+    .west-cards .hand .card:not(:first-child) {
+        margin-top: -5vw; /* Adjust vertical overlap for smaller cards using vw */
+    }
+
+
+    /* --- CRITICAL CHANGES FOR PLAYER NAME AND BUTTONS --- */
+
+    /* Player Name containers: Ensure they stack vertically and use minimal space */
+    .north-name, .east-name, .west-name, .south-name {
+        flex-direction: column; /* Stack name and buttons vertically by default */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content horizontally */
+        padding: 0.5vw !important;
+        min-height: unset; /* Allow vertical shrinkage */
+        min-width: unset; /* Allow horizontal shrinkage */
+    }
+
+    /* Player name text within the container */
+    .player-name {
+        font-size: 2.3vw !important; /* Adjusted font size for player name */
+        white-space: nowrap; /* Prevent wrapping */
+        overflow: hidden; /* Hide overflow */
+        text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        width: 100%; /* Take full width of its parent flex container */
+        margin-bottom: 0.3vw !important; /* Adjusted space below name before buttons */
+        padding: 0 0.3vw !important; /* Adjusted horizontal padding for player name text */
+        line-height: 1; /* Ensure text takes minimal vertical space */
+        box-sizing: border-box; /* Include padding in width calculation */
+    }
+    .player-score {
+        font-size: 1.8vw !important; /* Adjust font size for mobile */
+        padding: 0.5vw 1.2vw !important; /* Adjust padding for mobile */
+    }
+
+    /* Style for player scores */
+    .player-score {
+        font-size: 0.8rem;
+        color: #ffcc00; /* Yellowish color for score */
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 3px 8px;
+        border-radius: 5px;
+        margin-top: 2px; /* Small margin to separate from adjacent elements */
+        margin-bottom: 2px; /* Small margin to separate from adjacent elements */
+        white-space: nowrap; /* Prevent score text from wrapping */
+    }
+
+    /* Player-specific Bid Control Containers (General for North/South) */
+    .player-bid-controls {
+        flex-direction: row; /* Keep buttons side-by-side for North/South */
+        flex-wrap: wrap; /* Allow buttons to wrap to a new line */
+        justify-content: center; /* Center buttons within their control area */
+        gap: 0.5vw !important;
+        width: 100%; /* Ensure it takes full available width within the parent name container */
+        margin-top: 0; /* No top margin needed if player name has margin-bottom */
+        min-height: unset; /* Allow vertical shrinkage */
+    }
+
+    /* Specific adjustment for EAST and WEST players: Bid/Pass buttons stack vertically */
+    .east-name .player-bid-controls,
+    .west-name .player-bid-controls {
+        flex-direction: column !important; /* Stack buttons vertically for East/West */
+        gap: 0.5vw !important;
+    }
+
+    /* General Bid Button Styling within small screens */
+    .bid-button, .pass-button {
+        padding: 0.6vw 1.2vw !important;
+        font-size: 1.7vw !important;
+        flex-grow: 1; /* Allow them to grow to fill space */
+        flex-basis: auto; /* Let content determine base size, then grow/shrink */
+        min-width: unset !important; /* Ensure no minimum width prevents shrinking */
+        max-width: 20% !important; /* Set max-width as requested for North/South */
+        height: auto; /* Allow height to adjust based on padding/font-size */
+        line-height: 1; /* Ensure line height is very compact */
+        white-space: nowrap; /* Prevent text wrapping inside button */
+        box-sizing: border-box; /* Include padding in width/height calculation */
+        border-radius: 0.4vw !important;
+    }
+
+    /* Specific button styling for EAST and WEST when stacked vertically */
+    .east-name .bid-button, .east-name .pass-button,
+    .west-name .bid-button, .west-name .pass-button {
+        max-width: 100% !important; /* Allow buttons to take full width when stacked vertically */
+    }
+}
+
+/* PLAYER NAMES */
+.player-name {
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 100%;
+  padding: 4px;
+  flex-grow: 1;
+  text-align: center;
+  white-space: nowrap;
+  position: static;
+  transform: none;
+  left: auto;
+  z-index: auto;
+}
+
+/* General Bid Button Styling */
+.bid-button, .pass-button {
+  padding: 6px 12px;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  flex-shrink: 0;
+  height: fit-content;
+}
+
+.bid-button:hover:not([disabled]) {
+  background-color: #003d80;
+}
+
+.pass-button {
+  background-color: #dc3545;
+}
+
+.pass-button:hover:not([disabled]) {
+  background-color: #a71d2a;
+}
+
+/* --- STYLES FOR DISABLED BUTTONS --- */
+.bid-button[disabled],
+.pass-button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+}
+/* --- END STYLES --- */
+
+/* Player-specific Bid Control Containers */
+.player-bid-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: static;
+    top: auto;
+    transform: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Class to enable controls (no longer used for visibility, but could be used for other effects) */
+.player-bid-controls.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* CARD STYLING */
+.card {
+  height: 90px;
+  width: 64px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  border: none;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+/* CARD STACKING FOR HANDS */
+.north-cards .hand, .south-cards .hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  border: none;
+}
+
+/* Overlap for horizontal cards (North and South) in hands */
+.north-cards .hand .card:not(:first-child),
+.south-cards .hand .card:not(:first-child) {
+  margin-left: -40px;
+}
+
+/* Ensure cards stack correctly (later cards on top) in hands */
+.north-cards .hand .card:nth-child(n),
+.south-cards .hand .card:nth-child(n) {
+    z-index: calc(var(--card-index, 0) + 1);
+}
+
+
+.east-cards .hand, .west-cards .hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  min-width: 90px;
+  border: none;
+}
+
+/* Overlap for vertical cards (East and West) in hands */
+.east-cards .hand .card:not(:first-child),
+.west-cards .hand .card:not(:first-child) {
+  margin-top: -60px;
+}
+
+/* --- NEW STYLES FOR PLAYED CARDS IN CENTER --- */
+/* Base styles for cards played to the center area */
+#center-played-cards .card {
+    transition: transform 0.2s ease-out, z-index 0.1s ease-out; /* Smooth transitions for movement/stacking */
+    /* Position: absolute and transform: translate/rotate will be set by JS */
+}
+
+/* Orientation for North/South played cards (default, no extra rotation) */
+#center-played-cards .card.played-card-north-south {
+    /* Cards maintain their upright orientation */
+}
+
+/* Orientation for East/West played cards (rotated) */
+#center-played-cards .card.played-card-east-west {
+    /* Rotation will be applied by JS using transform, combining with stacking translate */
+}
+
+
+/* --- Modal Styles --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #333;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #0ABAB5;
+}
+
+.modal-content button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin: 0 5px;
+}
+
+.modal-content #bid-dropdown {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #444;
+    color: white;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 200px;
+    box-sizing: border-box;
+    align-self: center;
+}
+
+/* Specific button styles for modals */
+#confirm-bid-btn, #confirm-pass-btn {
+    background-color: #28a745;
+}
+#confirm-bid-btn:hover, #confirm-pass-btn:hover {
+    background-color: #1e7e34;
+}
+
+#cancel-bid-btn, #cancel-pass-btn {
+    background-color: #dc3545;
+}
+#cancel-bid-btn:hover, #cancel-pass-btn:hover {
+    background-color: #a71d2a;
+}
+
+/* New style for modal buttons container to control their width */
+.modal-content .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.modal-content .modal-buttons button {
+    flex-grow: 0;
+    flex-shrink: 1;
+    width: auto;
+    max-width: 120px;
+}
+
+/* Styles for the Trump Selection Modal */
+.suit-selection-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.suit-option {
+    width: 60px;
+    height: 60px;
+    border: 3px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 5px;
+}
+
+.suit-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.suit-option.selected {
+    border-color: #ffcc00;
+    transform: scale(1.1);
+}
+
+.suit-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#confirm-trump-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Partner Modal Specific Styles */
+.partner-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+/* Rank Selection Container */
+.rank-selection-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    max-width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Rank Card Options */
+.rank-option {
+    width: 50px;
+    height: 70px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: white;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.rank-option.selected {
+    border-color: #ffcc00;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.rank-option:hover {
+    transform: scale(1.02);
+    border-color: rgba(255, 204, 0, 0.7);
+}
+
+/* Responsive adjustments for rank selection */
+@media (max-width: 768px) {
+    .rank-selection-container {
+        max-height: 200px;
+        gap: 5px;
+        padding: 5px;
+    }
+    
+    .rank-option {
+        width: 40px;
+        height: 56px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        padding: 15px;
+    }
+    
+    .partner-step h3 {
+        font-size: 1.1rem;
+    }
+    
+    .partner-step p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Button styling for partner modal */
+#next-to-rank-btn, #confirm-partner-btn {
+    background-color: #28a745;
+    min-width: 140px;
+}
+
+#next-to-rank-btn:hover, #confirm-partner-btn:hover {
+    background-color: #1e7e34;
+}
+
+#back-to-suit-btn {
+    background-color: #6c757d;
+    min-width: 80px;
+}
+
+#back-to-suit-btn:hover {
+    background-color: #545b62;
+}
+
+#next-to-rank-btn[disabled], #confirm-partner-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Suit name styling */
+#suit-name {
+    color: #ffcc00;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+/* General modal buttons container styling (moved here for clarity) */
+.modal-content .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+}
+{
+type: uploaded file
+fileName: starter.html
+fullText:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Black Queen</title>
+  
+  <link rel="stylesheet" href="./css/navbar.css">
+  <link rel="stylesheet" href="./css/cards_table.css">
+  <link rel="stylesheet" href="./css/cards.css">
+  <link rel="stylesheet" href="./css/intro.css">
+  <link rel="stylesheet" href="./css/partner_modal.css">
+  <link rel="stylesheet" href="./css/gameplay_animations.css">
+  <script src="js/intro.js"></script>
+</head>
+<body>
+  <!-- White overlay and animated logo -->
+  <div id="white-overlay"></div>
+  <div id="logo-anim-overlay">
+    <img id="logo-anim-img" src="./img/black_queen_backside_default.webp" alt="Black Queen Logo" />
+  </div>
+  <!-- Main website content, hidden initially -->
+  <div id="main-content">
+    <!-- NAVBAR -->
+    <nav class="navbar-bq">
+      <!-- Left: Logo -->
+      <div class="navbar-logo">
+        <img src="./img/black_queen_backside_default.webp" alt="Black Queen Logo" class="bq-logo" />
+      </div>
+
+      <!-- Center: Title -->
+      <div class="navbar-title-links-wrapper">
+        <div class="navbar-title">
+          <span class="title-text">Black Queen</span>
+          <h1 class="subtitle-text">A strategic 4-player card game</h1>
+        </div>
+
+        <!-- Right: Links -->
+        <div class="navbar-links-bq">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="about.html">About Us</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Game Play Area - THIS IS THE FLEX CONTAINER FOR TABLE AND INFO SIDEBAR -->
+    <div id="play-area" class="play-area-container">
+        <!-- The main table -->
+        <div class="playing-table-container">
+            <!-- North Player Name Area -->
+            <div class="table-item north-name">
+                <span class="player-name">North</span>
+                <span id="north-score" class="player-score">Score: 0</span>
+                <div class="player-bid-controls north-controls">
+                    <button id="north-bid-btn" class="bid-button">Bid</button>
+                    <button id="north-pass-btn" class="pass-button">Pass</button>
+                </div>
+            </div>
+            <!-- North Player Cards Hand Area -->
+            <div class="table-item north-cards"><div class="hand"></div></div>
+
+            <!-- East Player Name Area -->
+            <div class="table-item east-name">
+                <span class="player-name">East</span>
+                <div class="player-bid-controls east-controls">
+                    <button id="east-bid-btn" class="bid-button">Bid</button>
+                    <button id="east-pass-btn" class="pass-button">Pass</button>
+                </div>
+                <span id="east-score" class="player-score">Score: 0</span>
+            </div>
+            <!-- East Player Cards Hand Area -->
+            <div class="table-item east-cards"><div class="hand"></div></div>
+
+            <!-- West Player Cards Hand Area -->
+            <div class="table-item west-cards"><div class="hand"></div></div>
+
+            <!-- Center Playing Area -->
+            <div class="table-item center-area">
+                <!-- Bidding Interface (central display) -->
+                <div id="bidding-interface" class="bidding-interface">
+                    <!-- This div is to be displayed for showing bidding details, trump selection & partner selection -->
+                    <h2 id="bidding-status" class="bidding-status">Bidding Starts!</h2>
+                    <p id="current-player-turn" class="current-player-turn"></p>
+                    <div class="highest-bid-info">
+                        <p class="highest-bid-label">Current Bid:</p>
+                        <span id="highest-bid-display" class="highest-bid-display">170</span>
+                        <span id="highest-bidder-name" class="highest-bidder-name"></span>
+                    </div>
+                    <p id="message-box" class="message-box"></p>
+                </div>
+                <!-- This div is to be displayed once the partner selection is done to display only played cards -->
+                <div id="center-played-cards">
+                </div>
+            </div>
+
+            <!-- West Player Name Area -->
+            <div class="table-item west-name">
+                <span class="player-name">West</span>
+                <div class="player-bid-controls west-controls">
+                    <button id="west-bid-btn" class="bid-button">Bid</button>
+                    <button id="west-pass-btn" class="pass-button">Pass</button>
+                </div>
+                <span id="west-score" class="player-score">Score: 0</span>
+            </div>
+
+            <!-- South Player Cards Hand Area -->
+            <div class="table-item south-cards"><div class="hand"></div></div>
+            <!-- South Player Name Area -->
+            <div class="table-item south-name">
+                <span class="player-name">You (South)</span>
+                <span id="south-score" class="player-score">Score: 0</span>
+                <div class="player-bid-controls south-controls">
+                    <button id="south-bid-btn" class="bid-button">Bid</button>
+                    <button id="south-pass-btn" class="pass-button">Pass</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Desktop Game Info Sidebar - THIS MUST BE A SIBLING TO .playing-table-container -->
+        <div id="game-info-desktop" class="game-info-sidebar">
+            <h3>Current Round Info</h3>
+            <p>Bid Winner: <span id="desktop-bid-winner">N/A</span></p>
+            <p>Final Bid: <span id="desktop-final-bid">N/A</span></p>
+            <p>Partner Card: <span id="desktop-partner-card">N/A</span></p>
+        </div>
+    </div>
+    <!-- END of .play-area-container -->
+
+    <!-- NEW: Mobile Game Info Display - Remains outside the main play area container -->
+    <div id="game-info-mobile" class="game-info-mobile-display">
+        <h3>Current Round Info</h3>
+        <p>Bid Winner: <span id="mobile-bid-winner">N/A</span></p>
+        <p>Final Bid: <span id="mobile-final-bid">N/A</span></p>
+        <p>Partner Card: <span id="mobile-partner-card">N/A</span></p>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button id="shuffle-deck-btn">Shuffle</button>
+      <button id="deal-cards-btn">Deal & Start Game</button>
+    </div>
+
+    <!-- Custom Bid Dropdown Modal -->
+    <div id="bid-modal" class="modal">
+      <div class="modal-content">
+        <h3>Select Your Bid</h3>
+        <select id="bid-dropdown"></select>
+        <div class="modal-buttons"> <!-- Added this div for button grouping -->
+          <button id="confirm-bid-btn">Confirm Bid</button>
+          <button id="cancel-bid-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Pass Confirmation Modal -->
+    <div id="pass-confirm-modal" class="modal">
+      <div class="modal-content">
+        <h3>Confirm Pass</h3>
+        <p>Are you sure you want to pass?</p>
+        <div class="modal-buttons"> <!-- Added this div for button grouping -->
+          <button id="confirm-pass-btn">Yes, Pass</button>
+          <button id="cancel-pass-btn">No, Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="trump-modal" class="modal">
+      <div class="modal-content">
+          <h3>Choose a Trump Suit</h3>
+          <p>You won the bid! Select the trump suit for this round.</p>
+          <div id="suit-selection-container" class="suit-selection-container">
+              <div class="suit-option" data-suit="clubs">
+                  <img src="./img/Clubs.webp" alt="Clubs">
+              </div>
+              <div class="suit-option" data-suit="diamonds">
+                  <img src="./img/Diamonds.webp" alt="Diamonds">
+              </div>
+              <div class="suit-option" data-suit="hearts">
+                  <img src="./img/Hearts.webp" alt="Hearts">
+              </div>
+              <div class="suit-option" data-suit="spades">
+                  <img src="./img/Spades.webp" alt="Spades">
+              </div>
+          </div>
+          <button id="confirm-trump-btn" class="bid-button" disabled>Confirm Trump Suit</button>
+        </div>
+    </div>
+
+    <div id="partner-modal" class="modal">
+      <div class="modal-content">
+          <!-- Step 1: Suit Selection -->
+          <div id="partner-step1" class="partner-step">
+              <h3>Choose Partner Card - Step 1</h3>
+              <p>Select the suit of the card held by your desired partner.</p>
+              <div id="partner-suit-selection" class="suit-selection-container">
+                  <div class="suit-option" data-suit="clubs">
+                      <img src="./img/Clubs.webp" alt="Clubs">
+                  </div>
+                  <div class="suit-option" data-suit="diamonds">
+                      <img src="./img/Diamonds.webp" alt="Diamonds">
+                  </div>
+                  <div class="suit-option" data-suit="hearts">
+                      <img src="./img/Hearts.webp" alt="Hearts">
+                  </div>
+                  <div class="suit-option" data-suit="spades">
+                      <img src="./img/Spades.webp" alt="Spades">
+                  </div>
+              </div>
+              <button id="next-to-rank-btn" class="bid-button" disabled>Next: Select Rank</button>
+          </div>
+
+          <!-- Step 2: Rank Selection -->
+          <div id="partner-step2" class="partner-step" style="display: none;">
+              <h3>Choose Partner Card - Step 2</h3>
+              <p id="selected-suit-text">Select the rank of the <span id="suit-name"></span> card:</p>
+              <div id="partner-rank-selection" class="rank-selection-container">
+                  <!-- Rank cards will be populated here -->
+              </div>
+              <div class="modal-buttons">
+                  <button id="back-to-suit-btn" class="pass-button">Back</button>
+                  <button id="confirm-partner-btn" class="bid-button" disabled>Confirm Partner Card</button>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <script src="js/game_logic.js"></script> <!-- game_logic.js must be loaded FIRST -->
+    <script src="js/script.js"></script>     <!-- script.js must be loaded SECOND -->
+    <script src="js/partner_selection.js"></script> <!-- partner_selection.js must be loaded Next -->
+    <script src="js/game_play.js"></script> <!-- game_play.js must be loaded next -->
+    <script src="js/card_play_animations.js"></script> <!-- card_play_animations.js must be loaded Next -->
+    <script src="js/trick_logics.js"></script> <!-- trick_logics.js must be loaded last -->
+  </div>
+</body>
+</html>
+```
+
+---
+
+You are right to be persistent with this! My apologies for the repeated misses. I've re-analyzed your provided `starter.html` and `cards_table.css` specifically to find why the desktop info box isn't sitting to the right.
+
+### The Problem: CSS Specificity and Conflicting `max-width` 🤯
+
+You actually **do have** the correct HTML structure where `#game-info-desktop` is a sibling of `.playing-table-container` inside `<div id="play-area" class="play-area-container">`. This is good!
+
+However, the problem now lies in a **conflict of `max-width` properties** within your `cards_table.css` and the order of your media queries.
+
+Let's break it down:
+
+1.  **`.play-area-container` initial definition:**
+    ```css
+    .play-area-container {
+        /* ... other properties ... */
+        max-width: 1400px; /* This is where the issue starts */
+    }
+    ```
+    This `max-width: 1400px` applies **globally** and is the root cause.
+
+2.  **`@media (min-width: 1024px)` block:**
+    ```css
+    @media (min-width: 1024px) {
+        .play-area-container {
+            flex-direction: row; /* Correctly sets to row */
+            align-items: center;
+        }
+        .playing-table-container {
+            width: 60vw;
+            max-width: 900px; /* This sets the table's max-width for desktop */
+        }
+        .game-info-sidebar {
+            display: flex; /* Correctly displays the desktop sidebar */
+        }
+        .game-info-mobile-display {
+            display: none;
+        }
+    }
+    ```
+    Even though the `flex-direction: row` is applied here, the `max-width: 1400px` from the *global* `.play-area-container` rule still limits the overall width.
+
+**Why it's still stacking (wrapping):**
+
+* Your table `width: 60vw` on a `1920px` screen is `1152px`.
+* Your sidebar `width: 250px`.
+* Your `gap` is `20px`.
+* Total content width needed: `1152px + 250px + 20px = 1422px`.
+* Your `.play-area-container` only provides an effective `1380px` (`1400px - 2 * 10px padding`).
+
+Since `1422px` > `1380px`, the `flex-wrap: wrap` (which is present in the global `.play-area-container` rule) forces the sidebar to wrap to the next line, causing it to appear below the table.
+
+### The Solution: Adjust `max-width` in `cards_table.css` and order of media queries 🛠️
+
+We need to:
+
+1.  **Increase the `max-width` of `.play-area-container` globally** (or within the `min-width: 1024px` media query if you want a mobile-first philosophy that overrides later) to ensure there's enough space for both elements side-by-side. A value like `1500px` should be sufficient (`1500px - 20px padding = 1480px` available, which is greater than `1422px` needed).
+2.  **Ensure `flex-direction: row` is set as a default outside any media query or specifically inside your desktop media query.** Your current setup has it only in the `min-width: 1024px` query, which is fine, but the width constraint is overriding it.
+
+Let's modify your `cards_table.css` file.
+
+---
+
+
+```css
+/* TABLE LAYOUT */
+.play-area-container {
+    display: flex; /* Use flexbox for the main play area container */
+    justify-content: center;
+    align-items: center; /* MODIFIED: Center items vertically within the flex container */
+    gap: 20px; /* Space between table and sidebar */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    padding: 10px;
+    max-width: 1500px; /* INCREASED: Ensure enough space for table + sidebar on desktop */
+    margin: 1rem auto;
+}
+
+.playing-table-container {
+  display: grid;
+  /* Define 3 columns with specified percentages */
+  grid-template-columns: 20% 60% 20%;
+  /* Updated: Define 7 rows with adjusted percentages summing to 100% */
+  grid-template-rows: 8% 20% 13% 14% 13% 18% 8%; /* Adjusted row heights for better balance and no clipping */
+  width: 60vw; /* Updated: Changed from 90vw to 60vw */
+  max-width: 1200px;
+  height: 70vh; /* Updated: Changed from 80vh to 70vh */
+  max-height: 800px;
+  background-color: #28a745; /* Green table color */
+  border: 16px solid #1e7e34; /* Darker green border */
+  border-radius: 20px; /* Rounded corners for the table */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Soft shadow */
+  gap: 5px; /* Small gap between grid items */
+  padding: 10px; /* Inner padding for the grid */
+  margin: 1rem auto; /* Keep existing margin for centering */
+  box-sizing: border-box;
+  position: relative; /* Keep existing position */
+  overflow: hidden; /* Re-added overflow: hidden */
+}
+
+/* General styling for all grid items */
+.table-item {
+    display: flex; /* Make all table items flex containers */
+    justify-content: center; /* Default center for content */
+    align-items: center;
+    color: white; /* White text for visibility on green */
+    font-weight: bold;
+    text-align: center;
+    border-radius: 8px; /* Rounded corners for all sections */
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+/* Specific grid area definitions */
+
+/* Player Name Areas (North, East, West, South) */
+.north-name, .east-name, .west-name, .south-name {
+    background-color: #1a6d2f; /* Solid darker green background */
+    display: flex;
+    flex-direction: row; /* CRITICAL: Stack items vertically */
+    align-items: center;    /* Center items horizontally within the column */
+    justify-content: center; /* Center content vertically within the container */
+    padding: 10px 20px; /* Adjust padding slightly */
+    gap: 10px; /* Add a small gap between stacked items */
+}
+
+/* North Name */
+.north-name {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 1 / 2; /* First row */
+}
+
+/* North Cards */
+.north-cards {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 2 / 3; /* Second row */
+    background-color: rgba(255, 255, 255, 0.1); /* Lighter for card areas */
+    border: 1px dashed rgba(255, 255, 255, 0.5); /* Dashed border for card area */
+    min-height: 100px; /* Ensure enough height for cards */
+}
+
+/* East Name */
+.east-name {
+    grid-column: 3 / 4; /* Third column */
+    grid-row: 2 / 3; /* Second row */
+    background-color: rgba(0, 0, 0, 0.2);
+    flex-direction: column; /* Ensure horizontal layout for name and buttons */
+}
+
+/* East Cards (spanning multiple rows) */
+.east-cards {
+    grid-column: 3 / 4; /* Third column */
+    grid-row: 3 / 7; /* Spans rows 3, 4, 5, 6 */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    min-width: 80px; /* Ensure enough width for vertical cards */
+}
+
+/* West Name */
+.west-name {
+    grid-column: 1 / 2; /* First column */
+    grid-row: 6 / 7; /* Sixth row */
+    background-color: rgba(0, 0, 0, 0.2);
+    flex-direction: column; /* Ensure horizontal layout for name and buttons */
+}
+
+/* West Cards (spanning multiple rows) */
+.west-cards {
+    grid-column: 1 / 2; /* First column */
+    grid-row: 2 / 6; /* Spans rows 2, 3, 4, 5 */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    min-width: 80px; /* Ensure enough width for vertical cards */
+}
+
+/* Center Area */
+.center-area {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 3 / 6; /* Rows 3, 4, 5 */
+    background-color: rgba(255, 255, 255, 0.05); /* Very subtle background for center */
+    border: 2px dashed rgba(255, 255, 255, 0.3); /* Dashed border for center */
+    font-size: 1.5em; /* Larger text for center */
+    color: rgba(255, 255, 255, 0.7);
+    display: flex; /* Ensure center area is a flex container */
+    flex-direction: column; /* Stack content vertically */
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+}
+
+#center-played-cards {
+    grid-area: 3 / 2 / 5 / 3; /* Position in the center of the 3x3 grid */
+    position: relative; /* CRITICAL: Enables absolute positioning of children */
+    display: flex; /* Use flexbox for initial centering of absolute children */
+    justify-content: center;
+    align-items: center;
+    overflow: visible; /* Ensure cards don't spill outside the container */
+    opacity: 1; /* Start visible now */
+    pointer-events: none; /* Prevent clicks on a hidden element */
+    transition: opacity 0.5s ease-in-out; /* Smooth transition */
+}
+
+/* Base styles for all cards played into the center */
+#center-played-cards .card {
+    transition: transform 0.2s ease-out, z-index 0.1s ease-out; /* Smooth transitions for movement/stacking */
+    /* position: absolute and transform: translate/rotate will be set by JS */
+}
+
+/* Styles for North and South played cards (maintain upright orientation) */
+/*
+#center-played-cards .card.played-card-north-south {
+     No additional CSS rotation needed here; JS will handle translation. 
+}
+*/
+
+/* Styles for East and West played cards (rotated)
+#center-played-cards .card.played-card-east-west {
+    transform: rotate(90deg); /* Rotate East/West cards 
+}
+*/
+
+/* Add a class to hide the bidding interface */
+.bidding-interface.hidden {
+    display: none;
+}
+
+/* Bidding Interface (central display) */
+.bidding-interface {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: white;
+}
+
+.bidding-status {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.current-player-turn {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.highest-bid-label {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.highest-bid-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffcc00; /* Yellowish color for bid amount */
+}
+
+.highest-bidder-name { /* Styling for the bidder name next to the bid */
+    font-size: 1rem;
+    color: #aaffaa; /* Light green for bidder name */
+    margin-left: 5px;
+}
+
+.highest-bid-info { /* Container for bid and bidder name */
+    display: flex;
+    align-items: baseline; /* Align text baselines */
+}
+
+.message-box {
+    font-size: 0.8rem;
+    color: #ffcc00;
+    min-height: 1.2rem; /* Ensure space even if no message */
+}
+
+
+/* South Cards */
+.south-cards {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 6 / 7; /* Sixth row */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    min-height: 100px; /* Ensure enough height for cards */
+}
+
+/* South Name */
+.south-name {
+    grid-column: 2 / 3; /* Second column */
+    grid-row: 7 / 8; /* Seventh row */
+    background-color: #1a6d2f; /* Solid darker green background */
+    padding-bottom: 0; /* Removed explicit padding-bottom, relying on row height and flex centering */
+}
+
+
+/* NEW: Styles for the game info sidebar (desktop) */
+.game-info-sidebar {
+    width: 250px; /* Fixed width for the sidebar */
+    background-color: #1e7e34; /* Darker green background */
+    border: 8px solid #1a6d2f; /* Even darker border */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 1.1em;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Hide by default on smaller screens (will be explicitly shown by JS/media query) */
+    display: none; /* Changed to none for mobile-first, JS/MQ will turn it on */
+}
+
+.game-info-sidebar h3 {
+    margin-top: 0;
+    color: #ffcc00; /* Gold-like color for heading */
+    text-align: center;
+    font-size: 1.4em;
+    border-bottom: 1px solid rgba(255, 204, 0, 0.3);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.game-info-sidebar p {
+    margin: 0;
+    padding: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-info-sidebar span {
+    font-weight: bold;
+    color: #ffd700; /* Brighter gold for values */
+}
+
+
+/* NEW: Styles for the game info mobile display */
+.game-info-mobile-display {
+    width: 90%;
+    max-width: 500px;
+    background-color: #1e7e34;
+    border: 8px solid #1a6d2f;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px; /* Space from buttons/table above */
+    text-align: center;
+    /* Show by default on smaller screens (mobile-first) */
+    display: flex;
+}
+
+.game-info-mobile-display h3 {
+    margin-top: 0;
+    color: #ffcc00;
+    font-size: 1.2em;
+    border-bottom: 1px solid rgba(255, 204, 0, 0.3);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.game-info-mobile-display p {
+    margin: 0;
+    padding: 3px 0;
+}
+
+.game-info-mobile-display span {
+    font-weight: bold;
+    color: #ffd700;
+}
+
+
+/* Media Queries for Responsiveness */
+@media (min-width: 1024px) { /* For larger screens (desktops) */
+    .play-area-container {
+        flex-direction: row; /* Layout side-by-side */
+        align-items: center; /* Align table and sidebar at the top */
+    }
+
+    .playing-table-container {
+        width: 60vw; /* Keep table width */
+        max-width: 900px; /* Adjust max-width if needed for overall layout */
+    }
+
+    .game-info-sidebar {
+        display: flex; /* Show desktop sidebar */
+    }
+
+    .game-info-mobile-display {
+        display: none; /* Hide mobile display */
+    }
+}
+
+@media (max-width: 1023px) { /* For tablets and smaller screens */
+    .play-area-container {
+        flex-direction: column; /* Stack vertically */
+        align-items: center; /* Center items when stacked */
+    }
+
+    .playing-table-container {
+        width: 95vw; /* Make table wider on smaller screens */
+        height: 75vh; /* Adjust height for smaller screens */
+        padding: 1vw; /* Overall container padding in vw */
+        border-radius: 10px; /* Slightly smaller border radius */
+        /* Adjusted grid-template-rows to allow more flexibility for player areas */
+        grid-template-rows: 7% 20% 13% 14% 13% 18% 7%;
+        gap: 0.5vw; /* Reduce gap between grid items using vw */
+    }
+
+    .game-info-sidebar {
+        display: none; /* Hide desktop sidebar */
+    }
+
+    .game-info-mobile-display {
+        display: flex; /* Show mobile display */
     }
 
     .table-item {

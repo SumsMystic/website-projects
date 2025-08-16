@@ -9,6 +9,13 @@ window.currentPlayerIndex = currentPlayerIndex; // <--- ADDED: Expose globally
 
 let highestBid = 0;
 let highestBidder = null;
+window.highestBidder = highestBidder;
+// ADDED: New global variables for persistent game info
+let bidWinnerName = null;
+window.bidWinnerName = bidWinnerName;
+let finalBidAmount = null;
+window.finalBidAmount = finalBidAmount;
+
 let currentTrumpSuit = null;
 // MODIFIED: Expose 'currentTrumpSuit' directly on the window object
 window.currentTrumpSuit = currentTrumpSuit; // <--- ADDED: Expose globally
@@ -111,6 +118,40 @@ function displayMessage(msg, elementId) {
 }
 window.displayMessage = displayMessage; // <--- Expose globally
 
+/**
+ * Updates the persistent game information displays (desktop sidebar and mobile bottom).
+ * Reads information from global variables.
+ */
+function updateGameInfoDisplays() {
+    const desktopBidWinnerSpan = document.getElementById('desktop-bid-winner');
+    const desktopFinalBidSpan = document.getElementById('desktop-final-bid');
+    const desktopPartnerCardSpan = document.getElementById('desktop-partner-card');
+
+    const mobileBidWinnerSpan = document.getElementById('mobile-bid-winner');
+    const mobileFinalBidSpan = document.getElementById('mobile-final-bid');
+    const mobilePartnerCardSpan = document.getElementById('mobile-partner-card');
+
+    // Set bid winner and final bid (always available after bidding)
+    const formattedBidWinner = window.bidWinnerName ? window.formatPlayerDisplayName(window.bidWinnerName) : "N/A";
+    const formattedFinalBid = window.finalBidAmount ? window.finalBidAmount.toString() : "N/A";
+
+    if (desktopBidWinnerSpan) desktopBidWinnerSpan.textContent = formattedBidWinner;
+    if (desktopFinalBidSpan) desktopFinalBidSpan.textContent = formattedFinalBid;
+    if (mobileBidWinnerSpan) mobileBidWinnerSpan.textContent = formattedBidWinner;
+    if (mobileFinalBidSpan) mobileFinalBidSpan.textContent = formattedFinalBid;
+
+    // Set partner card (only available after partner selection is complete)
+    if (window.selectedPartnerSuit && window.selectedPartnerRank) {
+        const partnerCardText = `${window.selectedPartnerRank.charAt(0).toUpperCase() + window.selectedPartnerRank.slice(1)} of ${window.selectedPartnerSuit.charAt(0).toUpperCase() + window.selectedPartnerSuit.slice(1)}`;
+        if (desktopPartnerCardSpan) desktopPartnerCardSpan.textContent = partnerCardText;
+        if (mobilePartnerCardSpan) mobilePartnerCardSpan.textContent = partnerCardText;
+    } else {
+        if (desktopPartnerCardSpan) desktopPartnerCardSpan.textContent = "N/A";
+        if (mobilePartnerCardSpan) mobilePartnerCardSpan.textContent = "N/A";
+    }
+}
+window.updateGameInfoDisplays = updateGameInfoDisplays; // ADDED: Expose globally
+
 function startBidding(initialBidderIndex) {
     console.log("Bidding started!");
     window.highestBid = 0; // <--- Use window.highestBid
@@ -125,6 +166,12 @@ function startBidding(initialBidderIndex) {
     window.currentTrick = [];
     window.cardsInCurrentTrick = 0; // Corrected variable name, use window.cardsInCurrentTrick
     window.leadSuitForTrick = null; // Initialize lead suit to null for a new trick
+
+    // ADDED: Reset persistent game info variables
+    window.bidWinnerName = null;
+    window.finalBidAmount = null;
+    window.selectedPartnerSuit = null; // Reset partner info too
+    window.selectedPartnerRank = null; // Reset partner info too
 
     // Initialize all player scores to 0 using the global players array
     window.players.forEach(player => {
@@ -386,6 +433,11 @@ function endBiddingRound(redeal = false) {
             if (highestBidderNameDisplay) {
                 highestBidderNameDisplay.textContent = `(${window.formatPlayerDisplayName(window.highestBidder).substring(0, 15)})`; // <--- Use window.formatPlayerDisplayName and window.highestBidder
             }
+
+            // ADDED: Store the bid winner and final bid globally
+            window.bidWinnerName = window.highestBidder;
+            window.finalBidAmount = window.highestBid;
+
             showTrumpSelectionModal();
         } else {
             currentPlayerTurnDisplay.textContent = "No bids placed.";

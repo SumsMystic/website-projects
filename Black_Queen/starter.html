@@ -43,75 +43,95 @@
       </div>
     </nav>
 
-    <!-- CARD TABLE - Updated to use the new grid layout -->
-    <div class="playing-table-container">
-      <!-- North Player Name Area -->
-      <div class="table-item north-name">
-        <span class="player-name">North</span>
-        <span id="north-score" class="player-score">Score: 0</span>
-        <div class="player-bid-controls north-controls">
-          <button id="north-bid-btn" class="bid-button">Bid</button>
-          <button id="north-pass-btn" class="pass-button">Pass</button>
-        </div>
-      </div>
-      <!-- North Player Cards Hand Area -->
-      <div class="table-item north-cards"><div class="hand"></div></div>
+    <!-- Main Game Play Area - THIS IS THE FLEX CONTAINER FOR TABLE AND INFO SIDEBAR -->
+    <div id="play-area" class="play-area-container">
+        <!-- The main table -->
+        <div class="playing-table-container">
+            <!-- North Player Name Area -->
+            <div class="table-item north-name">
+                <span class="player-name">North</span>
+                <span id="north-score" class="player-score">Score: 0</span>
+                <div class="player-bid-controls north-controls">
+                    <button id="north-bid-btn" class="bid-button">Bid</button>
+                    <button id="north-pass-btn" class="pass-button">Pass</button>
+                </div>
+            </div>
+            <!-- North Player Cards Hand Area -->
+            <div class="table-item north-cards"><div class="hand"></div></div>
 
-      <!-- East Player Name Area -->
-      <div class="table-item east-name">
-        <span class="player-name">East</span>
-        <div class="player-bid-controls east-controls">
-          <button id="east-bid-btn" class="bid-button">Bid</button>
-          <button id="east-pass-btn" class="pass-button">Pass</button>
-        </div>
-        <span id="east-score" class="player-score">Score: 0</span>
-      </div>
-      <!-- East Player Cards Hand Area -->
-      <div class="table-item east-cards"><div class="hand"></div></div>
+            <!-- East Player Name Area -->
+            <div class="table-item east-name">
+                <span class="player-name">East</span>
+                <div class="player-bid-controls east-controls">
+                    <button id="east-bid-btn" class="bid-button">Bid</button>
+                    <button id="east-pass-btn" class="pass-button">Pass</button>
+                </div>
+                <span id="east-score" class="player-score">Score: 0</span>
+            </div>
+            <!-- East Player Cards Hand Area -->
+            <div class="table-item east-cards"><div class="hand"></div></div>
 
-      <!-- West Player Cards Hand Area -->
-      <div class="table-item west-cards"><div class="hand"></div></div>
+            <!-- West Player Cards Hand Area -->
+            <div class="table-item west-cards"><div class="hand"></div></div>
 
-      <!-- Center Playing Area -->
-      <div class="table-item center-area">
-        <!-- Bidding Interface (central display) -->
-        <div id="bidding-interface" class="bidding-interface">
-          <!-- This div is to be displayed for showing bidding details, trump selection & partner selection -->
-          <h2 id="bidding-status" class="bidding-status">Bidding Starts!</h2>
-          <p id="current-player-turn" class="current-player-turn"></p>
-          <div class="highest-bid-info">
-            <p class="highest-bid-label">Current Bid:</p>
-            <span id="highest-bid-display" class="highest-bid-display">170</span>
-            <span id="highest-bidder-name" class="highest-bidder-name"></span>
-          </div>
-          <p id="message-box" class="message-box"></p>
-        </div>
-        <!-- This div is to be displayed once the partner selection is done to display only played cards -->
-        <div id="center-played-cards">
-        </div>
-      </div>
+            <!-- Center Playing Area -->
+            <div class="table-item center-area">
+                <!-- Bidding Interface (central display) -->
+                <div id="bidding-interface" class="bidding-interface">
+                    <!-- This div is to be displayed for showing bidding details, trump selection & partner selection -->
+                    <h2 id="bidding-status" class="bidding-status">Bidding Starts!</h2>
+                    <p id="current-player-turn" class="current-player-turn"></p>
+                    <div class="highest-bid-info">
+                        <p class="highest-bid-label">Current Bid:</p>
+                        <span id="highest-bid-display" class="highest-bid-display">170</span>
+                        <span id="highest-bidder-name" class="highest-bidder-name"></span>
+                    </div>
+                    <p id="message-box" class="message-box"></p>
+                </div>
+                <!-- This div is to be displayed once the partner selection is done to display only played cards -->
+                <div id="center-played-cards">
+                </div>
+            </div>
 
-      <!-- West Player Name Area -->
-      <div class="table-item west-name">
-        <span class="player-name">West</span>
-        <div class="player-bid-controls west-controls">
-          <button id="west-bid-btn" class="bid-button">Bid</button>
-          <button id="west-pass-btn" class="pass-button">Pass</button>
-        </div>
-        <span id="west-score" class="player-score">Score: 0</span>
-      </div>
+            <!-- West Player Name Area -->
+            <div class="table-item west-name">
+                <span class="player-name">West</span>
+                <div class="player-bid-controls west-controls">
+                    <button id="west-bid-btn" class="bid-button">Bid</button>
+                    <button id="west-pass-btn" class="pass-button">Pass</button>
+                </div>
+                <span id="west-score" class="player-score">Score: 0</span>
+            </div>
 
-      <!-- South Player Cards Hand Area -->
-      <div class="table-item south-cards"><div class="hand"></div></div>
-      <!-- South Player Name Area -->
-      <div class="table-item south-name">
-        <span class="player-name">You (South)</span>
-        <span id="south-score" class="player-score">Score: 0</span>
-        <div class="player-bid-controls south-controls">
-          <button id="south-bid-btn" class="bid-button">Bid</button>
-          <button id="south-pass-btn" class="pass-button">Pass</button>
+            <!-- South Player Cards Hand Area -->
+            <div class="table-item south-cards"><div class="hand"></div></div>
+            <!-- South Player Name Area -->
+            <div class="table-item south-name">
+                <span class="player-name">You (South)</span>
+                <span id="south-score" class="player-score">Score: 0</span>
+                <div class="player-bid-controls south-controls">
+                    <button id="south-bid-btn" class="bid-button">Bid</button>
+                    <button id="south-pass-btn" class="pass-button">Pass</button>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- NEW: Desktop Game Info Sidebar - THIS MUST BE A SIBLING TO .playing-table-container -->
+        <div id="game-info-desktop" class="game-info-sidebar">
+            <h3>Current Round Info</h3>
+            <p>Bid Winner: <span id="desktop-bid-winner">N/A</span></p>
+            <p>Final Bid: <span id="desktop-final-bid">N/A</span></p>
+            <p>Partner Card: <span id="desktop-partner-card">N/A</span></p>
+        </div>
+    </div>
+    <!-- END of .play-area-container -->
+
+    <!-- NEW: Mobile Game Info Display - Remains outside the main play area container -->
+    <div id="game-info-mobile" class="game-info-mobile-display">
+        <h3>Current Round Info</h3>
+        <p>Bid Winner: <span id="mobile-bid-winner">N/A</span></p>
+        <p>Final Bid: <span id="mobile-final-bid">N/A</span></p>
+        <p>Partner Card: <span id="mobile-partner-card">N/A</span></p>
     </div>
 
     <!-- CONTROLS -->
