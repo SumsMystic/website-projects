@@ -30,6 +30,11 @@ function playCardInTrick(cardElem, player) {
     if (window.cardsInCurrentTrick === 0) {
         window.leadSuitForTrick = playedCardSuit;
     }
+    console.log(`DEBUG: Played Card: Suit -> ${playedCardSuit}  Rank: ${playedCardRank}`);
+    console.log(`DEBUG: Selected Partner Card Suit -> ${window.selectedPartnerSuit} Rank: ${window.selectedPartnerRank}`);
+    console.log(`DEBUG: Partner Revealed Flag -> ${window.partnerRevealed}`);
+    console.log(`DEBUG: Lead Suit for Trick -> ${window.leadSuitForTrick}`);
+    console.log(`DEBUG: window.currentTrumpSuit -> ${window.currentTrumpSuit} `);
 
     // Rule: Check if trump is broken
     // Trump is broken if a trump card is played when the lead suit is NOT trump,
@@ -69,6 +74,18 @@ function playCardInTrick(cardElem, player) {
         element: cardElem // Keep a reference to the element for trick evaluation/collection
     });
     window.cardsInCurrentTrick++;
+
+    // ADDED: Check if the played card is the partner card and reveal partner
+    if (!window.partnerRevealed &&
+        playedCardSuit === window.selectedPartnerSuit &&
+        playedCardRank === window.selectedPartnerRank) {
+        
+        window.partnerRevealed = true; // Set flag to true
+        // The player who played the partner card is the partner
+        // (This should match window.partnerPlayerName, which is identified in game_logic.js)
+        showPartnerRevealMessage();
+        window.displayMessage(`The partner card (${playedCardRank} of ${playedCardSuit}) has been played!`, "message-box");
+    }
 
     // Disable current player's cards immediately after playing
     window.updatePlayerCardInteractions(null, null);
@@ -290,6 +307,74 @@ function updatePlayerCardInteractions(activePlayer, leadSuit) {
             });
         }
     });
+}
+
+/**
+ * Displays the partner revealed message temporarily.
+ * Also updates the persistent game info displays with team information.
+ */
+function showPartnerRevealMessage() {
+    const partnerRevealMessageDiv = document.getElementById('partner-reveal-message');
+    const partnerRevealNameSpan = document.getElementById('partner-reveal-name');
+
+    // NEW: Get references to the persistent game info display spans
+    const desktopBidWinningTeamSpan = document.getElementById('desktop-bid-winner-team');
+    const desktopOpponentTeamSpan = document.getElementById('desktop-opponent-team');
+    const desktopTrumpSuitSpan = document.getElementById('desktop-trump-suit');
+    const mobileBidWinningTeamSpan = document.getElementById('mobile-bid-winner-team');
+    const mobileOpponentTeamSpan = document.getElementById('mobile-opponent-team');
+    const mobileTrumpSuitSpan = document.getElementById('mobile-trump-suit');
+
+    if (partnerRevealMessageDiv && partnerRevealNameSpan && window.partnerPlayerName) {
+        partnerRevealNameSpan.textContent = window.formatPlayerDisplayName(window.partnerPlayerName);
+        partnerRevealMessageDiv.classList.add('visible'); // Show the message
+
+        // NEW: Update persistent game info displays with team details
+        if (window.bidWinningTeam && window.opponentTeam) {
+            // Format player names (max 10 chars, capitalized)
+            const formatTeamNames = (team) => {
+                return team.map(player => {
+                    let displayName = window.formatPlayerDisplayName(player);
+                    return displayName.length > 10 ? displayName.substring(0, 10) + '...' : displayName;
+                }).join(', ');
+            };
+
+            const bidWinningTeamNames = formatTeamNames(window.bidWinningTeam);
+            const opponentTeamNames = formatTeamNames(window.opponentTeam);
+
+            // Update desktop display
+            if (desktopBidWinningTeamSpan) {
+                desktopBidWinningTeamSpan.textContent = bidWinningTeamNames;
+            }
+            if (desktopOpponentTeamSpan) {
+                desktopOpponentTeamSpan.textContent = opponentTeamNames;
+            }
+
+            if (desktopTrumpSuitSpan) {
+                desktopTrumpSuitSpan.textContent = window.currentTrumpSuit;
+            }
+
+            // Update mobile display
+            if (mobileBidWinningTeamSpan) {
+                mobileBidWinningTeamSpan.textContent = bidWinningTeamNames;
+            }
+            if (mobileOpponentTeamSpan) {
+                mobileOpponentTeamSpan.textContent = opponentTeamNames;
+            }
+            if (mobileTrumpSuitSpan) {
+                mobileTrumpSuitSpan.textContent = window.currentTrumpSuit;
+            }
+
+        } else {
+            console.warn("showPartnerRevealMessage: Team arrays (bidWinningTeam or opponentTeam) are not available.");
+        }
+
+        setTimeout(() => {
+            partnerRevealMessageDiv.classList.remove('visible'); // Hide after a delay
+        }, 3000); // Message visible for 3 seconds
+    } else {
+        console.warn("showPartnerRevealMessage() called but partner reveal message elements or partnerPlayerName not found.");
+    }
 }
 
 // Expose globally

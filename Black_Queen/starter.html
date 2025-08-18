@@ -88,6 +88,10 @@
                     </div>
                     <p id="message-box" class="message-box"></p>
                 </div>
+                <!-- NEW: Partner Revealed Message Box (initially hidden) -->
+                <div id="partner-reveal-message" class="message-box partner-reveal-message hidden">
+                    🎉 Partner Revealed! <span id="partner-reveal-name"></span> 🎉
+                </div>
                 <!-- This div is to be displayed once the partner selection is done to display only played cards -->
                 <div id="center-played-cards">
                 </div>
@@ -122,6 +126,10 @@
             <p>Bid Winner: <span id="desktop-bid-winner">N/A</span></p>
             <p>Final Bid: <span id="desktop-final-bid">N/A</span></p>
             <p>Partner Card: <span id="desktop-partner-card">N/A</span></p>
+            <p>Trump Suit: <span id="desktop-trump-suit">N/A</span></p>
+            <p>Bid-Winning Team: <span id="desktop-bid-winner-team">N/A</span></p>
+            <p>Opponents: <span id="desktop-opponent-team">N/A</span></p>
+
         </div>
     </div>
     <!-- END of .play-area-container -->
@@ -129,9 +137,11 @@
     <!-- NEW: Mobile Game Info Display - Remains outside the main play area container -->
     <div id="game-info-mobile" class="game-info-mobile-display">
         <h3>Current Round Info</h3>
-        <p>Bid Winner: <span id="mobile-bid-winner">N/A</span></p>
-        <p>Final Bid: <span id="mobile-final-bid">N/A</span></p>
-        <p>Partner Card: <span id="mobile-partner-card">N/A</span></p>
+        <p>Winner: <span id="mobile-bid-winner">N/A</span> | Bid: <span id="mobile-final-bid">N/A</span></p>
+        <p>Partner: <span id="mobile-partner-card">N/A</span></p>
+        <p>Trump Suit: <span id="mobile-trump-suit">N/A</span></p>
+        <p>Bid-Winning Team: <span id="mobile-bid-winner-team">N/A</span></p>
+        <p>Opponents: <span id="mobile-opponent-team">N/A</span></p>
     </div>
 
     <!-- CONTROLS -->

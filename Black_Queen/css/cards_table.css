@@ -209,6 +209,29 @@
     min-height: 1.2rem; /* Ensure space even if no message */
 }
 
+/* Styles for the Partner Reveal Message */
+.partner-reveal-message {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffd700; /* Gold color for emphasis */
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); /* Soft glow */
+    position: absolute; /* Position it absolutely within center-area */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center it perfectly */
+    z-index: 1002; /* Ensure it's on top of other elements */
+    white-space: nowrap; /* Prevent text wrapping */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.5s ease-out; /* Smooth fade-in/out */
+    pointer-events: none; /* Make it non-clickable */
+}
+
+.partner-reveal-message.visible {
+    opacity: 1; /* Make visible */
+}
 
 /* South Cards */
 .south-cards {

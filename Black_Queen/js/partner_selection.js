@@ -125,6 +125,51 @@ function confirmPartnerCard() {
     }, 2000);
 }
 
+/**
+ * Identifies the actual player who holds the selected partner card.
+ * This should be called after cards are dealt and partner card is chosen.
+ */
+function identifyPartnerPlayer() {
+    if (!window.selectedPartnerSuit || !window.selectedPartnerRank || !window.hands) {
+        console.warn("Cannot identify partner: Partner card not selected or hands not dealt.");
+        return;
+    }
+
+    for (const player of window.players) {
+        if (player === window.bidWinnerName) continue; // Bid winner cannot be their own partner
+
+        const playerHand = window.hands[player];
+        if (playerHand) {
+            const hasPartnerCard = playerHand.some(card => 
+                card.suit === window.selectedPartnerSuit && card.rank === window.selectedPartnerRank
+            );
+            if (hasPartnerCard) {
+                window.partnerPlayerName = player;
+                console.log(`Identified partner: ${window.partnerPlayerName}`);
+                break; // Found the partner, no need to continue
+            }
+        }
+    }
+
+    if (!window.partnerPlayerName) {
+        console.warn("Partner card not found in any player's hand. This should not happen after dealing.");
+        // Fallback: If partner not found (e.g., due to a bug), might assign a random partner or display error.
+        // For robustness, ensure the selected partner card *always* exists in someone's hand.
+    }
+
+    // Set up teams now that partner is identified
+    window.bidWinningTeam = [window.bidWinnerName];
+    if (window.partnerPlayerName) {
+        window.bidWinningTeam.push(window.partnerPlayerName);
+    }
+    
+    window.opponentTeam = window.players.filter(player => !window.bidWinningTeam.includes(player));
+
+    console.log("Bid Winning Team:", window.bidWinningTeam);
+    console.log("Opponent Team:", window.opponentTeam);
+}
+window.identifyPartnerPlayer = identifyPartnerPlayer; // Expose globally
+
 // Event Listeners for Partner Selection (add this to your existing DOMContentLoaded event listener)
 function initializePartnerSelectionEvents() {
     // Assign DOM elements
@@ -195,6 +240,14 @@ function initializePartnerSelectionEvents() {
         confirmPartnerBtn.addEventListener('click', () => {
             confirmPartnerCard();
             partnerModal.style.display = 'none';
+            
+            // ADDED: Identify the partner player based on the selected card
+            if (typeof window.identifyPartnerPlayer === 'function') {
+                window.identifyPartnerPlayer();
+            } else {
+                console.error("identifyPartnerPlayer function not found.");
+            }
+
             window.dispatchEvent(new Event('partnerSelectionComplete'));
 
             // Clear center table area messages
