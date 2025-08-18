@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./css/intro.css">
   <link rel="stylesheet" href="./css/partner_modal.css">
   <link rel="stylesheet" href="./css/gameplay_animations.css">
+  <link rel="stylesheet" href="./css/score_table_modal.css">
   <script src="js/intro.js"></script>
 </head>
 <body>
@@ -232,6 +233,28 @@
               </div>
           </div>
       </div>
+    </div>
+
+    <!-- NEW: Score Table Modal -->
+    <div id="score-table-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="score-table-title">Game Scores</h3>
+            <table id="round-scores-table">
+                <thead>
+                    <tr id="score-table-header-row">
+                        <th>Round No.</th>
+                        <!-- Player headers will be populated here by JavaScript -->
+                    </tr>
+                </thead>
+                <tbody id="score-table-body">
+                    <!-- Round data rows will be populated here by JavaScript -->
+                </tbody>
+            </table>
+            <div class="modal-buttons">
+                <button id="next-round-btn" class="bid-button">Next Round</button>
+                <button id="restart-game-btn" class="pass-button">Restart Game</button>
+            </div>
+        </div>
     </div>
 
     <script src="js/game_logic.js"></script> <!-- game_logic.js must be loaded FIRST -->

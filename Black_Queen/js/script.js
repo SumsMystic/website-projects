@@ -30,6 +30,7 @@ function shuffleDeck() {
     }
     console.log("Deck shuffled.");
 }
+window.shuffleDeck = shuffleDeck; // <--- ADDED: Expose globally
 
 // Function to clear all cards from the display
 function clearAllCards() {
