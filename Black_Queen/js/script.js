@@ -1,15 +1,14 @@
 // Game variables
-// Players array should be declared in game_logic.js and will be globally available
-// const players = ["north", "east", "south", "west"]; // REMOVED - players array is now declared in game_logic.js
 const suits = ["hearts", "diamonds", "clubs", "spades"];
-// CORRECTED: Use full names for face ranks to match image file names
 const ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"];
 let deck = [];
-window.hands = {}; // <--- MODIFIED: Expose 'hands' globally. This was already correctly done in your provided file.
+window.hands = {}; // Expose 'hands' globally.
+
+window.cardsPerPlayer = 13; // Initialize default, will be overridden by game_logic.js on DOMContentLoaded.
 
 // DOM Elements
-let dealButton; // This variable will store the button element
-let playArea; // This variable will store the play area element
+let dealButton;
+let playArea;
 
 // Function to initialize the deck
 function initializeDeck() {
@@ -21,6 +20,7 @@ function initializeDeck() {
     }
     console.log("Deck initialized with", deck.length, "cards.");
 }
+window.initializeDeck = initializeDeck; // Expose globally
 
 // Function to shuffle the deck
 function shuffleDeck() {
@@ -30,67 +30,96 @@ function shuffleDeck() {
     }
     console.log("Deck shuffled.");
 }
-window.shuffleDeck = shuffleDeck; // <--- ADDED: Expose globally
+window.shuffleDeck = shuffleDeck; // Expose globally
 
 // Function to clear all cards from the display
 function clearAllCards() {
-    for (const player of window.players) { // <--- MODIFIED: Use the globally available 'window.players'
+    for (const player of window.players) {
         const handElement = document.querySelector(`.${player}-cards .hand`);
+        // Also get the outer player-cards container
+        const playerCardArea = document.querySelector(`.${player}-cards`);
+
         if (handElement) {
             handElement.innerHTML = ''; // Clear all child elements (cards)
+        }
+        // Ensure the player card area itself is visible
+        if (playerCardArea) {
+            playerCardArea.style.opacity = '1';
+            playerCardArea.style.display = 'flex'; // Assuming they are flex containers, adjust if 'block'
         }
     }
     console.log("All cards cleared from display.");
 }
+window.clearAllCards = clearAllCards; // Expose globally
 
 // Function to deal cards to players
 function dealCards() {
     clearAllCards(); // Clear previous cards before dealing new ones
-    window.hands = {}; // <--- MODIFIED: Use window.hands
-    window.players.forEach(player => { // <--- MODIFIED: Use the globally available 'window.players'
-        window.hands[player] = []; // <--- MODIFIED: Use window.hands
+    window.hands = {};
+    window.players.forEach(player => {
+        window.hands[player] = [];
     });
 
-    let localCurrentPlayerIndex = 0; // Local variable for dealing process
-    while (deck.length > 0) {
-        const player = window.players[localCurrentPlayerIndex]; // <--- MODIFIED: Use the globally available 'window.players'
-        window.hands[player].push(deck.shift()); // <--- MODIFIED: Use window.hands
-        localCurrentPlayerIndex = (localCurrentPlayerIndex + 1) % window.players.length; // <--- MODIFIED: Use window.players
+    // MODIFIED: Deal only 'cardsPerPlayer' number of cards to each player
+    const totalCardsToDeal = window.cardsPerPlayer * window.players.length;
+    let cardsDealtCount = 0;
+
+    let localCurrentPlayerIndex = 0;
+    while (cardsDealtCount < totalCardsToDeal && deck.length > 0) {
+        const player = window.players[localCurrentPlayerIndex];
+        if (window.hands[player].length < window.cardsPerPlayer) { // Ensure player doesn't get more than max
+            window.hands[player].push(deck.shift());
+            cardsDealtCount++;
+        }
+        localCurrentPlayerIndex = (localCurrentPlayerIndex + 1) % window.players.length;
     }
-    console.log("Cards dealt.");
+    console.log(`Dealt ${cardsDealtCount} cards in total (${window.cardsPerPlayer} per player).`);
     displayCards();
 }
-window.dealCards = dealCards; // <--- ADDED: Expose globally
+window.dealCards = dealCards; // Expose globally
 
 // Function to display cards for each player
 function displayCards() {
-    for (const player of window.players) { // <--- MODIFIED: Use the globally available 'window.players'
+    for (const player of window.players) {
         const handElement = document.querySelector(`.${player}-cards .hand`);
+        const playerCardArea = document.querySelector(`.${player}-cards`); // Get the outer container
+
         if (handElement) {
             handElement.innerHTML = ''; // Clear existing cards before re-displaying
+
+            // CRITICAL FIX: Ensure the hand element itself and its parent are visible
+            handElement.style.display = 'flex'; // Or 'block', based on your CSS for .hand
+            handElement.style.opacity = '1';
+
+            if (playerCardArea) {
+                playerCardArea.style.display = 'flex'; // Or 'block', based on your CSS for .player-cards
+                playerCardArea.style.opacity = '1';
+            }
 
             const suitOrder = { "diamonds": 0, "clubs": 1, "hearts": 2, "spades": 3 };
             const rankOrder = { "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "jack": 11, "queen": 12, "king": 13, "ace": 14 };
 
-            window.hands[player].sort((a, b) => { // <--- MODIFIED: Use window.hands
+            window.hands[player].sort((a, b) => {
                 if (suitOrder[a.suit] !== suitOrder[b.suit]) {
                     return suitOrder[a.suit] - suitOrder[b.suit];
                 }
                 return rankOrder[a.rank] - rankOrder[b.rank];
             });
 
-            window.hands[player].forEach((card, index) => { // <--- MODIFIED: Use window.hands
+            window.hands[player].forEach((card, index) => {
                 const cardDiv = document.createElement('div');
                 cardDiv.classList.add('card');
                 cardDiv.classList.add('card-pop-hover');
-
+                
                 // Set data attributes for player, suit, and rank
                 cardDiv.setAttribute('data-player', player);
-                cardDiv.setAttribute('data-suit', card.suit); // NEW
-                cardDiv.setAttribute('data-rank', card.rank); // NEW
+                cardDiv.setAttribute('data-suit', card.suit);
+                cardDiv.setAttribute('data-rank', card.rank);
 
                 cardDiv.style.backgroundImage = `url('./img/${card.rank}_of_${card.suit}.svg')`;
                 cardDiv.style.setProperty('--card-index', index);
+                cardDiv.style.opacity = '1'; // Ensure newly created cards are fully opaque
+                cardDiv.style.pointerEvents = 'auto'; // Ensure cards are clickable (will be overridden by updatePlayerCardInteractions)
                 handElement.appendChild(cardDiv);
             });
         }
@@ -98,9 +127,9 @@ function displayCards() {
     console.log("Cards displayed for all players.");
 
     // Initial state: Disable all card interactions until a trick starts
-    window.updatePlayerCardInteractions(null); // <--- MODIFIED: Use window.updatePlayerCardInteractions
+    window.updatePlayerCardInteractions(null);
 }
-window.displayCards = displayCards; // <--- ADDED: Expose globally
+window.displayCards = displayCards; // Expose globally
 
 // Main game flow function
 function dealAndStartGame() {
@@ -108,12 +137,9 @@ function dealAndStartGame() {
     initializeDeck();
     shuffleDeck();
     dealCards();
-    // Assuming game_logic.js is loaded first and startBidding is globally available
     // Start bidding from the player who receives the first card (South in this dealing logic)
-    // The initial bidder index can be customized based on game rules.
-    // Here, we assume South (index 2 in the players array: ["north", "east", "south", "west"]) starts bidding.
-    const initialBidderIndex = window.players.indexOf("south"); // <--- MODIFIED: Use window.players
-    window.startBidding(initialBidderIndex); // <--- MODIFIED: Use window.startBidding
+    const initialBidderIndex = window.players.indexOf("south");
+    window.startBidding(initialBidderIndex);
 }
 
 /**
@@ -121,20 +147,19 @@ function dealAndStartGame() {
  * This assumes you have score display elements like <span id="north-score">.
  */
 function updateScoresDisplay() {
-    for (const player in window.playersScores) { // Use window.playersScores
+    for (const player in window.playersScores) {
         const scoreElement = document.getElementById(`${player}-score`);
         if (scoreElement) {
             scoreElement.textContent = `Score: ${window.playersScores[player]}`;
         }
     }
 }
-window.updateScoresDisplay = updateScoresDisplay; // <--- MODIFIED: Expose globally
+window.updateScoresDisplay = updateScoresDisplay; // Expose globally
 
 // Event listener for the "Deal and Start Game" button
 document.addEventListener('DOMContentLoaded', () => {
-    // CORRECTED: Use 'deal-cards-btn' as per starter.html
     dealButton = document.getElementById('deal-cards-btn');
-    playArea = document.getElementById('play-area'); // Assuming you have a play-area div
+    playArea = document.getElementById('play-area');
 
     if (dealButton) {
         dealButton.addEventListener('click', dealAndStartGame);
@@ -144,8 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // After cards are rendered, attach hover effect. Click listener is in card_play_animations.js
-// Note: The click listener is now enabled by enableCardAnimations in card_play_animations.js
-// which is triggered by 'partnerSelectionComplete' event.
 document.querySelectorAll('.hand .card').forEach(card => {
   card.classList.add('card-pop-hover');
 });

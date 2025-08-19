@@ -1,78 +1,77 @@
 // Ensure players array is globally accessible
-// MODIFIED: Expose 'players' directly on the window object
 const players = ["north", "east", "south", "west"];
-window.players = players; // <--- ADDED: Expose globally
+window.players = players; // Expose globally
 
 let currentPlayerIndex;
-// MODIFIED: Expose 'currentPlayerIndex' directly on the window object
-window.currentPlayerIndex = currentPlayerIndex; // <--- ADDED: Expose globally
+window.currentPlayerIndex = currentPlayerIndex; // Expose globally
 
 let highestBid = 0;
+window.highestBid = highestBid; // Expose globally
+
 let highestBidder = null;
-window.highestBidder = highestBidder;
-// ADDED: New global variables for persistent game info
-let bidWinnerName = null;
-window.bidWinnerName = bidWinnerName;
-let finalBidAmount = null;
-window.finalBidAmount = finalBidAmount;
+window.highestBidder = highestBidder; // Expose globally
 
 let currentTrumpSuit = null;
-// MODIFIED: Expose 'currentTrumpSuit' directly on the window object
-window.currentTrumpSuit = currentTrumpSuit; // <--- ADDED: Expose globally
+window.currentTrumpSuit = currentTrumpSuit; // Expose globally
 
 const MIN_BID = 170;
 const MAX_BID = 280;
 const BID_INCREMENT = 5;
 
 let passedPlayers = new Set();
-// MODIFIED: Expose 'passedPlayers' directly on the window object
-window.passedPlayers = passedPlayers; // <--- ADDED: Expose globally
+window.passedPlayers = passedPlayers; // Expose globally
 
 // --- New Game Play State Variables ---
-let currentTrick = [];
-// MODIFIED: Expose 'currentTrick' directly on the window object
-window.currentTrick = currentTrick; // <--- ADDED: Expose globally
+let currentTrick = []; // Stores cards played in the current trick: [{card: cardElem, player: playerName}, ...]
+window.currentTrick = currentTrick; // Expose globally
 
-let trickCount = 0;    // Tracks the number of tricks played
-// MODIFIED: Expose 'trickCount' directly on the window object
-window.trickCount = trickCount; // <--- ADDED: Expose globally
+let trickCount = 0;    // Tracks the number of tricks played in the CURRENT ROUND
+window.trickCount = trickCount; // Expose globally
 
 let trickWinner = null; // Stores the player who won the last trick
-// MODIFIED: Expose 'trickWinner' directly on the window object
-window.trickWinner = trickWinner; // <--- ADDED: Expose globally
+window.trickWinner = trickWinner; // Expose globally
 
-let playersScores = {};
-// MODIFIED: Expose 'playersScores' directly on the window object
-window.playersScores = playersScores; // <--- ADDED: Expose globally - PRIMARY FIX FOR YOUR ERROR
+let playersScores = {}; // Object to store scores for each player for the CURRENT ROUND
+window.playersScores = playersScores; // Expose globally
 
 let currentTrickLeadPlayer = null; // The player who led the current trick
-// MODIFIED: Expose 'currentTrickLeadPlayer' directly on the window object
-window.currentTrickLeadPlayer = currentTrickLeadPlayer; // <--- ADDED: Expose globally
+window.currentTrickLeadPlayer = currentTrickLeadPlayer; // Expose globally
 
-let cardsInCurrentTrick = 0; // The actual name of the variable here
-// MODIFIED: Expose 'cardsInCurrentTrick' directly on the window object
-window.cardsInCurrentTrick = cardsInCurrentTrick; // <--- ADDED: Expose globally
+let cardsInCurrentTrick = 0; // Counter for cards played in the current trick (max 4)
+window.cardsInCurrentTrick = cardsInCurrentTrick; // Expose globally
 
-// MODIFIED: This variable was referenced as `window.leadSuitForTrick` in trick_logics.js.
-// It needs to be initialized here as well.
 let leadSuitForTrick = null;
-window.leadSuitForTrick = leadSuitForTrick; // <--- ADDED: Expose globally
+window.leadSuitForTrick = leadSuitForTrick; // Expose globally
 
-// MODIFIED: Add trumpBroken here as it's a global state.
 let trumpBroken = false;
-window.trumpBroken = trumpBroken; // <--- ADDED: Expose globally
+window.trumpBroken = trumpBroken; // Expose globally
 
-// ADDED: New global variables for game-level scoring and partner reveal
-window.gameTotalScores = {}; // Stores total score across multiple rounds for each player
-window.partnerPlayerName = null; // Stores the actual player who has the partner card
-window.partnerRevealed = false; // Flag to ensure partner reveal message shows only once
-window.bidWinningTeam = []; // Stores bid winner and their partner
-window.opponentTeam = []; // Stores the two opponent players
+// ADDED: New global variables for persistent game info (displayed in sidebar)
+let bidWinnerName = null;
+window.bidWinnerName = bidWinnerName;
+let finalBidAmount = null;
+window.finalBidAmount = finalBidAmount;
+let partnerPlayerName = null;
+window.partnerPlayerName = partnerPlayerName;
+let partnerRevealed = false;
+window.partnerRevealed = partnerRevealed;
 
-// ADDED: Game Round Management
-window.currentRound = 0; // Current round number (starts at 0, incremented before display)
-window.totalRounds = 10; // Total rounds in a game
-window.roundScoresHistory = []; // Stores an array of score objects for each completed round: [{round: 1, north: 220, east: 110, ...}, ...]
+let currentRound = 0; // Track the current game round (1 to totalRounds)
+window.currentRound = currentRound; // Expose globally
+
+let totalRounds = 10; // Default total rounds for a full game
+window.totalRounds = totalRounds; // Expose globally (will be updated from sessionStorage)
+
+let cardsPerPlayer = 13; // DEFAULT: Tricks per round (equal to cards dealt per player)
+window.cardsPerPlayer = cardsPerPlayer; // Expose globally (will be updated from sessionStorage)
+
+
+let gameTotalScores = {}; // Stores cumulative scores across rounds
+window.gameTotalScores = gameTotalScores; // Expose globally
+
+let roundScoresHistory = []; // Stores scores for each round for the table
+window.roundScoresHistory = roundScoresHistory; // Expose globally
+
 
 // DOM Elements (These are locally scoped to game_logic.js's DOMContentLoaded for assignment)
 let biddingStatusDisplay;
@@ -96,22 +95,25 @@ let trumpModal;
 let suitSelectionContainer;
 let confirmTrumpBtn;
 
-// Player-specific bid control elements (These are locally scoped to game_logic.js's DOMContentLoaded for assignment)
+// Player-specific bid control elements
 let bidButtons = {};
 let passButtons = {};
 
 /**
  * Formats a player's name for display.
- * @param {string | null | undefined} name - The player's internal name.
- * @returns {string} The display-friendly name, or a default string if name is null/undefined.
+ * @param {string} name - The player's internal name.
+ * @returns {string} The display-friendly name.
  */
 function formatPlayerDisplayName(name) {
-    if (name === null || typeof name === 'undefined' || name === '') { // <--- MODIFIED: Add check for null/undefined/empty string
+    // Check if name is null, undefined, or an empty string.
+    // If it is, return a default placeholder string to prevent charAt error.
+    if (name === null || typeof name === 'undefined' || name === '') {
         return "Bid Winner"; // Provide a default string when name is not available
     }
     if (name === "south") {
         return "You (South)";
     }
+    // For other valid names, format them as usual.
     return name.charAt(0).toUpperCase() + name.slice(1);
 }
 window.formatPlayerDisplayName = formatPlayerDisplayName; // <--- Expose globally
@@ -128,41 +130,35 @@ function displayMessage(msg, elementId) {
     msgBox.textContent = msg;
   }
 }
-window.displayMessage = displayMessage; // <--- Expose globally
+// Expose displayMessage globally
+window.displayMessage = displayMessage;
 
 /**
- * Updates the persistent game information displays (desktop sidebar and mobile bottom).
- * Reads information from global variables.
+ * Updates the persistent game info displays in the sidebar (desktop) and mobile area.
  */
 function updateGameInfoDisplays() {
-    const desktopBidWinnerSpan = document.getElementById('desktop-bid-winner');
-    const desktopFinalBidSpan = document.getElementById('desktop-final-bid');
-    const desktopPartnerCardSpan = document.getElementById('desktop-partner-card');
+    const desktopBidWinner = document.getElementById('desktop-bid-winner');
+    const desktopFinalBid = document.getElementById('desktop-final-bid');
+    const desktopPartnerCard = document.getElementById('desktop-partner-card');
 
-    const mobileBidWinnerSpan = document.getElementById('mobile-bid-winner');
-    const mobileFinalBidSpan = document.getElementById('mobile-final-bid');
-    const mobilePartnerCardSpan = document.getElementById('mobile-partner-card');
+    const mobileBidWinner = document.getElementById('mobile-bid-winner');
+    const mobileFinalBid = document.getElementById('mobile-final-bid');
+    const mobilePartnerCard = document.getElementById('mobile-partner-card');
 
-    // Set bid winner and final bid (always available after bidding)
-    const formattedBidWinner = window.bidWinnerName ? window.formatPlayerDisplayName(window.bidWinnerName) : "N/A";
-    const formattedFinalBid = window.finalBidAmount ? window.finalBidAmount.toString() : "N/A";
+    const bidWinnerText = window.bidWinnerName ? window.formatPlayerDisplayName(window.bidWinnerName) : 'N/A';
+    const finalBidText = window.finalBidAmount ? window.finalBidAmount.toString() : 'N/A';
+    const partnerCardText = (window.selectedPartnerRank && window.selectedPartnerSuit) ? 
+                            `${window.selectedPartnerRank.toUpperCase()} of ${window.selectedPartnerSuit.toUpperCase()}` : 'N/A';
 
-    if (desktopBidWinnerSpan) desktopBidWinnerSpan.textContent = formattedBidWinner;
-    if (desktopFinalBidSpan) desktopFinalBidSpan.textContent = formattedFinalBid;
-    if (mobileBidWinnerSpan) mobileBidWinnerSpan.textContent = formattedBidWinner;
-    if (mobileFinalBidSpan) mobileFinalBidSpan.textContent = formattedFinalBid;
+    if (desktopBidWinner) desktopBidWinner.textContent = bidWinnerText;
+    if (desktopFinalBid) desktopFinalBid.textContent = finalBidText;
+    if (desktopPartnerCard) desktopPartnerCard.textContent = partnerCardText;
 
-    // Set partner card (only available after partner selection is complete)
-    if (window.selectedPartnerSuit && window.selectedPartnerRank) {
-        const partnerCardText = `${window.selectedPartnerRank.charAt(0).toUpperCase() + window.selectedPartnerRank.slice(1)} of ${window.selectedPartnerSuit.charAt(0).toUpperCase() + window.selectedPartnerSuit.slice(1)}`;
-        if (desktopPartnerCardSpan) desktopPartnerCardSpan.textContent = partnerCardText;
-        if (mobilePartnerCardSpan) mobilePartnerCardSpan.textContent = partnerCardText;
-    } else {
-        if (desktopPartnerCardSpan) desktopPartnerCardSpan.textContent = "N/A";
-        if (mobilePartnerCardSpan) mobilePartnerCardSpan.textContent = "N/A";
-    }
+    if (mobileBidWinner) mobileBidWinner.textContent = bidWinnerText;
+    if (mobileFinalBid) mobileFinalBid.textContent = finalBidText;
+    if (mobilePartnerCard) mobilePartnerCard.textContent = partnerCardText;
 }
-window.updateGameInfoDisplays = updateGameInfoDisplays; // ADDED: Expose globally
+window.updateGameInfoDisplays = updateGameInfoDisplays; // Expose globally
 
 function startBidding(initialBidderIndex) {
     console.log("Bidding started!");
@@ -171,13 +167,13 @@ function startBidding(initialBidderIndex) {
     window.passedPlayers.clear();
     window.currentPlayerIndex = initialBidderIndex;
 
-    // --- Game Reset for New Game/Round ---
+    // --- CRITICAL: Ensure ALL trick-related game state is reset for a NEW ROUND ---
     window.trumpBroken = false;
-    window.trickCount = 0;
-    window.trickWinner = null;
-    window.currentTrick = [];
-    window.cardsInCurrentTrick = 0;
-    window.leadSuitForTrick = null;
+    window.trickCount = 0; // Reset trick count for the new round
+    window.trickWinner = null; // Reset trick winner
+    window.currentTrick = []; // Clear current trick cards
+    window.cardsInCurrentTrick = 0; // Reset card counter for new trick
+    window.leadSuitForTrick = null; // Reset lead suit for new trick
     
     // Reset persistent game info variables for the new round
     window.bidWinnerName = null;
@@ -187,39 +183,62 @@ function startBidding(initialBidderIndex) {
     window.partnerPlayerName = null; // Reset actual partner player
     window.partnerRevealed = false; // Reset partner reveal flag
 
-    // Initialize/reset playersScores for the CURRENT ROUND
+    // CRITICAL FIX: Increment currentRound ONLY at the end of a round, not here.
+    // This function is for *starting* a new round, not concluding the previous one.
+    // The only exception is the very first time starting the game.
+    if (window.currentRound === 0) { // If it's the very initial game start
+        window.currentRound = 1; // Start at Round 1
+    }
+
+    // Reset playersScores (current round's trick points) to 0 for the new round
     window.players.forEach(player => {
         window.playersScores[player] = 0;
-        // Initialize gameTotalScores if it's the very beginning of the game
-        if (window.gameTotalScores[player] === undefined) {
-            window.gameTotalScores[player] = 0;
+        // Initialize gameTotalScores if it's the very beginning of a NEW GAME (Round 1)
+        if (window.currentRound === 1) { // Only reset total game scores at the very start of a new game
+             window.gameTotalScores[player] = 0;
         }
     });
 
-    // Reset roundScoresHistory only if starting a brand new game
-    if (window.currentRound === 0) {
+    // Reset roundScoresHistory only if starting a brand new game (full restart via 'Restart Game' button)
+    // If currentRound is 1 (meaning a new game just started), clear history.
+    if (window.currentRound === 1) { 
         window.roundScoresHistory = [];
     }
 
+    // --- CRITICAL FIX: Ensure the center playing area is cleared for a new round's cards ---
+    if (typeof window.clearCenterPlayedCards === 'function') {
+        window.clearCenterPlayedCards(false); // Clear any lingering played cards instantly
+    }
+
+    // Ensure bidding interface is visible at the start of bidding (if it's not already)
+    const biddingInterface = document.getElementById('bidding-interface');
+    const centerPlayedCardsContainer = document.getElementById('center-played-cards');
+
+    if (biddingInterface) biddingInterface.style.display = 'flex';
+    if (centerPlayedCardsContainer) centerPlayedCardsContainer.style.display = 'none'; // Hide played cards area initially for bidding
+
     updateBiddingUI();
-    updatePlayerBidControls(window.players[window.currentPlayerIndex]);
+    window.updatePlayerBidControls(window.players[window.currentPlayerIndex]);
     window.displayMessage("Bidding has begun!", "message-box");
     
-    // Clear the persistent game info displays
+    // --- CRITICAL FIX: Update the visual score display to 0 for the new round ---
+    window.updateScoresDisplay(); // Call this to reset scores visually to 0 on player panels
+
+    // Clear the persistent game info displays in sidebar/mobile
     window.updateGameInfoDisplays();
 }
-window.startBidding = startBidding; // <--- Expose globally
+window.startBidding = startBidding; // Expose globally
 
 /**
  * Updates the central bidding display and player turn indicator.
  */
 function updateBiddingUI() {
     if (biddingStatusDisplay) biddingStatusDisplay.textContent = "Bidding in Progress";
-    if (currentPlayerTurnDisplay) currentPlayerTurnDisplay.textContent = `It's ${window.formatPlayerDisplayName(window.players[window.currentPlayerIndex])}'s turn to bid.`; // <--- Use window.formatPlayerDisplayName and window.players[window.currentPlayerIndex]
-    if (highestBidDisplay) highestBidDisplay.textContent = window.highestBidder ? window.highestBid.toString() : "0"; // <--- Use window.highestBidder and window.highestBid
-    if (highestBidderNameDisplay) highestBidderNameDisplay.textContent = window.highestBidder ? `(${window.formatPlayerDisplayName(window.highestBidder).substring(0, 15)})` : ""; // <--- Use window.highestBidder and window.formatPlayerDisplayName
+    if (currentPlayerTurnDisplay) currentPlayerTurnDisplay.textContent = `It's ${window.formatPlayerDisplayName(window.players[window.currentPlayerIndex])}'s turn to bid.`;
+    if (highestBidDisplay) highestBidDisplay.textContent = window.highestBidder ? window.highestBid.toString() : "0";
+    if (highestBidderNameDisplay) highestBidderNameDisplay.textContent = window.highestBidder ? `(${window.formatPlayerDisplayName(window.highestBidder).substring(0, 15)})` : "";
 }
-window.updateBiddingUI = updateBiddingUI; // <--- Expose globally
+window.updateBiddingUI = updateBiddingUI;
 
 /**
  * Updates the disabled status of bid/pass buttons for all players.
@@ -227,14 +246,14 @@ window.updateBiddingUI = updateBiddingUI; // <--- Expose globally
  * @param {string} activePlayerId - The identifier of the player whose turn it is.
  */
 function updatePlayerBidControls(activePlayerId) {
-    const isForcedBidder = window.passedPlayers.size === window.players.length - 1; // <--- Use window.passedPlayers and window.players
+    const isForcedBidder = window.passedPlayers.size === window.players.length - 1;
 
-    for (const player of window.players) { // <--- Use window.players
+    for (const player of window.players) {
         const bidBtn = bidButtons[player];
         const passBtn = passButtons[player];
 
         if (bidBtn && passBtn) {
-            if (player === activePlayerId && !window.passedPlayers.has(player)) { // <--- Use window.passedPlayers
+            if (player === activePlayerId && !window.passedPlayers.has(player)) {
                 bidBtn.removeAttribute('disabled');
                 
                 if (isForcedBidder) {
@@ -250,7 +269,7 @@ function updatePlayerBidControls(activePlayerId) {
         }
     }
 }
-window.updatePlayerBidControls = updatePlayerBidControls; // <--- Expose globally
+window.updatePlayerBidControls = updatePlayerBidControls;
 
 
 /**
@@ -258,12 +277,12 @@ window.updatePlayerBidControls = updatePlayerBidControls; // <--- Expose globall
  */
 function populateBidDropdown() {
     bidDropdown.innerHTML = '';
-    let startBid = window.highestBid; // <--- Use window.highestBid
+    let startBid = window.highestBid;
     
-    if (!window.highestBidder) { // <--- Use window.highestBidder
+    if (!window.highestBidder) {
         startBid = MIN_BID;
     } else {
-        startBid = window.highestBid + BID_INCREMENT; // <--- Use window.highestBid
+        startBid = window.highestBid + BID_INCREMENT;
     }
 
     let hasValidBids = false;
@@ -278,7 +297,7 @@ function populateBidDropdown() {
     if (hasValidBids) {
         bidDropdown.value = bidDropdown.options[0].value;
     } else {
-        window.displayMessage("No higher bids possible. You must pass.", "message-box"); // <--- Use window.displayMessage
+        window.displayMessage("No higher bids possible. You must pass.", "message-box");
         hideBidModal();
     }
 }
@@ -320,7 +339,7 @@ function hidePassConfirmModal() {
 function showTrumpSelectionModal() {
     trumpModal.style.display = 'flex';
 }
-window.showTrumpSelectionModal = showTrumpSelectionModal; // <--- Expose globally
+window.showTrumpSelectionModal = showTrumpSelectionModal;
 
 /**
  * Hides the trump selection modal.
@@ -335,66 +354,90 @@ function hideTrumpSelectionModal() {
  * @param {number} bidAmount - The amount the player wants to bid.
  */
 function placeBid(player, bidAmount) {
-    if (bidAmount > window.highestBid) { // <--- Use window.highestBid
-        window.highestBid = bidAmount; // <--- Use window.highestBid
-        window.highestBidder = player; // <--- Use window.highestBidder
-        window.displayMessage(`${window.formatPlayerDisplayName(player)} bids ${bidAmount}!`, "message-box"); // <--- Use window.displayMessage and window.formatPlayerDisplayName
+    if (bidAmount > window.highestBid) {
+        window.highestBid = bidAmount;
+        window.highestBidder = player;
+        window.displayMessage(`${window.formatPlayerDisplayName(player)} bids ${bidAmount}!`, "message-box");
+        updateGameInfoDisplays(); // Update game info after bid
         advanceTurn();
     } else {
-        window.displayMessage("Bid must be higher than current highest bid.", "message-box"); // <--- Use window.displayMessage
-        if (player === window.players[window.currentPlayerIndex]) { // <--- Use window.players and window.currentPlayerIndex
+        window.displayMessage("Bid must be higher than current highest bid.", "message-box");
+        if (player === window.players[window.currentPlayerIndex]) {
             showBidModal();
         }
     }
 }
-window.placeBid = placeBid; // <--- Expose globally
+window.placeBid = placeBid;
 
 /**
  * Handles a player choosing to pass.
  * @param {string} player - The name of the player passing.
  */
 function passBid(player) {
-    if (window.passedPlayers.size === window.players.length - 1 && player === window.players[window.currentPlayerIndex]) { // <--- Use window.passedPlayers and window.players and window.currentPlayerIndex
-        window.displayMessage(`You must bid. Passing is not allowed as you are the last player.`, "message-box"); // <--- Use window.displayMessage
+    if (window.passedPlayers.size === window.players.length - 1 && player === window.players[window.currentPlayerIndex]) {
+        window.displayMessage(`You must bid. Passing is not allowed as you are the last player.`, "message-box");
         hidePassConfirmModal();
         return;
     }
 
-    window.passedPlayers.add(player); // <--- Use window.passedPlayers
-    window.displayMessage(`${window.formatPlayerDisplayName(player)} passes.`, "message-box"); // <--- Use window.displayMessage and window.formatPlayerDisplayName
+    window.passedPlayers.add(player);
+    window.displayMessage(`${window.formatPlayerDisplayName(player)} passes.`, "message-box");
     
-    if (window.passedPlayers.size === window.players.length - 1 && window.highestBidder) { // <--- Use window.passedPlayers and window.players and window.highestBidder
-        window.displayMessage(`${window.formatPlayerDisplayName(window.highestBidder)} wins the bid with ${window.highestBid}!`, "message-box"); // <--- Use window.displayMessage and window.formatPlayerDisplayName and window.highestBidder and window.highestBid
+    if (window.passedPlayers.size === window.players.length - 1 && window.highestBidder) {
+        window.displayMessage(`${window.formatPlayerDisplayName(window.highestBidder)} wins the bid with ${window.highestBid}!`, "message-box");
         endBiddingRound();
-    } else if (window.passedPlayers.size === window.players.length && !window.highestBidder) { // <--- Use window.passedPlayers and window.players and window.highestBidder
-        window.displayMessage("All players passed on the minimum bid. Redealing cards...", "message-box"); // <--- Use window.displayMessage
+    } else if (window.passedPlayers.size === window.players.length && !window.highestBidder) {
+        window.displayMessage("All players passed on the minimum bid. Redealing cards...", "message-box");
         endBiddingRound(true);
     } else {
         advanceTurn();
     }
 }
-window.passBid = passBid; // <--- Expose globally
+window.passBid = passBid;
 
 /**
  * Advances the turn to the next player in the bidding sequence.
  */
 function advanceTurn() {
-    const activePlayers = window.players.filter(player => !window.passedPlayers.has(player)); // <--- Use window.players and window.passedPlayers
-    const nextPlayerIndex = (window.players.indexOf(window.players[window.currentPlayerIndex]) + 1) % window.players.length; // <--- Use window.players and window.currentPlayerIndex
-    let nextPlayerId = window.players[nextPlayerIndex]; // <--- Use window.players
+    const activePlayers = window.players.filter(player => !window.passedPlayers.has(player));
+    const nextPlayerIndex = (window.players.indexOf(window.players[window.currentPlayerIndex]) + 1) % window.players.length;
+    let nextPlayerId = window.players[nextPlayerIndex];
 
-    while (window.passedPlayers.has(nextPlayerId) && window.players.indexOf(nextPlayerId) !== window.players.indexOf(window.players[window.currentPlayerIndex])) { // <--- Use window.passedPlayers and window.players and window.currentPlayerIndex
-        nextPlayerId = window.players[(window.players.indexOf(nextPlayerId) + 1) % window.players.length]; // <--- Use window.players
+    while (window.passedPlayers.has(nextPlayerId) && window.players.indexOf(nextPlayerId) !== window.players.indexOf(window.players[window.currentPlayerIndex])) {
+        nextPlayerId = window.players[(window.players.indexOf(nextPlayerId) + 1) % window.players.length];
     }
     
-    if (activePlayers.length === 1 && window.highestBidder) { // <--- Use window.highestBidder
+    if (activePlayers.length === 1 && window.highestBidder) {
         endBiddingRound();
     } else {
-        window.currentPlayerIndex = window.players.indexOf(nextPlayerId); // <--- Update global currentPlayerIndex
+        window.currentPlayerIndex = window.players.indexOf(nextPlayerId);
         updateBiddingUI();
-        updatePlayerBidControls(window.players[window.currentPlayerIndex]); // <--- Use window.players and window.currentPlayerIndex
+        updatePlayerBidControls(window.players[window.currentPlayerIndex]);
     }
 }
+
+/**
+ * Identifies the partner player based on the selected partner card.
+ * This should be called after `confirmPartnerCard` in `partner_selection.js`.
+ 
+function identifyPartnerPlayer() {
+    // Iterate through all players' hands to find the selected partner card
+    for (const player in window.hands) {
+        const hand = window.hands[player];
+        const foundCard = hand.find(card => 
+            card.suit === window.selectedPartnerSuit && card.rank === window.selectedPartnerRank
+        );
+
+        if (foundCard) {
+            window.partnerPlayerName = player; // Set the global partner player name
+            window.displayMessage(`${window.formatPlayerDisplayName(player)} is your partner!`, "message-box");
+            console.log(`Partner is: ${player}`);
+            break; // Found the partner, exit loop
+        }
+    }
+}
+window.identifyPartnerPlayer = identifyPartnerPlayer; // Expose globally
+*/
 
 function startTrick() {
     console.log("Starting a new trick...");
@@ -411,74 +454,279 @@ function startTrick() {
         window.centerPlayedCards.style.pointerEvents = 'auto';
     }
 
-
     // Determine the lead player for this trick
     // If it's the very first trick, the highest bidder leads
     // Otherwise, the winner of the previous trick leads
-    window.currentTrickLeadPlayer = window.trickCount === 0 ? window.highestBidder : window.trickWinner; // <--- Use window.trickCount, window.highestBidder, window.trickWinner
+    window.currentTrickLeadPlayer = window.trickCount === 0 ? window.highestBidder : window.trickWinner;
 
     // Find the index of the lead player
-    window.currentPlayerIndex = window.players.indexOf(window.currentTrickLeadPlayer); // <--- Use window.players and window.currentTrickLeadPlayer
+    window.currentPlayerIndex = window.players.indexOf(window.currentTrickLeadPlayer);
 
     window.currentTrick = []; // Clear cards from previous trick for the new one
-    window.cardsInCurrentTrick = 0; // Reset cards played in current trick, use window.cardsInCurrentTrick
+    window.cardsInCurrentTrick = 0; // Reset cards played in current trick
     window.leadSuitForTrick = null; // Reset lead suit for new trick
 
-    window.displayMessage(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} leads the trick!`, "message-box"); // <--- Use window.displayMessage and window.formatPlayerDisplayName and window.currentTrickLeadPlayer
+    window.displayMessage(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} leads the trick!`, "message-box");
 
     // Enable only the lead player's cards for interaction
-    window.updatePlayerCardInteractions(window.currentTrickLeadPlayer, null); // <--- Use window.updatePlayerCardInteractions and window.currentTrickLeadPlayer
+    window.updatePlayerCardInteractions(window.currentTrickLeadPlayer, null); // New function to be added in script.js
 }
-window.startTrick = startTrick; // <--- Expose globally
+window.startTrick = startTrick;
 
 /**
  * Ends the bidding round.
  * @param {boolean} [redeal=false] - Optional. If true, indicates cards need to be redealt.
  */
 function endBiddingRound(redeal = false) {
-    console.log("Bidding round ended. Winner:", window.highestBidder); // <--- Use window.highestBidder
-    window.updatePlayerBidControls(null); // <--- Use window.updatePlayerBidControls
+    console.log("Bidding round ended. Winner:", window.highestBidder);
+    window.updatePlayerBidControls(null);
     if (redeal) {
         setTimeout(() => {
-            // alert("All players passed on minimum bid. Redealing cards!"); // Original alert
-            window.displayMessage("All players passed on minimum bid. Redealing cards!", "message-box"); // <--- Use window.displayMessage
-            if (typeof window.dealCards === 'function') { // dealCards is in script.js
-                window.shuffleDeck();
+            window.displayMessage("All players passed on minimum bid. Redealing cards!", "message-box");
+            if (typeof window.dealCards === 'function') { // dealCards is in script.js, now globally exposed
                 window.dealCards();
-                window.startBidding(0); // <--- Use window.startBidding
+                window.startBidding(0);
             } else {
                 console.error("dealCards function not found. Cannot redeal.");
             }
         }, 1500);
     } else {
         biddingStatusDisplay.textContent = `Bidding Concluded!`;
-        if (window.highestBidder) { // <--- Use window.highestBidder
-            currentPlayerTurnDisplay.textContent = `${window.formatPlayerDisplayName(window.highestBidder)} won the bid with ${window.highestBid}!`; // <--- Use window.formatPlayerDisplayName, window.highestBidder, window.highestBid
-            // CRITICAL FIX: Ensure the bidding UI is updated with the final bid amount before showing the modal
-            if (highestBidDisplay) {
-                highestBidDisplay.textContent = window.highestBid.toString(); // <--- Use window.highestBid
-            }
-            if (highestBidderNameDisplay) {
-                highestBidderNameDisplay.textContent = `(${window.formatPlayerDisplayName(window.highestBidder).substring(0, 15)})`; // <--- Use window.formatPlayerDisplayName and window.highestBidder
-            }
-
-            // ADDED: Store the bid winner and final bid globally
+        if (window.highestBidder) {
+            currentPlayerTurnDisplay.textContent = `${window.formatPlayerDisplayName(window.highestBidder)} won the bid with ${window.highestBid}!`;
+            // Store bid winner and amount for game info display
             window.bidWinnerName = window.highestBidder;
             window.finalBidAmount = window.highestBid;
-
-            showTrumpSelectionModal();
+            // CRITICAL FIX: Ensure the bidding UI is updated with the final bid amount before showing the modal
+            if (highestBidDisplay) {
+                highestBidDisplay.textContent = window.highestBid.toString();
+            }
+            if (highestBidderNameDisplay) {
+                highestBidderNameDisplay.textContent = `(${window.formatPlayerDisplayName(window.highestBidder).substring(0, 15)})`;
+            }
+            window.showTrumpSelectionModal();
         } else {
             currentPlayerTurnDisplay.textContent = "No bids placed.";
         }
     }
-    // IMPORTANT: The call to startTrick() should be triggered *after* partner selection is confirmed.
-    // It's currently called unconditionally here. We'll move the actual game start after partner selection in partner_selection.js.
 }
+window.endBiddingRound = endBiddingRound; // Expose globally
 
-// Add this new function to game_logic.js
 /**
- * Displays the score table modal with current round and total scores
- * in the requested horizontal format (Round No. | Player1 | Player2 | ...).
+ * Handles the end of a single game round (after all tricks for that round are played).
+ * This function determines if the entire game is over or if another round should start.
+ */
+function endRound() {
+    console.log("End of Round detected.");
+
+    // Add current round's scores to total game scores and record history
+    const currentRoundScores = { round: window.currentRound };
+    window.players.forEach(player => {
+        const roundScore = window.playersScores[player]; // Score earned in this round
+        window.gameTotalScores[player] = (window.gameTotalScores[player] || 0) + roundScore;
+        currentRoundScores[player] = roundScore;
+    });
+    window.roundScoresHistory.push(currentRoundScores); // Record this round's scores
+
+    // Reset current round's individual player scores for the next round
+    window.players.forEach(player => {
+        window.playersScores[player] = 0;
+    });
+
+    window.displayMessage(`Round ${window.currentRound} complete!`, "message-box");
+    console.log(`Round ${window.currentRound} complete. Game Total Scores:`, window.gameTotalScores);
+    console.log("Round Scores History:", window.roundScoresHistory);
+
+    window.currentRound++; // Increment game round number for the *next* round
+
+    // Clear the center played cards and show score table
+    setTimeout(() => {
+        if (typeof window.clearCenterPlayedCards === 'function') {
+            window.clearCenterPlayedCards(false); // Clear without face down animation
+        }
+
+        // Check if the entire game is over (if the *incremented* currentRound is now greater than totalRounds)
+        if (window.currentRound > window.totalRounds) { 
+            window.endGame(); // Call the game over function
+        } else {
+            window.showRoundScoreTable(); // Show round scores table for intermediate rounds
+        }
+
+        // Hide main game controls/messages while score table is up (or before next deal)
+        document.getElementById('deal-cards-btn').style.display = 'none';
+        window.updatePlayerBidControls(null);
+    }, 3000); // Give time for final message to be read before showing table
+}
+window.endRound = endRound; // Expose globally
+
+
+/**
+ * Handles the end of the entire game (after all totalRounds are played).
+ */
+function endGame() {
+    window.displayMessage("Game Over!", "message-box");
+    
+    // Determine overall winner based on gameTotalScores
+    let overallWinner = null;
+    let highestScore = -Infinity; // Initialize with negative infinity for correct comparison
+    for (const player in window.gameTotalScores) {
+        if (window.gameTotalScores[player] > highestScore) {
+            highestScore = window.gameTotalScores[player];
+            overallWinner = player;
+        } else if (window.gameTotalScores[player] === highestScore && overallWinner !== null) {
+            // Handle ties: if current player ties with existing winner, add to overallWinner string or array
+            // For now, simple tie break: first one encountered wins, or you can extend this.
+            // If you want to show all tied players:
+            // if (typeof overallWinner === 'string') overallWinner = [overallWinner];
+            // overallWinner.push(player);
+        }
+    }
+    
+    if (overallWinner) {
+        window.displayMessage(`Game Over! ${window.formatPlayerDisplayName(overallWinner)} wins the game with a total score of ${highestScore}!`, "message-box");
+    } else {
+        window.displayMessage("Game Over! No scores to determine a winner.", "message-box");
+    }
+    
+    // Show final score table (it should already be visible from endRound if it was the last round)
+    // Or display a dedicated "Game Over" screen/modal.
+    // For now, we'll ensure the score table is shown and just has the restart button.
+    setTimeout(() => {
+        window.showRoundScoreTable(); // Display the score table modal with final scores
+        // The showRoundScoreTable function already handles showing/hiding buttons based on currentRound vs totalRounds
+    }, 2000); // Give time to read end game message
+}
+window.endGame = endGame; // Expose globally
+
+/**
+ * Determines the winner of the trick and updates scores.
+ * This function should be called after all 4 cards have been played in a trick.
+ */
+function evaluateTrick() {
+    console.log("Evaluating trick:", window.currentTrick);
+
+    let winningCardInfo = window.currentTrick[0];
+    const leadSuit = window.currentTrick[0].card.suit;
+    const trumpSuit = window.currentTrumpSuit;
+
+    // Define card rank order for comparison (higher number is better)
+    const rankOrder = {
+        "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10,
+        "jack": 11, "queen": 12, "king": 13, "ace": 14
+    };
+
+    // Iterate through played cards to find the winner
+    for (let i = 1; i < window.currentTrick.length; i++) {
+        const currentCardInfo = window.currentTrick[i];
+        const currentCard = currentCardInfo.card;
+        const winningCard = winningCardInfo.card;
+
+        const isCurrentTrump = (currentCard.suit === trumpSuit);
+        const isWinningTrump = (winningCard.suit === trumpSuit);
+        const isCurrentLeadSuit = (currentCard.suit === leadSuit);
+        const isWinningLeadSuit = (winningCard.suit === leadSuit);
+
+        // Scenario 1: Current card is trump, winning card is not trump -> Current card wins
+        if (isCurrentTrump && !isWinningTrump) {
+            winningCardInfo = currentCardInfo;
+        } 
+        // Scenario 2: Both are trump -> Compare ranks
+        else if (isCurrentTrump && isWinningTrump) {
+            if (rankOrder[currentCard.rank] > rankOrder[winningCard.rank]) {
+                winningCardInfo = currentCardInfo;
+            }
+        }
+        // Scenario 3: Winning card is trump, current card is not -> Winning card keeps winning (no change)
+        else if (!isCurrentTrump && isWinningTrump) {
+            // No change needed
+        }
+        // Scenario 4: Neither are trump. Compare lead suit.
+        else { 
+            // Sub-scenario 4a: Current card follows lead suit, winning card does not -> Current card wins
+            if (isCurrentLeadSuit && !isWinningLeadSuit) {
+                winningCardInfo = currentCardInfo;
+            } 
+            // Sub-scenario 4b: Both follow lead suit -> Compare ranks
+            else if (isCurrentLeadSuit && isWinningLeadSuit) {
+                if (rankOrder[currentCard.rank] > rankOrder[winningCard.rank]) {
+                    winningCardInfo = currentCardInfo;
+                }
+            }
+            // Sub-scenario 4c: Winning card follows lead suit, current card does not -> Winning card keeps winning (no change)
+            else if (!isCurrentLeadSuit && isWinningLeadSuit) {
+                // No change needed
+            }
+            // Sub-scenario 4d: Neither follow lead suit (both sluffed). The original winning card remains the winner
+            // unless previous logic changed it. Essentially, the first card of the trick (or an earlier winner) holds up.
+        }
+    }
+
+    window.trickWinner = winningCardInfo.player;
+    let trickPoints = 1; // Base points for winning a trick
+
+    const blackQueenCard = { rank: 'queen', suit: 'spades' };
+    let blackQueenWasTaken = false;
+
+    // Check if Black Queen was played AND if the trick winner took it
+    window.currentTrick.forEach(playedCard => {
+        if (playedCard.card.rank === blackQueenCard.rank && playedCard.card.suit === blackQueenCard.suit && winningCardInfo.player === playedCard.player) {
+            blackQueenWasTaken = true;
+        }
+    });
+
+    // Scoring for Black Queen (penalty points)
+    if (blackQueenWasTaken) {
+        // Adjust points based on actual Black Queen rules.
+        // If taking the Black Queen means -13 points for the winner:
+        trickPoints = -13; 
+        window.displayMessage(`Oh no! ${window.formatPlayerDisplayName(window.trickWinner)} took the Black Queen and gets ${trickPoints} points!`, "message-box");
+    } else {
+        window.displayMessage(`${window.formatPlayerDisplayName(window.trickWinner)} won Trick ${window.trickCount} with the ${winningCardInfo.card.rank} of ${winningCardInfo.card.suit}!`, "message-box");
+    }
+
+    // Update scores for the current round
+    window.playersScores[window.trickWinner] += trickPoints;
+    window.trickCount++;
+
+    window.updateScoresDisplay(); // Update individual player score displays
+
+    // Clear center cards and proceed to next trick or end round/game
+    setTimeout(() => {
+        if (typeof window.clearCenterPlayedCards === 'function') {
+            window.clearCenterPlayedCards(true); // Clear cards face down
+        }
+
+        const cardsRemaining = window.hands[window.players[0]] ? window.hands[window.players[0]].length : 0;
+        console.log(`Cards remaining in hand (player 0): ${cardsRemaining}`);
+
+        if (cardsRemaining > 0) { // If there are still cards to play, start next trick
+            window.startTrick();
+        } else { // No cards left in hands, end of round
+            // Add current round's scores to total game scores
+            const currentRoundScores = { round: window.currentRound };
+            window.players.forEach(player => {
+                const roundScore = window.playersScores[player];
+                window.gameTotalScores[player] = (window.gameTotalScores[player] || 0) + roundScore;
+                currentRoundScores[player] = roundScore;
+            });
+            window.roundScoresHistory.push(currentRoundScores); // Record history
+
+            console.log("Round Scores History:", window.roundScoresHistory);
+            console.log("Game Total Scores:", window.gameTotalScores);
+
+            // Check if game is over (all rounds played)
+            if (window.currentRound >= window.totalRounds) {
+                window.endGame(); // End of game
+            } else {
+                window.showRoundScoreTable(); // Show round scores and option for next round
+            }
+        }
+    }, 1000); // MODIFIED: Reduced from 3000ms to 1000ms
+}
+window.evaluateTrick = evaluateTrick; // Expose globally
+
+/**
+ * Shows the score table modal at the end of a round or game.
  */
 function showRoundScoreTable() {
     const scoreTableModal = document.getElementById('score-table-modal');
@@ -493,7 +741,7 @@ function showRoundScoreTable() {
         return;
     }
 
-    scoreTableTitle.textContent = `Game Scores (Round ${window.currentRound} of ${window.totalRounds})`;
+    scoreTableTitle.textContent = `Game Scores (Round ${window.currentRound -1} of ${window.totalRounds})`; // Corrected: Display the round that just finished
 
     // Clear previous headers and body
     scoreTableHeaderRow.innerHTML = '';
@@ -541,145 +789,72 @@ function showRoundScoreTable() {
 
 
     // Control button visibility based on game state
-    if (window.currentRound < window.totalRounds) {
+    // If the current round number (which is the *next* round to be played) is less than or equal to totalRounds, allow next round.
+    if (window.currentRound <= window.totalRounds) { // Corrected: Use <= to allow "Next Round" for the final intermediate round
         nextRoundBtn.style.display = 'block';
-        restartGameBtn.style.display = 'none'; // Only show restart if game is fully over
+        restartGameBtn.style.display = 'none'; 
     } else {
+        // If currentRound is now greater than totalRounds, it means the game is truly over.
         scoreTableTitle.textContent = `Final Game Scores - Game Over!`;
-        nextRoundBtn.style.display = 'none'; // No more rounds
-        restartGameBtn.style.display = 'block'; // Show restart game button
+        nextRoundBtn.style.display = 'none'; 
+        restartGameBtn.style.display = 'block'; 
     }
 
-    scoreTableModal.style.display = 'flex'; // Show the modal
+    scoreTableModal.style.display = 'flex'; 
 
 
     // Add event listeners for buttons within the modal
     // It's safer to re-assign these to ensure they're always active after modal is shown
     nextRoundBtn.onclick = () => {
+        console.log("Proceeding to next round...");
         scoreTableModal.style.display = 'none';
-        // Reset player scores for the new round
-        window.players.forEach(player => {
-            window.playersScores[player] = 0; // Reset individual trick scores for the new round
-        });
+        
+        // window.playersScores is already reset in startBidding, but ensure the UI reflects it.
+        // The game state resets are now primarily handled by startBidding,
+        // which will be called right after dealing.
+        
         window.shuffleDeck();
-        window.dealCards(); // Deal new cards (from script.js)
+        window.dealCards(); // This will also call displayCards()
         window.startBidding(0); // Start new bidding phase (South leads by default)
     };
 
     restartGameBtn.onclick = () => {
+        console.log("Restarting game...");
         scoreTableModal.style.display = 'none';
-        // Completely reset game state for a new game
-        window.currentRound = 0; // Reset round
+        // Completely reset game state for a brand new game
+        window.currentRound = 0; // Reset round counter to 0, which will make startBidding increment it to 1
         window.players.forEach(player => {
-            window.playersScores[player] = 0; // Reset individual round scores
+            window.playersScores[player] = 0;   // Reset individual round scores
             window.gameTotalScores[player] = 0; // Reset total game scores
         });
-        window.roundScoresHistory = []; // Clear historical round scores
+        window.roundScoresHistory = []; // Clear all historical round scores
+        
         window.shuffleDeck(); // Shuffle the deck
-        window.dealCards(); // Deal new cards
-        window.startBidding(0); // Start new bidding phase
+        window.dealCards(); // This will also call displayCards()
+        window.startBidding(0); // Start new bidding phase from scratch
     };
 }
 window.showRoundScoreTable = showRoundScoreTable; // Expose globally
 
-// In endGame() in game_logic.js:
-/**
- * Calculates game-level scores at the end of a trick cycle (13 tricks) and manages round progression.
- */
-function endGame() {
-    console.log("Trick cycle ended. Calculating final scores for the round.");
-
-    if (!window.bidWinnerName || window.finalBidAmount === null || !window.partnerPlayerName) {
-        console.error("Cannot calculate game-level scores: Bid winner, final bid, or partner not set.");
-        window.displayMessage("Game ended, but scores could not be calculated due to missing info.", "message-box");
-        return;
-    }
-
-    let bidWinnerTeamTotalScore = 0;
-    // Sum scores for the bid winner and their partner
-    window.bidWinningTeam.forEach(player => {
-        bidWinnerTeamTotalScore += window.playersScores[player] || 0;
-    });
-
-    let roundOutcomeMessage = "";
-    let currentRoundScores = { round: window.currentRound + 1 }; // Prepare object for this round's scores
-
-    // Initialize currentRoundScores for all players to 0 before applying calculations
-    window.players.forEach(player => {
-        currentRoundScores[player] = 0;
-    });
-
-    // Apply game-level scoring rules
-    if (bidWinnerTeamTotalScore >= window.finalBidAmount) {
-        // Bid was met or exceeded
-        const pointsForBidWinner = 2 * window.finalBidAmount; // Bid winner gets double
-        const pointsForPartner = window.finalBidAmount; // Partner gets bid amount
-
-        currentRoundScores[window.bidWinnerName] = pointsForBidWinner; // Store for this round
-        currentRoundScores[window.partnerPlayerName] = pointsForPartner; // Store for this round
-
-        window.gameTotalScores[window.bidWinnerName] += pointsForBidWinner;
-        window.gameTotalScores[window.partnerPlayerName] += pointsForPartner;
-        
-        roundOutcomeMessage = `${window.formatPlayerDisplayName(window.bidWinnerName)} and ${window.formatPlayerDisplayName(window.partnerPlayerName)} made their bid of ${window.finalBidAmount}! Bid Winner: +${pointsForBidWinner}, Partner: +${pointsForPartner}.`;
-        window.opponentTeam.forEach(player => {
-            // Opponents get 0 points for this round (already initialized to 0)
-            roundOutcomeMessage += ` ${window.formatPlayerDisplayName(player)}: +0.`;
-        });
-
-    } else {
-        // Bid was not met
-        const penaltyForBidWinner = -1 * window.finalBidAmount; // Negative marking for bid winner
-        const pointsForOpponents = window.finalBidAmount; // Opponents get bid amount
-
-        currentRoundScores[window.bidWinnerName] = penaltyForBidWinner; // Store for this round
-        currentRoundScores[window.partnerPlayerName] = 0; // Partner gets 0 if bid failed
-
-        window.gameTotalScores[window.bidWinnerName] += penaltyForBidWinner;
-        // Partner gets 0 points for failing the bid
-        
-        roundOutcomeMessage = `${window.formatPlayerDisplayName(window.bidWinnerName)} and ${window.formatPlayerDisplayName(window.partnerPlayerName)} FAILED to make their bid of ${window.finalBidAmount}. Bid Winner: ${penaltyForBidWinner}, Partner: +0.`;
-        window.opponentTeam.forEach(player => {
-            currentRoundScores[player] = pointsForOpponents; // Store for this round
-            window.gameTotalScores[player] += pointsForOpponents;
-            roundOutcomeMessage += ` ${window.formatPlayerDisplayName(player)}: +${pointsForOpponents}.`;
-        });
-    }
-
-    window.roundScoresHistory.push(currentRoundScores); // ADDED: Save this round's scores to history
-    window.currentRound++; // Increment round number AFTER recording scores for the current round
-
-    window.displayMessage(roundOutcomeMessage, "message-box");
-    console.log(`Round ${window.currentRound} ended. Game Total Scores:`, window.gameTotalScores);
-    console.log("Round Scores History:", window.roundScoresHistory);
-    
-    // Clear the center played cards and show score table
-    setTimeout(() => {
-        if (typeof window.clearCenterPlayedCards === 'function') {
-            window.clearCenterPlayedCards(false); // Clear without face down animation
-        }
-        window.showRoundScoreTable(); // Display the score table modal
-
-        // Hide main game controls/messages while score table is up
-        document.getElementById('deal-cards-btn').style.display = 'none';
-        window.updatePlayerBidControls(null);
-        // Reset bidding UI if visible
-        // ADDED: Switch back to bidding interface for the new round
-        document.getElementById('bidding-interface').classList.remove('hidden');
-
-
-    }, 3000); // Give time for message to be read
-}
-window.endGame = endGame; // Expose globally
-
-
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Retrieve game parameters from sessionStorage
+    const storedTotalRounds = sessionStorage.getItem('totalRounds');
+    const storedCardsPerPlayer = sessionStorage.getItem('cardsPerPlayer'); // ADDED
+
+    if (storedTotalRounds) {
+        window.totalRounds = parseInt(storedTotalRounds, 10);
+    }
+    if (storedCardsPerPlayer) { // ADDED
+        window.cardsPerPlayer = parseInt(storedCardsPerPlayer, 10); // ADDED
+    } else { // ADDED: Default for cardsPerPlayer if not set
+        window.cardsPerPlayer = 13; // Default for a standard game
+    }
+
+
     // Assign DOM elements to window object for global access
     window.biddingInterface = document.getElementById('bidding-interface');
     window.centerPlayedCards = document.getElementById('center-played-cards');
-
-    
     // Ensure initial display state: bidding visible, played cards hidden
     if (window.centerPlayedCards) {
         window.centerPlayedCards.style.display = 'none'; // Hide it initially
@@ -694,6 +869,18 @@ document.addEventListener('DOMContentLoaded', () => {
     highestBidDisplay = document.getElementById('highest-bid-display');
     highestBidderNameDisplay = document.getElementById('highest-bidder-name');
     messageBox = document.getElementById('message-box');
+
+    // Partner Selection Modal references
+    window.partnerModal = document.getElementById('partner-modal');
+    window.partnerStep1 = document.getElementById('partner-step1');
+    window.partnerStep2 = document.getElementById('partner-step2');
+    window.partnerSuitSelection = document.getElementById('partner-suit-selection');
+    window.partnerRankSelection = document.getElementById('partner-rank-selection');
+    window.nextToRankBtn = document.getElementById('next-to-rank-btn');
+    window.backToSuitBtn = document.getElementById('back-to-suit-btn');
+    window.confirmPartnerBtn = document.getElementById('confirm-partner-btn');
+    window.suitNameDisplay = document.getElementById('suit-name');
+
 
     bidModal = document.getElementById('bid-modal');
     bidDropdown = document.getElementById('bid-dropdown');
@@ -710,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmTrumpBtn = document.getElementById('confirm-trump-btn');
 
     // Populate player-specific button references by ID
-    for (const player of window.players) { // <--- Use window.players
+    for (const player of window.players) {
         const bidBtn = document.getElementById(`${player}-bid-btn`);
         const passBtn = document.getElementById(`${player}-pass-btn`);
 
@@ -723,25 +910,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Attach event listeners to all player Bid/Pass buttons
-    window.players.forEach(player => { // <--- Use window.players
+    window.players.forEach(player => {
         const bidBtn = bidButtons[player];
         const passBtn = passButtons[player];
 
         if (bidBtn) {
             bidBtn.addEventListener('click', () => {
-                if (player === window.players[window.currentPlayerIndex]) { // <--- Use window.players and window.currentPlayerIndex
+                if (player === window.players[window.currentPlayerIndex]) {
                     showBidModal();
                 } else {
-                    window.displayMessage(`It's not ${window.formatPlayerDisplayName(player)}'s turn.`, "message-box"); // <--- Use window.displayMessage and window.formatPlayerDisplayName
+                    window.displayMessage(`It's not ${window.formatPlayerDisplayName(player)}'s turn.`, "message-box");
                 }
             });
         }
         if (passBtn) {
             passBtn.addEventListener('click', () => {
-                if (player === window.players[window.currentPlayerIndex]) { // <--- Use window.players and window.currentPlayerIndex
+                if (player === window.players[window.currentPlayerIndex]) {
                     showPassConfirmModal();
                 } else {
-                    window.displayMessage(`It's not ${window.formatPlayerDisplayName(player)}'s turn.`, "message-box"); // <--- Use window.displayMessage and window.formatPlayerDisplayName
+                    window.displayMessage(`It's not ${window.formatPlayerDisplayName(player)}'s turn.`, "message-box");
                 }
             });
         }
@@ -752,10 +939,10 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmBidBtn.addEventListener('click', () => {
             const bidAmount = parseInt(bidDropdown.value, 10);
             if (!isNaN(bidAmount)) {
-                window.placeBid(window.players[window.currentPlayerIndex], bidAmount); // <--- Use window.placeBid and window.players and window.currentPlayerIndex
+                window.placeBid(window.players[window.currentPlayerIndex], bidAmount);
                 hideBidModal();
             } else {
-                window.displayMessage("Please select a valid bid.", "message-box"); // <--- Use window.displayMessage
+                window.displayMessage("Please select a valid bid.", "message-box");
             }
         });
     }
@@ -763,13 +950,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cancelBidBtn) {
         cancelBidBtn.addEventListener('click', () => {
             hideBidModal();
-            window.displayMessage("Bid cancelled.", "message-box"); // <--- Use window.displayMessage
+            window.displayMessage("Bid cancelled.", "message-box");
         });
     }
 
     if (confirmPassBtn) {
         confirmPassBtn.addEventListener('click', () => {
-            window.passBid(window.players[window.currentPlayerIndex]); // <--- Use window.passBid and window.players and window.currentPlayerIndex
+            window.passBid(window.players[window.currentPlayerIndex]);
             hidePassConfirmModal();
         });
     }
@@ -777,7 +964,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cancelPassBtn) {
         cancelPassBtn.addEventListener('click', () => {
             hidePassConfirmModal();
-            window.displayMessage("Pass cancelled.", "message-box"); // <--- Use window.displayMessage
+            window.displayMessage("Pass cancelled.", "message-box");
         });
     }
 
@@ -796,7 +983,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 target.classList.add('selected');
                 
                 const selectedSuit = target.getAttribute('data-suit');
-                window.currentTrumpSuit = selectedSuit; // <--- Update global currentTrumpSuit
+                window.currentTrumpSuit = selectedSuit;
                 confirmTrumpBtn.removeAttribute('disabled');
             }
         });
@@ -804,38 +991,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (confirmTrumpBtn) {
         confirmTrumpBtn.addEventListener('click', () => {
-            if (window.currentTrumpSuit) { // <--- Use window.currentTrumpSuit
-                // MODIFIED: Use the more robust formatPlayerDisplayName
-                window.displayMessage(`${window.formatPlayerDisplayName(window.highestBidder)} has selected ${window.currentTrumpSuit} as trump!`, "message-box"); 
+            if (window.currentTrumpSuit) {
+                window.displayMessage(`${window.formatPlayerDisplayName(window.highestBidder)} has selected ${window.currentTrumpSuit} as trump!`, "message-box");
                 hideTrumpSelectionModal();
                 
                 // Show partner selection modal after a brief delay
                 setTimeout(() => {
-                    showPartnerSelectionModal(); // This function is in partner_selection.js
-                }, 1500);
+                    window.showPartnerSelectionModal(); // This function is in partner_selection.js
+                }, 1000);
             } else {
-                window.displayMessage("Please select a trump suit.", "message-box"); // <--- Use window.displayMessage
+                window.displayMessage("Please select a trump suit.", "message-box");
             }
         });
     }
 
     // ADD this to your existing DOMContentLoaded event listener
     // Add this line inside the existing DOMContentLoaded event listener, after the trump modal initialization:
-    initializePartnerSelectionEvents(); // This function is in partner_selection.js
+    window.initializePartnerSelectionEvents(); // This function is in partner_selection.js
 
     // Initial state: Disable all controls until bidding starts
     window.updatePlayerBidControls(null);
 });
 
 // Explicitly expose functions as necessary for other scripts
-// These were already done, but adding here for clarity if they were missed.
-// window.startBidding = startBidding; // Already handled by direct assignment
-// window.updateBiddingUI = updateBiddingUI; // Already handled by direct assignment
-// window.placeBid = placeBid; // Already handled by direct assignment
-// window.passBid = passBid; // Already handled by direct assignment
-// window.showTrumpSelectionModal = showTrumpSelectionModal; // Already handled by direct assignment
-// window.updatePlayerBidControls = updatePlayerBidControls; // Already handled by direct assignment
-// window.formatPlayerDisplayName = formatPlayerDisplayName; // Already handled by direct assignment
-// window.displayMessage = displayMessage; // Already handled by direct assignment
-// window.startTrick = startTrick; // Already handled by direct assignment
-// window.endGame = endGame; // Already handled by direct assignment
+// window.endBiddingRound = endBiddingRound; // Already handled by direct assignment
+// window.evaluateTrick = evaluateTrick; // Already handled by direct assignment
+// window.showRoundScoreTable = showRoundScoreTable; // Already handled by direct assignment

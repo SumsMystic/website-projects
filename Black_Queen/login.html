@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Queen - Login</title>
+    <link rel="stylesheet" href="./css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="login-title">Welcome to Black Queen</h1>
+        <p class="login-subtitle">Log in to continue</p>
+
+        <div class="social-login">
+            <button class="social-btn facebook-btn">Login with Facebook</button>
+            <button class="social-btn google-btn">Login with Google</button>
+        </div>
+
+        <div class="divider">
+            <span>OR</span>
+        </div>
+
+        <div class="email-login">
+            <input type="email" id="email-input" placeholder="Email" class="login-input" value="admin@blackqueen.com">
+            <input type="password" id="password-input" placeholder="Password" class="login-input" value="">
+            <button id="email-login-btn" class="login-btn">Login with Email</button>
+        </div>
+
+        <p class="signup-text">Don't have an account? <a href="#" class="signup-link">Sign Up</a></p>
+    </div>
+
+    <script>
+        // Store game parameters in sessionStorage for easy access on the game page
+        // Default values for normal login
+        let defaultTotalRounds = 10;
+        let defaultCardsPerPlayer = 13; // 52 cards / 4 players
+
+        document.getElementById('email-login-btn').addEventListener('click', () => {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+
+            // Admin credentials for debugging
+            if (email === 'admin@blackqueen.com' && password === 'BlackQueen%456') {
+                sessionStorage.setItem('totalRounds', '3');
+                sessionStorage.setItem('cardsPerPlayer', '2'); // 2 cards per player = 8 total cards
+                sessionStorage.setItem('skipIntro', 'true'); // <-- ADD THIS LINE FOR ADMIN LOGIN
+                alert('Admin login successful! Game will start with 2 rounds and 2 cards per player for debugging.');
+                window.location.href = 'starter.html'; // Redirect to main game
+            } else {
+                // For regular login, use default values
+                sessionStorage.setItem('totalRounds', defaultTotalRounds.toString());
+                sessionStorage.setItem('cardsPerPlayer', defaultCardsPerPlayer.toString());
+                sessionStorage.setItem('skipIntro', 'true'); // <-- ADD THIS LINE FOR REGULAR LOGIN
+                alert('Login successful! Starting game with default settings.');
+                window.location.href = 'starter.html'; // Redirect to main game
+            }
+        });
+
+        // Add dummy event listeners for social buttons (they won't do anything for now)
+        document.querySelectorAll('.social-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                alert('Social login not yet implemented.');
+            });
+        });
+    </script>
+</body>
+</html>

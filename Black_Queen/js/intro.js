@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // --- Intro Video Overlay ---
   var overlay = document.createElement('div');
   overlay.id = 'intro-video-overlay';
   overlay.innerHTML = `
@@ -12,6 +11,43 @@ document.addEventListener('DOMContentLoaded', function() {
   `;
   var video = overlay.querySelector('video');
   var startBtn = overlay.querySelector('#start-intro-btn');
+  document.body.appendChild(overlay);
+
+  const mainContent = document.getElementById('main-content');
+  const whiteOverlay = document.getElementById('white-overlay');
+  const logoOverlay = document.getElementById('logo-anim-overlay');
+  const logoImg = document.getElementById('logo-anim-img');
+
+  /**
+   * Immediately shows the main content and cleans up intro overlays.
+   */
+  function showMainContentAndCleanup() {
+    console.log("Showing main content and cleaning up intro overlays.");
+    if (mainContent) {
+      mainContent.style.display = 'block'; // Ensure main content is visible
+    }
+    if (whiteOverlay) {
+      whiteOverlay.style.display = 'none';
+    }
+    if (logoOverlay) {
+      logoOverlay.style.display = 'none';
+      logoOverlay.style.opacity = '1'; // Reset opacity for future uses if any
+    }
+    // Remove the intro video overlay from the DOM
+    if (overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+    }
+    sessionStorage.removeItem('skipIntro'); // Clear the flag after use
+  }
+
+  // --- Check for skipIntro flag immediately ---
+  if (sessionStorage.getItem('skipIntro') === 'true') {
+    console.log("Skip intro flag detected. Bypassing intro animation.");
+    showMainContentAndCleanup();
+    return; // Exit the DOMContentLoaded listener
+  }
+
+  // --- Initial (first-time) intro sequence ---
   startBtn.onclick = function(e) {
     e.stopPropagation();
     video.muted = false;
@@ -19,25 +55,27 @@ document.addEventListener('DOMContentLoaded', function() {
     video.setAttribute('autoplay', 'autoplay');
     video.play().catch(function(err) {
       console.warn('Video play failed:', err);
+      // Fallback if video play fails (e.g., autoplay blocked)
+      // Directly proceed to logo animation or main content
+      overlay.style.display = 'none';
+      runLogoIntroSequence();
     });
     startBtn.style.display = 'none';
   };
+
   video.onended = function() {
     overlay.style.display = 'none';
     runLogoIntroSequence();
   };
+
   overlay.onclick = function() {
     if (!video.paused) video.pause();
     overlay.style.display = 'none';
     runLogoIntroSequence();
   };
-  document.body.appendChild(overlay);
 
   // --- Logo Animation Sequence ---
   function runLogoIntroSequence() {
-    var whiteOverlay = document.getElementById('white-overlay');
-    var logoOverlay = document.getElementById('logo-anim-overlay');
-    var logoImg = document.getElementById('logo-anim-img');
     // Step 1: Show white overlay
     whiteOverlay.style.display = 'block';
     setTimeout(function() {
@@ -70,14 +108,14 @@ document.addEventListener('DOMContentLoaded', function() {
           logoImg.style.top = '0';
           logoImg.style.transform = `translate(0, 0) scale(${scaleRatio})`;
           logoImg.style.height = finalHeight + 'px';
-          // After animation, fade out and show main content
+          // After animation, fade out and redirect to login.html
           setTimeout(function() {
             logoOverlay.style.transition = 'opacity 0.5s';
             logoOverlay.style.opacity = '0';
             setTimeout(function() {
-              logoOverlay.style.display = 'none';
-              logoOverlay.style.opacity = '1';
-              document.getElementById('main-content').style.display = 'block';
+              // --- CRITICAL CORRECTION: Redirect to login.html if first time, else show main content ---
+              // This is the initial entry point after intro, so always redirect to login.html
+              window.location.href = 'login.html';
             }, 500);
           }, 1200);
         }, 50); // Small delay to allow browser to apply initial transform

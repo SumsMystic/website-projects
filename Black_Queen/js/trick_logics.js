@@ -1,4 +1,3 @@
-
 /**
  * Handles a player playing a card during a trick.
  * @param {HTMLElement} cardElem - The HTML element of the card played.
@@ -229,10 +228,12 @@ function evaluateTrick() {
             window.clearCenterPlayedCards(true);
         }
 
-        if (window.trickCount < 13) { // Assuming 13 tricks in a game
+        // CRITICAL FIX: Change 13 to window.cardsPerPlayer to correctly identify end of round
+        if (window.trickCount < window.cardsPerPlayer) { 
             window.startTrick(); // Call the global startTrick
         } else {
-            window.endGame(); // Call the global endGame
+            // CRITICAL FIX: Call endRound() here instead of endGame()
+            window.endRound(); 
         }
     }, 1000);
 }

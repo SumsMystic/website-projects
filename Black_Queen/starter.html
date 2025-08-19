@@ -21,7 +21,7 @@
     <img id="logo-anim-img" src="./img/black_queen_backside_default.webp" alt="Black Queen Logo" />
   </div>
   <!-- Main website content, hidden initially -->
-  <div id="main-content">
+  <div id="main-content" style="display: none;"> 
     <!-- NAVBAR -->
     <nav class="navbar-bq">
       <!-- Left: Logo -->
@@ -230,6 +230,15 @@
               <div class="modal-buttons">
                   <button id="back-to-suit-btn" class="pass-button">Back</button>
                   <button id="confirm-partner-btn" class="bid-button" disabled>Confirm Partner Card</button>
+              </div>
+          </div>
+          <!-- Step 3: Solo Confirmation (New) -->
+          <div id="partner-step3" class="partner-step" style="display: none;">
+              <h3>Going Solo?</h3>
+              <p id="solo-warning-text">You have selected a card in your own hand as the partner card. This means you will play alone against the other three players to complete your bid. Are you sure you want to go solo?</p>
+              <div class="modal-buttons">
+                  <button id="solo-confirm-btn" class="bid-button">Yes, Go Solo!</button>
+                  <button id="solo-cancel-btn" class="pass-button">No, Pick New Partner</button>
               </div>
           </div>
       </div>
