@@ -512,12 +512,75 @@ function endBiddingRound(redeal = false) {
 }
 window.endBiddingRound = endBiddingRound; // Expose globally
 
+function endOfRoundScoring() {
+    console.log("End of Round Scoring triggered.");
+
+    let bidWinningTeamTotal = 0;
+    let opponentTeamTotal = 0;
+
+    // Calculate total points for the bid-winning team
+    if (window.bidWinningTeam) {
+        window.bidWinningTeam.forEach(player => {
+            // Use a nullish coalescing operator to handle players who might have 0 points
+            bidWinningTeamTotal += window.playersScores[player] ?? 0;
+        });
+    }
+
+    // Calculate total points for the opponent team
+    if (window.opponentTeam) {
+        window.opponentTeam.forEach(player => {
+            opponentTeamTotal += window.playersScores[player] ?? 0;
+        });
+    }
+
+    // At this point, we have the total trick points for each team.
+    // We will add the logic to apply the scoring rules in the next step. 
+    // 2. Apply the scoring rules based on the bid
+    if (bidWinningTeamTotal >= window.finalBidAmount) {
+        // Bid-winning team meets or exceeds the bid.
+        window.playersScores[window.highestBidder] = window.finalBidAmount * 2;
+        
+        // Partner's score
+        const partner = window.partnerPlayerName;
+        if (partner) {
+            window.playersScores[partner] = window.finalBidAmount;
+        }
+
+        // Opponent team gets 0 points for this round
+        if (window.opponentTeam) {
+            window.opponentTeam.forEach(player => {
+                window.playersScores[player] = 0;
+            });
+        }
+
+    } else {
+        // Bid-winning team FAILS to meet the bid.
+        window.playersScores[window.highestBidder] = -window.finalBidAmount;
+
+        // Partner's score is 0
+        const partner = window.partnerPlayerName;
+        if (partner) {
+            window.playersScores[partner] = 0;
+        }
+
+        // Each opponent player gets the bid amount
+        if (window.opponentTeam) {
+            window.opponentTeam.forEach(player => {
+                window.playersScores[player] = window.finalBidAmount;
+            });
+        }
+    }
+}
+
 /**
  * Handles the end of a single game round (after all tricks for that round are played).
  * This function determines if the entire game is over or if another round should start.
  */
 function endRound() {
     console.log("End of Round detected.");
+
+    // Call the endOfRoundScoring function to calculate scores for this round
+    endOfRoundScoring();
 
     // Add current round's scores to total game scores and record history
     const currentRoundScores = { round: window.currentRound };
@@ -597,133 +660,6 @@ function endGame() {
     }, 2000); // Give time to read end game message
 }
 window.endGame = endGame; // Expose globally
-
-/**
- * Determines the winner of the trick and updates scores.
- * This function should be called after all 4 cards have been played in a trick.
- */
-function evaluateTrick() {
-    console.log("Evaluating trick:", window.currentTrick);
-
-    let winningCardInfo = window.currentTrick[0];
-    const leadSuit = window.currentTrick[0].card.suit;
-    const trumpSuit = window.currentTrumpSuit;
-
-    // Define card rank order for comparison (higher number is better)
-    const rankOrder = {
-        "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10,
-        "jack": 11, "queen": 12, "king": 13, "ace": 14
-    };
-
-    // Iterate through played cards to find the winner
-    for (let i = 1; i < window.currentTrick.length; i++) {
-        const currentCardInfo = window.currentTrick[i];
-        const currentCard = currentCardInfo.card;
-        const winningCard = winningCardInfo.card;
-
-        const isCurrentTrump = (currentCard.suit === trumpSuit);
-        const isWinningTrump = (winningCard.suit === trumpSuit);
-        const isCurrentLeadSuit = (currentCard.suit === leadSuit);
-        const isWinningLeadSuit = (winningCard.suit === leadSuit);
-
-        // Scenario 1: Current card is trump, winning card is not trump -> Current card wins
-        if (isCurrentTrump && !isWinningTrump) {
-            winningCardInfo = currentCardInfo;
-        } 
-        // Scenario 2: Both are trump -> Compare ranks
-        else if (isCurrentTrump && isWinningTrump) {
-            if (rankOrder[currentCard.rank] > rankOrder[winningCard.rank]) {
-                winningCardInfo = currentCardInfo;
-            }
-        }
-        // Scenario 3: Winning card is trump, current card is not -> Winning card keeps winning (no change)
-        else if (!isCurrentTrump && isWinningTrump) {
-            // No change needed
-        }
-        // Scenario 4: Neither are trump. Compare lead suit.
-        else { 
-            // Sub-scenario 4a: Current card follows lead suit, winning card does not -> Current card wins
-            if (isCurrentLeadSuit && !isWinningLeadSuit) {
-                winningCardInfo = currentCardInfo;
-            } 
-            // Sub-scenario 4b: Both follow lead suit -> Compare ranks
-            else if (isCurrentLeadSuit && isWinningLeadSuit) {
-                if (rankOrder[currentCard.rank] > rankOrder[winningCard.rank]) {
-                    winningCardInfo = currentCardInfo;
-                }
-            }
-            // Sub-scenario 4c: Winning card follows lead suit, current card does not -> Winning card keeps winning (no change)
-            else if (!isCurrentLeadSuit && isWinningLeadSuit) {
-                // No change needed
-            }
-            // Sub-scenario 4d: Neither follow lead suit (both sluffed). The original winning card remains the winner
-            // unless previous logic changed it. Essentially, the first card of the trick (or an earlier winner) holds up.
-        }
-    }
-
-    window.trickWinner = winningCardInfo.player;
-    let trickPoints = 1; // Base points for winning a trick
-
-    const blackQueenCard = { rank: 'queen', suit: 'spades' };
-    let blackQueenWasTaken = false;
-
-    // Check if Black Queen was played AND if the trick winner took it
-    window.currentTrick.forEach(playedCard => {
-        if (playedCard.card.rank === blackQueenCard.rank && playedCard.card.suit === blackQueenCard.suit && winningCardInfo.player === playedCard.player) {
-            blackQueenWasTaken = true;
-        }
-    });
-
-    // Scoring for Black Queen (penalty points)
-    if (blackQueenWasTaken) {
-        // Adjust points based on actual Black Queen rules.
-        // If taking the Black Queen means -13 points for the winner:
-        trickPoints = -13; 
-        window.displayMessage(`Oh no! ${window.formatPlayerDisplayName(window.trickWinner)} took the Black Queen and gets ${trickPoints} points!`, "message-box");
-    } else {
-        window.displayMessage(`${window.formatPlayerDisplayName(window.trickWinner)} won Trick ${window.trickCount} with the ${winningCardInfo.card.rank} of ${winningCardInfo.card.suit}!`, "message-box");
-    }
-
-    // Update scores for the current round
-    window.playersScores[window.trickWinner] += trickPoints;
-    window.trickCount++;
-
-    window.updateScoresDisplay(); // Update individual player score displays
-
-    // Clear center cards and proceed to next trick or end round/game
-    setTimeout(() => {
-        if (typeof window.clearCenterPlayedCards === 'function') {
-            window.clearCenterPlayedCards(true); // Clear cards face down
-        }
-
-        const cardsRemaining = window.hands[window.players[0]] ? window.hands[window.players[0]].length : 0;
-        console.log(`Cards remaining in hand (player 0): ${cardsRemaining}`);
-
-        if (cardsRemaining > 0) { // If there are still cards to play, start next trick
-            window.startTrick();
-        } else { // No cards left in hands, end of round
-            // Add current round's scores to total game scores
-            const currentRoundScores = { round: window.currentRound };
-            window.players.forEach(player => {
-                const roundScore = window.playersScores[player];
-                window.gameTotalScores[player] = (window.gameTotalScores[player] || 0) + roundScore;
-                currentRoundScores[player] = roundScore;
-            });
-            window.roundScoresHistory.push(currentRoundScores); // Record history
-
-            console.log("Round Scores History:", window.roundScoresHistory);
-            console.log("Game Total Scores:", window.gameTotalScores);
-
-            // Check if game is over (all rounds played)
-            if (window.currentRound >= window.totalRounds) {
-                window.endGame(); // End of game
-            } else {
-                window.showRoundScoreTable(); // Show round scores and option for next round
-            }
-        }
-    }, 1000); // MODIFIED: Reduced from 3000ms to 1000ms
-}
-window.evaluateTrick = evaluateTrick; // Expose globally
 
 /**
  * Shows the score table modal at the end of a round or game.
