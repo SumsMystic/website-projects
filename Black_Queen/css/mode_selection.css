@@ -1,0 +1,195 @@
+/* Existing content of mode_selection.css (from previous steps) */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #1a1a2e; /* Dark background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: #e0e0e0;
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+.setup-container {
+    background-color: #2a2a4a;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.setup-title {
+    color: #ffcc00;
+    margin-bottom: 5px;
+    font-size: 2.5em;
+    font-weight: 700;
+}
+
+.setup-subtitle {
+    color: #b0b0b0;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.selection-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.group-label {
+    display: block;
+    font-size: 1.05em;
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 8px;
+}
+
+.setup-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #3a3a5a;
+    color: #e0e0e0;
+    font-size: 1em;
+    outline: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%20viewBox%3D%220%200%20292.4%20292.4%22%3E%3Cpath%20fill%3D%22%23e0e0e0%22%20d%3D%22M287%20197.6l-137.9%20137.9c-4.7%204.7-12.4%204.7-17.1%200L5.4%20197.6c-4.7-4.7-4.7-12.4%200-17.1s12.4-4.7%2017.1%200l129.4%20129.4L270%20180.5c4.7-4.7%2012.4-4.7%2017.1%200s4.7%2012.4%200%2017.1z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.setup-select:focus {
+    border-color: #0ABAB5;
+    box-shadow: 0 0 8px rgba(0, 186, 181, 0.3);
+}
+
+.start-game-btn {
+    padding: 15px 25px;
+    background-color: #0ABAB5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    margin-top: 20px;
+}
+
+.start-game-btn:hover {
+    background-color: #088c88;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 500px) {
+    .setup-container {
+        padding: 25px;
+        gap: 15px;
+    }
+    .setup-title {
+        font-size: 2em;
+    }
+    .setup-subtitle {
+        font-size: 1em;
+    }
+    .start-game-btn {
+        font-size: 1.1em;
+        padding: 12px 20px;
+    }
+    .setup-select, .group-label {
+        font-size: 0.95em;
+    }
+}
+
+/* === Below is the content from intro.css, with display:none changed to visibility/opacity === */
+
+/* === Intro Video Overlay === */
+#intro-video-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #000;
+  z-index: 9999;
+  display: flex; /* Keep flex to center content */
+  align-items: center;
+  justify-content: center;
+  /* MODIFIED: Initially hidden with transitions */
+  visibility: hidden; 
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+#intro-video-overlay video {
+  max-width: 100vw;
+  max-height: 100vh;
+  background: #000;
+}
+
+/* === White Overlay === */
+#white-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #fff;
+  z-index: 9998;
+  /* MODIFIED: Initially hidden with transitions */
+  visibility: hidden; 
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+/* === Logo Animation Overlay === */
+#logo-anim-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 9999;
+    /* Keep flex here as JS sets display to flex */
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    /* MODIFIED: Initially hidden with transitions */
+    visibility: hidden; 
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+#logo-anim-img {
+    width: auto;
+    height: 320px;
+    opacity: 0;
+    box-shadow: 0 0 60px 20px #1de9b6, 0 0 0 0 #fff;
+    transition:
+        opacity 0.5s,
+        box-shadow 0.7s,
+        left 1.2s cubic-bezier(.77,0,.18,1),
+        top 1.2s cubic-bezier(.77,0,.18,1),
+        transform 1.2s cubic-bezier(.77,0,.18,1),
+        height 1.2s cubic-bezier(.77,0,.18,1);
+    position: absolute; /* Changed from fixed to absolute for proper centering within flex */
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Final shrunk state for logo animation */
+#logo-anim-img.shrunk {
+    height: 16vh;
+    width: auto;
+}
+
+/* === Hide main content initially === */
+/* This rule is no longer directly used by starter.html as we remove the main-content div there */
+/* Keeping it for reference, but it will be managed by direct style manipulation from JS */
+#main-content {
+  display: none;
+}

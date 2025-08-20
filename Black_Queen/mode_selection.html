@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Queen - Game Setup</title>
+    <link rel="stylesheet" href="./css/mode_selection.css">
+    <script src="./js/mode_selection.js"></script> <!-- KEEP THIS ONE -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="setup-container">
+        <h1 class="setup-title">Setup Your Game</h1>
+        <p class="setup-subtitle">Choose your preferred mode and card theme.</p>
+
+        <div class="selection-group">
+            <label for="game-mode-select" class="group-label">Game Mode:</label>
+            <select id="game-mode-select" class="setup-select">
+                <option value="single-player">Single Player (vs. AI Bots)</option>
+                <option value="multiplayer">Multiplayer (Online)</option>
+            </select>
+        </div>
+
+        <div class="selection-group">
+            <label for="card-theme-select" class="group-label">Card Back Theme:</label>
+            <select id="card-theme-select" class="setup-select">
+                <option value="def">Default (Black)</option>
+                <option value="red">Red</option>
+                <option value="blu">Blue</option>
+            </select>
+        </div>
+
+        <button id="start-game-btn" class="start-game-btn">Enter the Dominion of the Black Queen</button>
+    </div>
+</body>
+</html>

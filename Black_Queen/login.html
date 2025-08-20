@@ -44,16 +44,18 @@
             if (email === 'admin@blackqueen.com' && password === 'BlackQueen%456') {
                 sessionStorage.setItem('totalRounds', '3');
                 sessionStorage.setItem('cardsPerPlayer', '2'); // 2 cards per player = 8 total cards
-                sessionStorage.setItem('skipIntro', 'true'); // <-- ADD THIS LINE FOR ADMIN LOGIN
+                sessionStorage.setItem('isAdminLogin', 'true'); // <-- MODIFIED: Set isAdminLogin flag
+                // Removed: sessionStorage.setItem('skipIntro', 'true'); as it's no longer used this way
                 alert('Admin login successful! Game will start with 2 rounds and 2 cards per player for debugging.');
-                window.location.href = 'starter.html'; // Redirect to main game
+                window.location.href = 'mode_selection.html'; // Redirect to mode selection
             } else {
                 // For regular login, use default values
                 sessionStorage.setItem('totalRounds', defaultTotalRounds.toString());
                 sessionStorage.setItem('cardsPerPlayer', defaultCardsPerPlayer.toString());
-                sessionStorage.setItem('skipIntro', 'true'); // <-- ADD THIS LINE FOR REGULAR LOGIN
+                sessionStorage.removeItem('isAdminLogin'); // <-- MODIFIED: Ensure isAdminLogin is NOT set for regular users
+                // Removed: sessionStorage.setItem('skipIntro', 'true');
                 alert('Login successful! Starting game with default settings.');
-                window.location.href = 'starter.html'; // Redirect to main game
+                window.location.href = 'mode_selection.html'; // Redirect to mode selection
             }
         });
 

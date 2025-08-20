@@ -22,6 +22,18 @@ let passedPlayers = new Set();
 window.passedPlayers = passedPlayers; // Expose globally
 
 // --- New Game Play State Variables ---
+// --- Retrieve game parameters from sessionStorage ---
+window.isAdminMode = sessionStorage.getItem('isAdminLogin') === 'true'; // Get admin flag
+window.cardTheme = sessionStorage.getItem('cardTheme') || 'def'; // Get selected theme
+window.gameMode = sessionStorage.getItem('gameMode') || 'multiplayer'; // Get selected game mode
+// loggedInPlayer will still come from URL params for now, until full multiplayer is implemented
+const urlParams = new URLSearchParams(window.location.search);
+window.loggedInPlayer = urlParams.get('player') || null; 
+console.log(`Admin Mode: ${window.isAdminMode ? 'ENABLED' : 'DISABLED'}`);
+console.log(`Card Back Theme: ${window.cardTheme}`);
+console.log(`Game Mode: ${window.gameMode}`);
+console.log(`Logged-in Player: ${window.loggedInPlayer || 'Not set'}`);
+
 let currentTrick = []; // Stores cards played in the current trick: [{card: cardElem, player: playerName}, ...]
 window.currentTrick = currentTrick; // Expose globally
 

@@ -116,7 +116,16 @@ function displayCards() {
                 cardDiv.setAttribute('data-suit', card.suit);
                 cardDiv.setAttribute('data-rank', card.rank);
 
-                cardDiv.style.backgroundImage = `url('./img/${card.rank}_of_${card.suit}.svg')`;
+                if (window.isAdminMode || player === window.loggedInPlayer) {
+                    // Admin Mode: Show card face using the correct image path
+                    cardDiv.style.backgroundImage = `url('./img/${card.rank}_of_${card.suit}.svg')`;
+                } else {
+                    // Normal Play Mode: Hide the card face with the selected theme
+                    cardDiv.classList.add('card-back', `card-back-${window.cardTheme}-theme`);
+                    cardDiv.style.color = 'transparent'; // Hides the rank/suit text
+                }
+
+                // cardDiv.style.backgroundImage = `url('./img/${card.rank}_of_${card.suit}.svg')`;
                 cardDiv.style.setProperty('--card-index', index);
                 cardDiv.style.opacity = '1'; // Ensure newly created cards are fully opaque
                 cardDiv.style.pointerEvents = 'auto'; // Ensure cards are clickable (will be overridden by updatePlayerCardInteractions)

@@ -46,6 +46,35 @@
     box-sizing: border-box;
 }
 
+/* Card Back side CSS */
+.card-back-def-theme {
+    /* Set a background image for the card back */
+    background-image: url('../img/black_queen_backside_default.webp');
+}
+
+/* Card Back side CSS */
+.card-back-red-theme {
+    /* Set a background image for the card back */
+    background-image: url('../img/black_queen_backside_red.webp');
+}
+
+/* Card Back side CSS */
+.card-back-blu-theme {
+    /* Set a background image for the card back */
+    background-image: url('../img/black_queen_backside_blue.webp');
+}
+
+.card-back {
+    /* Set a background image for the card back */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    
+    /* Hide the card's rank and suit elements */
+    color: transparent; /* Makes text invisible */
+    text-shadow: none;
+}
+
 /* Specific grid area definitions */
 
 /* Player Name Areas (North, East, West, South) */
