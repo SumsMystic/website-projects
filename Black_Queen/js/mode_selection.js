@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in, redirect to login.html if not
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+        return; // Stop execution if not logged in
+    }
+
     const gameModeSelect = document.getElementById('game-mode-select');
     const cardThemeSelect = document.getElementById('card-theme-select');
     const startGameBtn = document.getElementById('start-game-btn');

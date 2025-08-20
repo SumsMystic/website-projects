@@ -22,8 +22,9 @@
         </div>
 
         <div class="email-login">
-            <input type="email" id="email-input" placeholder="Email" class="login-input" value="admin@blackqueen.com">
-            <input type="password" id="password-input" placeholder="Password" class="login-input" value="">
+            <!-- Default value for non-admin user for easy testing -->
+            <input type="email" id="email-input" placeholder="Email" class="login-input" value="testuser@blackqueen.com">
+            <input type="password" id="password-input" placeholder="Password" class="login-input" value="test123">
             <button id="email-login-btn" class="login-btn">Login with Email</button>
         </div>
 
@@ -31,8 +32,6 @@
     </div>
 
     <script>
-        // Store game parameters in sessionStorage for easy access on the game page
-        // Default values for normal login
         let defaultTotalRounds = 10;
         let defaultCardsPerPlayer = 13; // 52 cards / 4 players
 
@@ -40,22 +39,35 @@
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
 
-            // Admin credentials for debugging
-            if (email === 'admin@blackqueen.com' && password === 'BlackQueen%456') {
+            // Admin credentials
+            const ADMIN_EMAIL = 'admin@blackqueen.com';
+            const ADMIN_PASSWORD = 'BlackQueen%456';
+
+            // Normal user credentials
+            const NORMAL_USER_EMAIL = 'testuser@blackqueen.com';
+            const NORMAL_USER_PASSWORD = 'test123';
+
+            let loginSuccess = false;
+
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
                 sessionStorage.setItem('totalRounds', '3');
-                sessionStorage.setItem('cardsPerPlayer', '2'); // 2 cards per player = 8 total cards
-                sessionStorage.setItem('isAdminLogin', 'true'); // <-- MODIFIED: Set isAdminLogin flag
-                // Removed: sessionStorage.setItem('skipIntro', 'true'); as it's no longer used this way
-                alert('Admin login successful! Game will start with 2 rounds and 2 cards per player for debugging.');
-                window.location.href = 'mode_selection.html'; // Redirect to mode selection
-            } else {
-                // For regular login, use default values
+                sessionStorage.setItem('cardsPerPlayer', '2'); // Debug mode for admin
+                sessionStorage.setItem('isAdminLogin', 'true');
+                loginSuccess = true;
+                alert('Admin login successful! Redirecting to game setup.');
+            } else if (email === NORMAL_USER_EMAIL && password === NORMAL_USER_PASSWORD) {
                 sessionStorage.setItem('totalRounds', defaultTotalRounds.toString());
                 sessionStorage.setItem('cardsPerPlayer', defaultCardsPerPlayer.toString());
-                sessionStorage.removeItem('isAdminLogin'); // <-- MODIFIED: Ensure isAdminLogin is NOT set for regular users
-                // Removed: sessionStorage.setItem('skipIntro', 'true');
+                sessionStorage.removeItem('isAdminLogin'); // Ensure admin flag is not set
+                loginSuccess = true;
                 alert('Login successful! Starting game with default settings.');
-                window.location.href = 'mode_selection.html'; // Redirect to mode selection
+            } else {
+                alert('Invalid email or password.');
+            }
+
+            if (loginSuccess) {
+                sessionStorage.setItem('isLoggedIn', 'true'); // <-- ADDED: Set logged in flag
+                window.location.href = 'mode_selection.html'; // Always redirect to mode selection
             }
         });
 

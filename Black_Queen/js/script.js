@@ -1,3 +1,10 @@
+// Check if user is logged in, redirect to login.html if not
+if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    window.location.href = 'login.html';
+    // No return here, as the rest of the script needs to initialize window globals
+    // However, ensure functions depending on DOM are in DOMContentLoaded
+}
+
 // Game variables
 const suits = ["hearts", "diamonds", "clubs", "spades"];
 const ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"];

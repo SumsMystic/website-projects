@@ -15,8 +15,11 @@ let currentTrumpSuit = null;
 window.currentTrumpSuit = currentTrumpSuit; // Expose globally
 
 const MIN_BID = 170;
+window.MIN_BID = MIN_BID
 const MAX_BID = 280;
+window.MAX_BID = MAX_BID;
 const BID_INCREMENT = 5;
+window.BID_INCREMENT = BID_INCREMENT;
 
 let passedPlayers = new Set();
 window.passedPlayers = passedPlayers; // Expose globally
@@ -26,13 +29,58 @@ window.passedPlayers = passedPlayers; // Expose globally
 window.isAdminMode = sessionStorage.getItem('isAdminLogin') === 'true'; // Get admin flag
 window.cardTheme = sessionStorage.getItem('cardTheme') || 'def'; // Get selected theme
 window.gameMode = sessionStorage.getItem('gameMode') || 'multiplayer'; // Get selected game mode
-// loggedInPlayer will still come from URL params for now, until full multiplayer is implemented
-const urlParams = new URLSearchParams(window.location.search);
-window.loggedInPlayer = urlParams.get('player') || null; 
+let assignedPlayer = sessionStorage.getItem('loggedInPlayer'); // Check if player was already assigned in a previous session
+let availableSeats = JSON.parse(sessionStorage.getItem('availableSeats'));
+
+// Initialize availableSeats if not present or empty (new game session or full reset)
+if (!availableSeats || availableSeats.length === 0 || !Array.isArray(availableSeats)) { // Added Array.isArray check for robustness
+    availableSeats = ["north", "east", "south", "west"];
+    sessionStorage.setItem('availableSeats', JSON.stringify(availableSeats)); // Persist initial state
+    // If we just reset availableSeats, also clear any stale assignedPlayer
+    sessionStorage.removeItem('loggedInPlayer');
+    assignedPlayer = null; 
+}
+
+if (!assignedPlayer) { // If no player has been assigned yet in this session
+    if (window.isAdminMode || window.gameMode === 'single-player') {
+        // Admin Mode OR Single Player Mode: current user always takes 'south'
+        if (availableSeats.includes('south')) {
+            assignedPlayer = 'south';
+        } else {
+            // Fallback: if 'south' is somehow unavailable (e.g., manually tampered sessionStorage), take first available
+            assignedPlayer = availableSeats[0];
+            console.warn("South seat was not available for single player/admin mode, assigning first available seat.");
+        }
+    } else { // Multiplayer mode - assign random available seat
+        // In multiplayer, new users get a random unassigned seat.
+        if (availableSeats.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableSeats.length);
+            assignedPlayer = availableSeats[randomIndex];
+        } else {
+            // This case indicates all seats are taken, or an error.
+            // For now, log an error and assign a random seat after resetting availableSeats.
+            console.error("No available seats for multiplayer. Resetting available seats and assigning a random one.");
+            availableSeats = ["north", "east", "south", "west"]; // Reset for a fresh attempt
+            assignedPlayer = availableSeats[Math.floor(Math.random() * availableSeats.length)];
+            sessionStorage.setItem('availableSeats', JSON.stringify(availableSeats)); // Persist reset
+        }
+    }
+
+    if (assignedPlayer) {
+        // Remove the assigned seat from the list of available seats for future assignments
+        availableSeats = availableSeats.filter(seat => seat !== assignedPlayer);
+        sessionStorage.setItem('availableSeats', JSON.stringify(availableSeats)); // Persist updated available seats
+        sessionStorage.setItem('loggedInPlayer', assignedPlayer); // Persist the assigned player for the session
+    }
+}
+
+// Set the global variable for the current client's assigned player seat
+window.loggedInPlayer = assignedPlayer; 
+
 console.log(`Admin Mode: ${window.isAdminMode ? 'ENABLED' : 'DISABLED'}`);
 console.log(`Card Back Theme: ${window.cardTheme}`);
 console.log(`Game Mode: ${window.gameMode}`);
-console.log(`Logged-in Player: ${window.loggedInPlayer || 'Not set'}`);
+console.log(`Logged-in Player (Assigned Seat): ${window.loggedInPlayer || 'Not assigned'}`);
 
 let currentTrick = []; // Stores cards played in the current trick: [{card: cardElem, player: playerName}, ...]
 window.currentTrick = currentTrick; // Expose globally
@@ -238,6 +286,9 @@ function startBidding(initialBidderIndex) {
 
     // Clear the persistent game info displays in sidebar/mobile
     window.updateGameInfoDisplays();
+
+    // MODIFIED: Check if current player is AI and trigger AI bid
+    window.handleCurrentPlayerTurn(); // This function will now handle AI turns
 }
 window.startBidding = startBidding; // Expose globally
 
@@ -360,6 +411,34 @@ function hideTrumpSelectionModal() {
     trumpModal.style.display = 'none';
 }
 
+// Add this new function to game_logic.js
+/**
+ * Initiates the trump selection phase.
+ * @param {string} bidWinner - The player who won the bid.
+ */
+function startTrumpSelection(bidWinner) {
+    window.currentPlayerIndex = window.players.indexOf(bidWinner); // Set current player to bid winner
+    window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)}, choose the trump suit.`, "message-box");
+
+    // MODIFIED: Check if bid winner is AI and trigger AI trump choice
+    if (window.gameMode === 'single-player' && bidWinner !== window.loggedInPlayer) {
+        setTimeout(() => {
+            const aiChosenTrump = window.ai.aiChooseTrump(bidWinner, window.hands[bidWinner]);
+            window.currentTrumpSuit = aiChosenTrump;
+            window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)} has selected ${aiChosenTrump} as trump!`, "message-box");
+            
+            // Proceed to partner selection after AI chooses trump
+            setTimeout(() => {
+                window.showPartnerSelectionModal(); // This function is in partner_selection.js
+            }, 1000);
+        }, 1500); // AI "thinking" delay
+    } else {
+        // Human player (or multiplayer)
+        window.showTrumpSelectionModal(); // Show the human UI for trump selection
+    }
+}
+window.startTrumpSelection = startTrumpSelection; // Expose globally
+
 /**
  * Handles a player placing a bid.
  * @param {string} player - The name of the player placing the bid.
@@ -407,25 +486,54 @@ function passBid(player) {
 }
 window.passBid = passBid;
 
+// Add this new function to game_logic.js
+/**
+ * Handles the current player's turn (human or AI).
+ * This function will be called whenever the turn changes.
+ */
+function handleCurrentPlayerTurn() {
+    const currentPlayer = window.players[window.currentPlayerIndex];
+    window.updatePlayerBidControls(currentPlayer); // Always update controls
+
+    // If it's a single-player game AND the current player is an AI bot
+    if (window.gameMode === 'single-player' && currentPlayer !== window.loggedInPlayer) {
+        window.displayMessage(`${window.formatPlayerDisplayName(currentPlayer)} is thinking...`, "message-box");
+        setTimeout(() => {
+            // Trigger AI to make a bid
+            const aiBid = window.ai.aiMakeBid(currentPlayer, window.highestBid, window.hands[currentPlayer]);
+            window.placeBid(currentPlayer, aiBid); // AI makes its bid
+        }, 1500); // Simulate AI thinking time
+    } else {
+        // It's a human player's turn (or multiplayer setup)
+        window.displayMessage(`${window.formatPlayerDisplayName(currentPlayer)}'s turn to bid.`, "message-box");
+        // For bidding, show the bid modal only for the human player
+        if (currentPlayer === window.loggedInPlayer) { // Ensure modal only opens for logged-in player
+            window.showBidModal();
+        }
+    }
+}
+window.handleCurrentPlayerTurn = handleCurrentPlayerTurn; // Expose globally
+
 /**
  * Advances the turn to the next player in the bidding sequence.
  */
 function advanceTurn() {
-    const activePlayers = window.players.filter(player => !window.passedPlayers.has(player));
-    const nextPlayerIndex = (window.players.indexOf(window.players[window.currentPlayerIndex]) + 1) % window.players.length;
-    let nextPlayerId = window.players[nextPlayerIndex];
+        const activePlayers = window.players.filter(player => !window.passedPlayers.has(player));
+        const nextPlayerIndex = (window.players.indexOf(window.players[window.currentPlayerIndex]) + 1) % window.players.length;
+        let nextPlayerId = window.players[nextPlayerIndex];
 
-    while (window.passedPlayers.has(nextPlayerId) && window.players.indexOf(nextPlayerId) !== window.players.indexOf(window.players[window.currentPlayerIndex])) {
-        nextPlayerId = window.players[(window.players.indexOf(nextPlayerId) + 1) % window.players.length];
-    }
-    
-    if (activePlayers.length === 1 && window.highestBidder) {
-        endBiddingRound();
-    } else {
-        window.currentPlayerIndex = window.players.indexOf(nextPlayerId);
-        updateBiddingUI();
-        updatePlayerBidControls(window.players[window.currentPlayerIndex]);
-    }
+        while (window.passedPlayers.has(nextPlayerId) && window.players.indexOf(nextPlayerId) !== window.players.indexOf(window.players[window.currentPlayerIndex])) {
+            nextPlayerId = window.players[(window.players.indexOf(nextPlayerId) + 1) % window.players.length];
+        }
+        
+        if (activePlayers.length === 1 && window.highestBidder) {
+            endBiddingRound();
+        } else {
+            window.currentPlayerIndex = window.players.indexOf(nextPlayerId);
+            updateBiddingUI();
+            updatePlayerBidControls(window.players[window.currentPlayerIndex]);
+            window.handleCurrentPlayerTurn(); 
+        }
 }
 
 /**
@@ -516,7 +624,7 @@ function endBiddingRound(redeal = false) {
             if (highestBidderNameDisplay) {
                 highestBidderNameDisplay.textContent = `(${window.formatPlayerDisplayName(window.highestBidder).substring(0, 15)})`;
             }
-            window.showTrumpSelectionModal();
+            window.startTrumpSelection(window.highestBidder);
         } else {
             currentPlayerTurnDisplay.textContent = "No bids placed.";
         }
