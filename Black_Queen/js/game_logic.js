@@ -2,6 +2,13 @@
 const players = ["north", "east", "south", "west"];
 window.players = players; // Expose globally
 
+// MODIFIED: Define global suits and ranks arrays
+const suits = ["hearts", "diamonds", "clubs", "spades"];
+window.suits = suits; // Expose globally
+
+const ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"];
+window.ranks = ranks; // Expose globally
+
 let currentPlayerIndex;
 window.currentPlayerIndex = currentPlayerIndex; // Expose globally
 
@@ -194,6 +201,21 @@ function displayMessage(msg, elementId) {
 window.displayMessage = displayMessage;
 
 /**
+ * Hides a message or element in the UI.
+ * @param {string} elementId - The ID of the HTML element to hide.
+ */
+function hideMessage(elementId) {
+    const msgBox = document.getElementById(elementId);
+    if (msgBox) {
+        msgBox.textContent = ''; // Clear the text content
+        // Depending on your CSS/design, you might also want to hide it completely
+        // For example: msgBox.style.display = 'none';
+        // For this specific case, clearing the text is enough to make it appear hidden.
+    }
+}
+window.hideMessage = hideMessage; // <--- Expose globally
+
+/**
  * Updates the persistent game info displays in the sidebar (desktop) and mobile area.
  */
 function updateGameInfoDisplays() {
@@ -309,25 +331,39 @@ window.updateBiddingUI = updateBiddingUI;
  * @param {string} activePlayerId - The identifier of the player whose turn it is.
  */
 function updatePlayerBidControls(activePlayerId) {
-    const isForcedBidder = window.passedPlayers.size === window.players.length - 1;
+    const bidControls = document.getElementById('bid-controls');
+    const passBtn = document.getElementById('pass-btn');
 
-    for (const player of window.players) {
-        const bidBtn = bidButtons[player];
-        const passBtn = passButtons[player];
+    // Check for the "Pass Out" scenario: three players have passed, and no one has bid.
+    // This happens when the highestBid is still 0.
+    if (window.passedPlayers.size === 3 && window.highestBid === 0) {
+        // This player is the last one in the bidding round, they must bid.
+        if (passBtn) {
+            passBtn.disabled = true;
+            passBtn.classList.add('disabled');
+            window.displayMessage("You must bid. Passing is not allowed as you are the last player to bid.", "message-box");
+        }
+    } else {
+        const isForcedBidder = window.passedPlayers.size === window.players.length - 1;
 
-        if (bidBtn && passBtn) {
-            if (player === activePlayerId && !window.passedPlayers.has(player)) {
-                bidBtn.removeAttribute('disabled');
-                
-                if (isForcedBidder) {
-                    passBtn.setAttribute('disabled', 'true');
+        for (const player of window.players) {
+            const bidBtn = bidButtons[player];
+            const passBtn = passButtons[player];
+
+            if (bidBtn && passBtn) {
+                // MODIFIED CONDITION: Only enable buttons if it's the active player's turn AND they are the logged-in (human) player
+                if (player === activePlayerId && player === window.loggedInPlayer && !window.passedPlayers.has(player)) {
+                    bidBtn.removeAttribute('disabled');                
+                    if (isForcedBidder) {
+                        passBtn.setAttribute('disabled', 'true');
+                    } else {
+                        passBtn.removeAttribute('disabled');
+                    }
+
                 } else {
-                    passBtn.removeAttribute('disabled');
+                    bidBtn.setAttribute('disabled', 'true');
+                    passBtn.setAttribute('disabled', 'true');
                 }
-
-            } else {
-                bidBtn.setAttribute('disabled', 'true');
-                passBtn.setAttribute('disabled', 'true');
             }
         }
     }
@@ -419,19 +455,42 @@ function hideTrumpSelectionModal() {
 function startTrumpSelection(bidWinner) {
     window.currentPlayerIndex = window.players.indexOf(bidWinner); // Set current player to bid winner
     window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)}, choose the trump suit.`, "message-box");
-
-    // MODIFIED: Check if bid winner is AI and trigger AI trump choice
+    
+    // MODIFIED: Check if bid winner is AI and trigger AI trump choice AND partner choice
     if (window.gameMode === 'single-player' && bidWinner !== window.loggedInPlayer) {
         setTimeout(() => {
+            // 1. AI chooses Trump
             const aiChosenTrump = window.ai.aiChooseTrump(bidWinner, window.hands[bidWinner]);
             window.currentTrumpSuit = aiChosenTrump;
             window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)} has selected ${aiChosenTrump} as trump!`, "message-box");
             
-            // Proceed to partner selection after AI chooses trump
+            // 2. AI chooses Partner (NEW)
+            const aiPartnerCard = window.ai.aiChoosePartner(bidWinner, window.hands[bidWinner]);
+            window.selectedPartnerSuit = aiPartnerCard.suit;
+            window.selectedPartnerRank = aiPartnerCard.rank;
+            
+            // 3. Identify the actual partner player (will also set up teams: bidWinningTeam, opponentTeam)
+            // This function is in partner_selection.js and needs to be exposed if not already
+            window.identifyPartnerPlayer(); // Ensure this function is called
+            
+            // 4. Show partner reveal message (visual feedback)
+            // window.showPartnerRevealMessage();  This function should be in trick_logics.js or game_play.js
+
+            // 5. Proceed to start the trick after AI trump/partner selection and brief display
             setTimeout(() => {
-                window.showPartnerSelectionModal(); // This function is in partner_selection.js
-            }, 1000);
-        }, 1500); // AI "thinking" delay
+                // Hide bidding interface (and partner reveal message if still visible)
+                if (window.biddingInterface) {
+                    window.biddingInterface.style.display = 'none';
+                }
+                window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
+
+                if (typeof window.startTrick === 'function') {
+                    window.startTrick();
+                } else {
+                    console.error("startTrick function not found. Cannot begin game play after AI trump/partner selection.");
+                }
+            }, 2500); // Longer delay to allow human to read trump and partner reveal messages
+        }, 1500); // AI "thinking" delay for trump selection
     } else {
         // Human player (or multiplayer)
         window.showTrumpSelectionModal(); // Show the human UI for trump selection
@@ -453,8 +512,15 @@ function placeBid(player, bidAmount) {
         advanceTurn();
     } else {
         window.displayMessage("Bid must be higher than current highest bid.", "message-box");
-        if (player === window.players[window.currentPlayerIndex]) {
-            showBidModal();
+        
+        // MODIFIED: Differentiate behavior for human vs. AI on invalid bid
+        if (player === window.loggedInPlayer) {
+            // If the human player made an invalid bid, show the modal again for them to correct.
+            showBidModal(); 
+        } else {
+            // If an AI player made an invalid bid, they should automatically pass.
+            // This prevents the modal from appearing for AI turns.
+            window.passBid(player); 
         }
     }
 }
@@ -496,7 +562,7 @@ function handleCurrentPlayerTurn() {
     window.updatePlayerBidControls(currentPlayer); // Always update controls
 
     // If it's a single-player game AND the current player is an AI bot
-    if (window.gameMode === 'single-player' && currentPlayer !== window.loggedInPlayer) {
+    if (window.gameMode === 'single-player' && (window.isAdminMode || currentPlayer !== window.loggedInPlayer)) {
         window.displayMessage(`${window.formatPlayerDisplayName(currentPlayer)} is thinking...`, "message-box");
         setTimeout(() => {
             // Trigger AI to make a bid
@@ -506,10 +572,11 @@ function handleCurrentPlayerTurn() {
     } else {
         // It's a human player's turn (or multiplayer setup)
         window.displayMessage(`${window.formatPlayerDisplayName(currentPlayer)}'s turn to bid.`, "message-box");
-        // For bidding, show the bid modal only for the human player
+        /* For bidding, show the bid modal only for the human player BUT only when the user clicks 
+            .. on bid button so this part of the code was commented out to avoid auto-opening:
         if (currentPlayer === window.loggedInPlayer) { // Ensure modal only opens for logged-in player
             window.showBidModal();
-        }
+        } */
     }
 }
 window.handleCurrentPlayerTurn = handleCurrentPlayerTurn; // Expose globally
@@ -582,16 +649,208 @@ function startTrick() {
     // Find the index of the lead player
     window.currentPlayerIndex = window.players.indexOf(window.currentTrickLeadPlayer);
 
-    window.currentTrick = []; // Clear cards from previous trick for the new one
-    window.cardsInCurrentTrick = 0; // Reset cards played in current trick
-    window.leadSuitForTrick = null; // Reset lead suit for new trick
+    window.currentTrick = [];
+    window.cardsInCurrentTrick = 0;
+    window.leadSuitForTrick = null;
 
     window.displayMessage(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} leads the trick!`, "message-box");
 
-    // Enable only the lead player's cards for interaction
-    window.updatePlayerCardInteractions(window.currentTrickLeadPlayer, null); // New function to be added in script.js
+     // MODIFIED: Check if the lead player is an AI and trigger AI card play
+    if (window.gameMode === 'single-player' && (window.isAdminMode || window.currentTrickLeadPlayer !== window.loggedInPlayer)) {
+        // AI's turn to lead a trick
+        setTimeout(() => {
+            // Pass all required parameters to aiPlayCard
+            const cardToPlayElement = window.ai.aiPlayCard(
+                window.currentTrickLeadPlayer, 
+                window.hands[window.currentTrickLeadPlayer], 
+                window.currentTrick,
+                null, 
+                window.currentTrumpSuit
+            );
+            if (cardToPlayElement) {
+                
+                // console.log(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} plays ${cardToPlayElement.dataset.rank} of ${cardToPlayElement.dataset.suit}`);
+                // console.log("Card element to play:", cardToPlayElement);
+                window.animateCardToCenter(cardToPlayElement);
+                // window.playCardInTrick(cardToPlayElement, window.currentTrickLeadPlayer);
+            }
+        }, 1500); // Simulate AI thinking time
+    } else {
+        // Human player's turn to lead
+        console.log(`It's ${window.currentTrickLeadPlayer}'s turn to lead the trick.`);
+        window.updatePlayerCardInteractions(window.currentTrickLeadPlayer, null); // Enable human player's cards
+    }
 }
 window.startTrick = startTrick;
+
+/**
+ * Returns a numerical value for a card's rank.
+ * @param {string} rank - The rank of the card (e.g., 'ace', 'king', '5').
+ * @returns {number} - The numerical value of the rank.
+ */
+function getCardRankValue(rank) {
+    const rankOrder = { "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "jack": 11, "queen": 12, "king": 13, "ace": 14 };
+    return rankOrder[rank] || 0;
+}
+window.getCardRankValue = getCardRankValue;
+
+/**
+ * Calculates the points for a given card based on the game's scoring rules.
+ * @param {object} card - The card object {suit: string, rank: string}.
+ * @returns {number} The point value of the card.
+ */
+function getCardPoints(card) {
+    const { rank, suit } = card;
+    if (rank === 'ace') {
+        return 20;
+    } else if (rank === 'jack' || rank === 'king') {
+        return 10;
+    } else if (rank === 'queen') {
+        if (suit === 'spades') { // Queen of Spades (Black Queen)
+            return 30;
+        }
+        return 10; // Other Queens
+    } else if (rank === '10') {
+        return 10;
+    } else if (rank === '5') {
+        return 5;
+    }
+    return 0; // All other cards (2,3,4,6,7,8,9)
+}
+
+/**
+ * Determines the numerical value of a card based on its suit and rank.
+ * Used for comparing cards in a trick.
+ * @param {Object} card - The card object {suit, rank}.
+ * @param {string} leadSuit - The suit of the first card played in the trick.
+ * @param {string} trumpSuit - The current trump suit.
+ * @returns {number} - A numerical value for comparison.
+ */
+function getCardValue(card, leadSuit, trumpSuit) {
+    const rankValue = window.getCardRankValue(card.rank);
+    if (card.suit === trumpSuit) {
+        return rankValue + 1000; // Trumps are always higher
+    }
+    if (card.suit === leadSuit) {
+        return rankValue + 100; // Cards of the lead suit are next highest
+    }
+    return rankValue; // All other cards
+}
+window.getCardValue = getCardValue;
+
+/**
+ * Compares two cards to determine which one is higher in a trick.
+ * @param {Object} cardA - The first card object {suit, rank}.
+ * @param {Object} cardB - The second card object {suit, rank}.
+ * @param {string} leadSuit - The suit of the first card played in the trick.
+ * @param {string} trumpSuit - The current trump suit.
+ * @returns {number} - 1 if cardA wins, -1 if cardB wins, 0 if they are equal (shouldn't happen).
+ */
+function compareCards(cardA, cardB, leadSuit, trumpSuit) {
+    const valueA = window.getCardValue(cardA, leadSuit, trumpSuit);
+    const valueB = window.getCardValue(cardB, leadSuit, trumpSuit);
+    return valueA > valueB ? 1 : (valueA < valueB ? -1 : 0);
+}
+window.compareCards = compareCards;
+
+/**
+ * Finds the highest card in the current trick.
+ * @param {Array<Object>} trick - The array of cards played in the trick.
+ * @param {string} leadSuit - The suit of the first card played in the trick.
+ * @param {string} trumpSuit - The current trump suit.
+ * @returns {Object} - The highest card object in the trick.
+ */
+function getHighestCardInTrick(trick, leadSuit, trumpSuit) {
+    if (trick.length === 0) {
+        return null;
+    }
+    let highestCard = trick[0];
+    for (let i = 1; i < trick.length; i++) {
+        if (window.compareCards(trick[i], highestCard, leadSuit, trumpSuit) > 0) {
+            highestCard = trick[i];
+        }
+    }
+    return highestCard;
+}
+window.getHighestCardInTrick = getHighestCardInTrick;
+
+/**
+ * Determines the winning card and player for a trick.
+ * @param {Array<Object>} trick - An array of card/player objects played in the trick.
+ * @returns {Object} - The winning trick object {card, player, playerIndex}.
+ */
+function determineTrickWinner(trick) {
+    if (trick.length === 0) return null;
+
+    const leadSuit = trick[0].card.suit;
+    let highestCardValue = window.getCardValue(trick[0].card, leadSuit, window.currentTrumpSuit);
+    let winningTrick = trick[0];
+
+    for (let i = 1; i < trick.length; i++) {
+        const currentCardValue = window.getCardValue(trick[i].card, leadSuit, window.currentTrumpSuit);
+        if (currentCardValue > highestCardValue) {
+            highestCardValue = currentCardValue;
+            winningTrick = trick[i];
+        }
+    }
+    return winningTrick;
+}
+window.determineTrickWinner = determineTrickWinner;
+
+/**
+ * Determines which cards in a player's hand are legally playable.
+ * @param {Array<Object>} playerHand - The player's hand.
+ * @param {string|null} leadSuit - The suit of the first card played in the trick. Null if player is leading.
+ * @param {string} trumpSuit - The current trump suit.
+ * @returns {Array<Object>} - An array of playable card objects.
+ */
+function getPlayableCards(playerHand, leadSuit, trumpSuit) {
+    if (!leadSuit) {
+        // If the player is leading the trick, all cards are playable.
+        return playerHand;
+    }
+
+    const cardsOfLeadSuit = playerHand.filter(card => card.suit === leadSuit);
+    if (cardsOfLeadSuit.length > 0) {
+        // If the player has cards of the lead suit, they must play one.
+        return cardsOfLeadSuit;
+    }
+
+    // If the player does not have any cards of the lead suit...
+    const trumpCards = playerHand.filter(card => card.suit === trumpSuit);
+    
+    // Check if player has any trump cards
+    if (trumpCards.length > 0) {
+        // Check if the current trick contains any trump cards
+        const trickHasTrumps = window.currentTrick.some(trickCard => trickCard.suit === trumpSuit);
+        const playerIsBidWinnerTeam = window.bidWinningTeam.includes(window.players[window.currentPlayerIndex]);
+
+        // "Ruffing" (playing a trump when out of the lead suit) is allowed, but must follow rules
+        if (trickHasTrumps) {
+            // If trick has trumps and you have trumps, you must play a trump higher than the highest one on the table, if possible.
+            // This is a simplified logic. You could add more complex rules.
+            const highestTrumpInTrick = window.getHighestCardInTrick(window.currentTrick, leadSuit, trumpSuit);
+            const canOverTrump = trumpCards.some(card => window.getCardValue(card, trumpSuit) > window.getCardValue(highestTrumpInTrick.card, trumpSuit));
+            
+            if (playerIsBidWinnerTeam && canOverTrump) {
+                // If on the bid-winning team and can over-trump, must do so.
+                return trumpCards.filter(card => window.getCardValue(card, trumpSuit) > window.getCardValue(highestTrumpInTrick.card, trumpSuit));
+            } else {
+                // Otherwise, can play any trump card.
+                return trumpCards;
+            }
+        } else {
+            // The trick does not have a trump yet, and the player is out of the lead suit.
+            // They can play any card, including a trump card to win the trick.
+            return playerHand;
+        }
+    } else {
+        // The player has no cards of the lead suit and no trump cards.
+        // They can play any card (this is called "sloughing").
+        return playerHand;
+    }
+}
+window.getPlayableCards = getPlayableCards; // Expose globally
 
 /**
  * Ends the bidding round.
@@ -972,18 +1231,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (bidBtn) {
             bidBtn.addEventListener('click', () => {
-                if (player === window.players[window.currentPlayerIndex]) {
+                // MODIFIED: Only allow loggedInPlayer to trigger the modal via their OWN button
+                if (player === window.loggedInPlayer && player === window.players[window.currentPlayerIndex]) {
                     showBidModal();
+                } else if (player === window.loggedInPlayer && player !== window.players[window.currentPlayerIndex]) {
+                    // Human player clicked their button when it's not their turn
+                    window.displayMessage(`Please wait, it's not your turn to bid.`, "message-box");
                 } else {
+                    // This branch should theoretically not be hit for AI players if buttons are disabled,
+                    // but it's a safe fallback. AI will bid programmatically.
                     window.displayMessage(`It's not ${window.formatPlayerDisplayName(player)}'s turn.`, "message-box");
                 }
             });
         }
         if (passBtn) {
             passBtn.addEventListener('click', () => {
-                if (player === window.players[window.currentPlayerIndex]) {
+                // MODIFIED: Only allow loggedInPlayer to trigger the modal via their OWN button
+                if (player === window.loggedInPlayer && player === window.players[window.currentPlayerIndex]) {
                     showPassConfirmModal();
+                } else if (player === window.loggedInPlayer && player !== window.players[window.currentPlayerIndex]) {
+                    // Human player clicked their button when it's not their turn
+                    window.displayMessage(`Please wait, it's not your turn to pass.`, "message-box");
                 } else {
+                    // This branch should theoretically not be hit for AI players if buttons are disabled.
                     window.displayMessage(`It's not ${window.formatPlayerDisplayName(player)}'s turn.`, "message-box");
                 }
             });

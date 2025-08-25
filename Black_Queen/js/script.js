@@ -6,8 +6,6 @@ if (sessionStorage.getItem('isLoggedIn') !== 'true') {
 }
 
 // Game variables
-const suits = ["hearts", "diamonds", "clubs", "spades"];
-const ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"];
 let deck = [];
 window.hands = {}; // Expose 'hands' globally.
 
@@ -20,8 +18,8 @@ let playArea;
 // Function to initialize the deck
 function initializeDeck() {
     deck = [];
-    for (let suit of suits) {
-        for (let rank of ranks) {
+    for (let suit of window.suits) {
+        for (let rank of window.ranks) {
             deck.push({ suit, rank });
         }
     }
@@ -181,6 +179,16 @@ document.addEventListener('DOMContentLoaded', () => {
         dealButton.addEventListener('click', dealAndStartGame);
     } else {
         console.error("Deal button not found!");
+    }
+});
+
+window.addEventListener('beforeunload', function(event) {
+    // Check if the user is closing the tab/window, not just refreshing the page
+    // Note: The behavior of this event can vary slightly across browsers,
+    // but this is a common and effective approach.
+    if (sessionStorage.getItem('loggedInPlayer')) {
+        sessionStorage.removeItem('loggedInPlayer');
+        console.log("Player session data cleared.");
     }
 });
 

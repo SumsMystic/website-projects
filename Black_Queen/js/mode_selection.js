@@ -5,6 +5,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return; // Stop execution if not logged in
     }
 
+    // CRITICAL: Reset the game state on a fresh login to prevent lingering data
+    sessionStorage.removeItem('loggedInPlayer');
+    sessionStorage.removeItem('gameMode');
+    sessionStorage.removeItem('cardTheme');
+
     const gameModeSelect = document.getElementById('game-mode-select');
     const cardThemeSelect = document.getElementById('card-theme-select');
     const startGameBtn = document.getElementById('start-game-btn');

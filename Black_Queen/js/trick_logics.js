@@ -4,13 +4,30 @@
  * @param {string} player - The name of the player who played the card.
  */
 function playCardInTrick(cardElem, player) {
-    console.log(`${window.formatPlayerDisplayName(player)} played: ${cardElem.dataset.rank} of ${cardElem.dataset.suit}`);
+    // console.log(`${window.formatPlayerDisplayName(player)} played: ${cardElem.dataset.rank} of ${cardElem.dataset.suit}`);
 
     // CRITICAL: Call playCardToCenter from game_play.js to move the card
     // from temporary body placement to the center played cards area
     // and apply its final styling (position: absolute, transforms).
     if (typeof window.playCardToCenter === 'function') {
-        window.playCardToCenter(cardElem, player); // This moves and styles the card
+        if (cardElem) {
+            // Check if the card is currently face-down (has 'card-back' class)
+            if (cardElem.classList.contains('card-back')) {
+                // Remove the 'card-back' class to reveal the card face
+                cardElem.classList.remove('card-back');
+                cardElem.classList.remove(`card-back-${window.cardTheme}-theme`); // Remove theme-specific back
+                
+                // Ensure its background image is set to its actual face
+                const cardSuit = cardElem.dataset.suit;
+                const cardRank = cardElem.dataset.rank;
+                cardElem.style.backgroundImage = `url('./img/${cardRank}_of_${cardSuit}.svg')`;
+                cardElem.style.color = ''; // Restore text color if hidden for face-down cards
+            }
+
+            // Now call playCardToCenter with the potentially revealed card
+            window.currentPlayer = window.players[window.currentPlayerIndex];
+            window.playCardToCenter(cardElem, window.currentPlayer);
+        }
     } else {
         console.error("playCardToCenter function not found. Cannot place card on table.");
         // Fallback: If playCardToCenter is missing, at least try to append it.
@@ -29,11 +46,6 @@ function playCardInTrick(cardElem, player) {
     if (window.cardsInCurrentTrick === 0) {
         window.leadSuitForTrick = playedCardSuit;
     }
-    console.log(`DEBUG: Played Card: Suit -> ${playedCardSuit}  Rank: ${playedCardRank}`);
-    console.log(`DEBUG: Selected Partner Card Suit -> ${window.selectedPartnerSuit} Rank: ${window.selectedPartnerRank}`);
-    console.log(`DEBUG: Partner Revealed Flag -> ${window.partnerRevealed}`);
-    console.log(`DEBUG: Lead Suit for Trick -> ${window.leadSuitForTrick}`);
-    console.log(`DEBUG: window.currentTrumpSuit -> ${window.currentTrumpSuit} `);
 
     // Rule: Check if trump is broken
     // Trump is broken if a trump card is played when the lead suit is NOT trump,
@@ -92,54 +104,36 @@ function playCardInTrick(cardElem, player) {
     // Check if the trick is complete (all 4 players have played)
     if (window.cardsInCurrentTrick === window.players.length) {
         window.displayMessage("All cards played for the trick!", "message-box");
-        // Evaluate trick winner after a short delay to let the last card animation settle
+        // Evaluate trick winner after a short delay
         setTimeout(evaluateTrick, 700);
     } else {
         // Advance to the next player's turn in the trick
-        advanceTrickTurn();
-        const nextPlayer = window.players[window.currentPlayerIndex];
-        window.displayMessage(`${window.formatPlayerDisplayName(nextPlayer)}'s turn to play.`, "message-box");
+        window.currentPlayerIndex = (window.currentPlayerIndex + 1) % window.players.length;
+        window.currentPlayer = window.players[window.currentPlayerIndex];
         
-        // Enable next player's cards, passing the lead suit for suit-following rule
-        window.updatePlayerCardInteractions(nextPlayer, window.leadSuitForTrick);
-    }
-}
+        window.displayMessage(`${window.formatPlayerDisplayName(window.currentPlayer)}'s turn to play.`, "message-box");
 
-
-/**
- * Advances the turn to the next player in the trick sequence.
- */
-function advanceTrickTurn() {
-    // This is a simplified turn order. In a real game, it follows lead player.
-    // For now, it just goes clockwise from the previous player.
-    window.currentPlayerIndex = (window.currentPlayerIndex + 1) % window.players.length;
-    // Skip players who have already played in this trick (if logic becomes more complex)
-    // For a simple 4-card trick, this sequential advance is usually fine.
-}
-
-/**
- * Calculates the points for a given card based on the game's scoring rules.
- * @param {object} card - The card object {suit: string, rank: string}.
- * @returns {number} The point value of the card.
- */
-function getCardPoints(card) {
-    const { rank, suit } = card;
-    if (rank === 'ace') {
-        return 20;
-    } else if (rank === 'jack' || rank === 'king') {
-        return 10;
-    } else if (rank === 'queen') {
-        if (suit === 'spades') { // Queen of Spades (Black Queen)
-            return 30;
+        // Check if the next player is an AI and trigger their turn.
+        if (window.currentPlayer !== window.loggedInPlayer) {
+            setTimeout(() => {
+                const cardElem = window.ai.aiPlayCard(
+                    window.currentPlayer,
+                    window.hands[window.currentPlayer],
+                    window.currentTrick,
+                    window.leadSuitForTrick,
+                    window.currentTrumpSuit
+                );
+                if (cardElem) {
+                    window.playCardInTrick(cardElem, window.currentPlayer);
+                }
+            }, 1500); // Simulate AI thinking time
+        } else {
+            // It's the human player's turn
+            window.updatePlayerCardInteractions(window.currentPlayer, window.leadSuitForTrick);
         }
-        return 10; // Other Queens
-    } else if (rank === '10') {
-        return 10;
-    } else if (rank === '5') {
-        return 5;
     }
-    return 0; // All other cards (2,3,4,6,7,8,9)
 }
+
 
 /**
  * Evaluates the current trick to determine the winner based on Black Queen rules.
@@ -154,12 +148,6 @@ function evaluateTrick() {
     let winningCardInfo = window.currentTrick[0];
     const leadSuit = window.currentTrick[0].card.suit;
     const trumpSuit = window.currentTrumpSuit;
-
-    // Define card rank order for comparison (higher number is better)
-    const rankOrder = {
-        "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10,
-        "jack": 11, "queen": 12, "king": 13, "ace": 14
-    };
 
     // Iterate through played cards to find the winner
     for (let i = 1; i < window.currentTrick.length; i++) {
@@ -179,7 +167,7 @@ function evaluateTrick() {
             // No change needed
         } else if (isCurrentTrump && isWinningTrump) {
             // Both are trump => Compare ranks
-            if (rankOrder[currentCard.rank] > rankOrder[winningCard.rank]) {
+            if (getCardRankValue[currentCard.rank] > getCardRankValue[winningCard.rank]) {
                 winningCardInfo = currentCardInfo;
             }
         } else { // Neither are trump
@@ -195,7 +183,7 @@ function evaluateTrick() {
                 // No change needed
             } else if (isCurrentLeadSuit && isWinningLeadSuit) {
                 // Both follow lead suit => Compare ranks
-                if (rankOrder[currentCard.rank] > rankOrder[winningCard.rank]) {
+                if (getCardRankValue[currentCard.rank] > getCardRankValue[winningCard.rank]) {
                     winningCardInfo = currentCardInfo;
                 }
             }
@@ -251,6 +239,8 @@ function updatePlayerCardInteractions(activePlayer, leadSuit) {
         const playerCardArea = document.querySelector(`.${player}-cards`); 
         // Keep selecting the inner handElement for individual card interaction logic
         const handElement = playerCardArea ? playerCardArea.querySelector('.hand') : null; // Get the inner hand for card logic
+        const isHumanPlayer = (activePlayer === window.loggedInPlayer);
+        const humanHand = document.getElementById(window.loggedInPlayer);
 
         if (playerCardArea && handElement) { // Ensure both elements exist
             // Apply/remove glow effect to the outer player card area
@@ -274,6 +264,9 @@ function updatePlayerCardInteractions(activePlayer, leadSuit) {
                     // Assume card is playable by default, then disable if rules are violated
                     cardElem.classList.add('card-playable');
                     cardElem.style.pointerEvents = 'auto';
+                    cardElem.addEventListener('click', function() {
+                        window.animateCardToCenter(cardElem);
+                    });
 
                     // Rule 2: Suit Following
                     if (leadSuit !== null) { // If it's not the lead player's turn
@@ -375,6 +368,7 @@ function showPartnerRevealMessage() {
         }, 3000); // Message visible for 3 seconds
     } else {
         console.warn("showPartnerRevealMessage() called but partner reveal message elements or partnerPlayerName not found.");
+        console.log("Elements:", partnerRevealMessageDiv, partnerRevealNameSpan, window.partnerPlayerName);
     }
 }
 

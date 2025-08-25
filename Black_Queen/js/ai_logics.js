@@ -12,13 +12,10 @@ window.ai = {};
 function getHandStrength(hand) {
     let strength = 0;
     const suitCounts = {};
-    const cardPoints = { // Re-using card points logic from trick_logics.js (ensure it's consistent)
-        'ace': 20, 'king': 10, 'queen': 10, 'jack': 10, '10': 10, '5': 5
-    };
 
     hand.forEach(card => {
         // Accumulate points for high-value cards
-        strength += cardPoints[card.rank] || 0;
+        strength += window.getCardPoints(card) || 0;
 
         // Count cards per suit for potential long suits
         suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
@@ -48,21 +45,60 @@ window.ai.aiMakeBid = function(player, currentHighestBid, playerHand) {
     const MIN_BID = window.MIN_BID || 170; // Use global MIN_BID from game_logic.js
     const BID_INCREMENT = window.BID_INCREMENT || 5; // Use global BID_INCREMENT
 
-    // Simple bidding strategy:
-    // If very strong hand, bid aggressively (higher than current, or initial high bid)
-    if (handStrength >= 70 && currentHighestBid < 250) { // Example threshold
-        const bid = Math.max(currentHighestBid + BID_INCREMENT, MIN_BID);
-        return Math.min(bid, 280); // Cap bid at max possible score
-    }
-    // If moderately strong hand, bid incrementally
-    else if (handStrength >= 40 && currentHighestBid < 200) { // Example threshold
-        const bid = Math.max(currentHighestBid + BID_INCREMENT, MIN_BID);
-        return Math.min(bid, 280);
-    }
-    // Otherwise, pass
-    else {
+    // Realistic bidding strategy based on hand strength:
+    // These thresholds are subjective and can be fine-tuned.
+    // They aim to make AI bid more conservatively for weaker hands.
+
+    let desiredBid = 0;
+    let baseBid = currentHighestBid + BID_INCREMENT; // Always increment by BID_INCREMENT
+
+    if (handStrength >= 100) {
+        // Very Strong Hand: Can confidently bid higher, aiming for a win.
+        desiredBid = Math.max(baseBid, 200); // Ensure bid is at least 200 if confident
+        desiredBid = Math.min(desiredBid, 240); // Cap aggressive bids at 240
+    } else if (handStrength >= 85) {
+        // Strong Hand (Upper Moderate): Can bid, but with more caution.
+        desiredBid = Math.max(baseBid, MIN_BID + 10); // Bid slightly above minimum
+        desiredBid = Math.min(desiredBid, 220); // More conservative cap
+    } else if (handStrength >= 55) {
+        // Moderate Hand (Lower Moderate): Bid only if the current bid is low and they have decent strength.
+        desiredBid = Math.max(baseBid, MIN_BID); // Start at MIN_BID if higher than current
+        desiredBid = Math.min(desiredBid, 200); // Cap at 200
+    } else if (handStrength >= 35) {
+        // Weak-Moderate Hand: Bid only if the current bid is very low (e.g., still at 170)
+        // This is primarily for the very first bidder with a weak-moderate hand.
+        if (currentHighestBid < 185) { // Only bid if current bid is very low
+            desiredBid = Math.max(baseBid, MIN_BID);
+            desiredBid = Math.min(desiredBid, 190); // Smallest possible increment, low cap
+        } else {
+            return 'pass'; // Pass if bid is already getting high
+        }
+    } else {
+        // Weak Hand: Always pass.
         return 'pass';
     }
+
+    // Ensure the bid is always a multiple of BID_INCREMENT
+    desiredBid = Math.ceil(desiredBid / BID_INCREMENT) * BID_INCREMENT;
+    
+    // Final check to ensure the bid is valid (higher than current and within MAX_BID)
+    if (desiredBid <= currentHighestBid) {
+        return 'pass'; // Cannot make a valid higher bid, so pass
+    }
+    
+    // Ensure bid doesn't exceed MAX_BID overall (though internal caps should handle most of this)
+    desiredBid = Math.min(desiredBid, MAX_BID); 
+
+    // If this is the very first bid (currentHighestBid is 0) and the calculated desiredBid
+    // is somehow still less than MIN_BID, ensure it at least bids MIN_BID if it decided to bid.
+    // This can happen if handStrength is in the 35-55 range and baseBid is too low.
+    if (currentHighestBid === 0 && desiredBid < MIN_BID && desiredBid !== 'pass') {
+        return MIN_BID;
+    }
+
+
+    console.log(`${window.formatPlayerDisplayName(player)} decided to bid: ${desiredBid}`);
+    return desiredBid;
 };
 
 /**
@@ -158,36 +194,73 @@ window.ai.aiPlayCard = function(player, playerHand, currentTrick, leadSuit, trum
         return playerHand[0] ? document.querySelector(`.hand[data-player="${player}"] .card[data-suit="${playerHand[0].suit}"][data-rank="${playerHand[0].rank}"]`) : null;
     }
 
-    // Convert hand objects to card elements for selection
-    const handElements = Array.from(document.querySelectorAll(`.hand[data-player="${player}"] .card`));
-    const getCardElement = (card) => {
-        return handElements.find(elem => elem.dataset.suit === card.suit && elem.dataset.rank === card.rank);
-    };
+    // Find the card element in handElements that matches the given card's suit and rank.
+    function getCardElement(card) {
+        // Convert hand objects to card elements for selection
+        const handElements = Array.from(document.querySelectorAll(`.${player}-cards .hand .card`));
+        // console.log(`Hand elements for ${window.formatPlayerDisplayName(player)}:`, handElements);
+        for (let i = 0; i < handElements.length; i++) {
+            const elem = handElements[i];
+            // console.log(`Checking card element: ${elem.dataset.rank} of ${elem.dataset.suit} against ${card.rank} of ${card.suit}`);
+            if (elem.dataset.suit === card.suit && elem.dataset.rank === card.rank) {
+                return elem;
+            }
+        }
+        
+        // If no matching element is found, return undefined.
+        console.warn(`Card element not found in hand for ${card.rank} of ${card.suit}`);
+        return undefined;
+    }
 
     // --- Strategy for playing a card ---
 
     // 1. If leading the trick: Play a low card to save high cards, or a high card to establish lead.
-    if (!leadSuit) { // AI is leading the trick
-        // Simple strategy: Play the lowest non-trump card first if available,
-        // otherwise lowest trump. Conserve high cards.
-        const nonTrumpCards = playableCards.filter(c => c.suit !== trumpSuit);
-        if (nonTrumpCards.length > 0) {
-            cardToPlay = nonTrumpCards.sort((a, b) => window.getCardRankValue(a.rank) - window.getCardRankValue(b.rank))[0];
-        } else {
-            // Only trumps left, play the lowest trump
-            cardToPlay = playableCards.sort((a, b) => window.getCardRankValue(a.rank) - window.getCardRankValue(b.rank))[0];
+    // AI is the leading player
+    if (leadSuit === null) {
+        // --- NEW: AI LEADING STRATEGY ---
+        // Strategy: Lead with the highest card from the longest suit to try and draw out opponents' high cards.
+        const suitCounts = {};
+        playerHand.forEach(card => {
+            suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+        });
+
+        let longestSuit = null;
+        let maxCount = 0;
+        for (const suit in suitCounts) {
+            if (suitCounts[suit] > maxCount) {
+                maxCount = suitCounts[suit];
+                longestSuit = suit;
+            }
         }
+
+        if (longestSuit) {
+            const longestSuitCards = playableCards.filter(card => card.suit === longestSuit);
+            // Play the highest card from the longest suit
+            cardToPlay = longestSuitCards.sort((a, b) => window.getCardRankValue(b.rank) - window.getCardRankValue(a.rank))[0];
+        } else {
+            // Fallback strategy if no long suit: play the lowest point card to save high cards.
+            cardToPlay = playableCards.sort((a, b) => window.getCardPoints(a) - window.getCardPoints(b))[0];
+        }
+
     } else { // AI is not leading, must follow suit or trump/slough
         const cardsOfLeadSuit = playableCards.filter(card => card.suit === leadSuit);
         const trumpCards = playableCards.filter(card => card.suit === trumpSuit);
 
         // Determine if current winning card is beatable by a non-trump lead suit card
-        const currentWinningCardInfo = window.determineTrickWinner(currentTrick, trumpSuit);
+        // const currentWinningCardInfo = window.determineTrickWinner(currentTrick, trumpSuit);
+        // Correct logic to find the current winning card in the trick
+        let currentWinningCardInfo = currentTrick[0];
+        let currentWinningCard = currentWinningCardInfo.card;
+        for (let i = 1; i < currentTrick.length; i++) {
+            const card = currentTrick[i].card;
+            console.log("Comparing cards:", currentWinningCardInfo.card, "vs", card);
+            currentWinningCard = window.compareCards(currentWinningCardInfo.card, card, leadSuit, trumpSuit);
+        }
         const canBeatWithLeadSuit = cardsOfLeadSuit.some(card => 
-            window.compareCards(card, currentWinningCardInfo.card, leadSuit, trumpSuit) > 0
+            window.compareCards(card, currentWinningCard, leadSuit, trumpSuit) > 0
         );
         const canBeatWithTrump = trumpCards.some(card => 
-            window.compareCards(card, currentWinningCardInfo.card, leadSuit, trumpSuit) > 0
+            window.compareCards(card, currentWinningCard, leadSuit, trumpSuit) > 0
         );
 
         if (cardsOfLeadSuit.length > 0) { // Has cards of the lead suit
@@ -239,7 +312,14 @@ window.ai.aiPlayCard = function(player, playerHand, currentTrick, leadSuit, trum
          // Ultimate fallback: if getPlayableCards returns nothing valid, just play the first card in hand
         cardToPlay = playerHand[0];
     }
+    console.log(`[AI Logic] AI Player ${player} has selected: ${cardToPlay ? `${cardToPlay.rank} of ${cardToPlay.suit}` : 'NO CARD SELECTED!'}`);
      // Return the actual HTML element
-    return getCardElement(cardToPlay);
+
+    if (cardToPlay) {
+        return getCardElement(cardToPlay);
+    } else {
+        console.warn("AI tried to play a card not found in hand:", cardToPlay);
+    }
+    
 };
 

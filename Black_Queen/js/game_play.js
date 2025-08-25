@@ -14,6 +14,7 @@
  */
 function playCardToCenter(cardElem, player) {
     // Ensure the target container exists and is globally accessible.
+    // console.log("Playing card to center:", cardElem, "from player:", player);
     if (!window.centerPlayedCards) {
         console.error("Error: 'centerPlayedCards' element (via window) not found in the DOM.");
         return;
