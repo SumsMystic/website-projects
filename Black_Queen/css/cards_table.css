@@ -700,15 +700,15 @@
     /* Position: absolute and transform: translate/rotate will be set by JS */
 }
 
-/* Orientation for North/South played cards (default, no extra rotation) */
+/* Orientation for North/South played cards (default, no extra rotation)
 #center-played-cards .card.played-card-north-south {
-    /* Cards maintain their upright orientation */
+     Cards maintain their upright orientation
 }
 
-/* Orientation for East/West played cards (rotated) */
+/* Orientation for East/West played cards (rotated) 
 #center-played-cards .card.played-card-east-west {
-    /* Rotation will be applied by JS using transform, combining with stacking translate */
-}
+    //Rotation will be applied by JS using transform, combining with stacking translate 
+} */
 
 
 /* --- Modal Styles --- */

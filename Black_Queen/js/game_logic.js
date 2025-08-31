@@ -485,6 +485,10 @@ function startTrumpSelection(bidWinner) {
                 window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
 
                 if (typeof window.startTrick === 'function') {
+                    // AI's turn to play first card after bidding
+                    // Explicitly set the current player to the highest bidder before starting the trick
+                    window.currentPlayerIndex = window.players.indexOf(window.highestBidder);
+                    window.currentPlayer = window.highestBidder;
                     window.startTrick();
                 } else {
                     console.error("startTrick function not found. Cannot begin game play after AI trump/partner selection.");
@@ -626,6 +630,9 @@ function identifyPartnerPlayer() {
 window.identifyPartnerPlayer = identifyPartnerPlayer; // Expose globally
 */
 
+/**
+ * Starts a new trick. Determines the lead player and prepares the UI.
+ */
 function startTrick() {
     console.log("Starting a new trick...");
 
@@ -642,43 +649,38 @@ function startTrick() {
     }
 
     // Determine the lead player for this trick
-    // If it's the very first trick, the highest bidder leads
-    // Otherwise, the winner of the previous trick leads
+    // Use the highest bidder for the first trick, otherwise the winner of the last trick
     window.currentTrickLeadPlayer = window.trickCount === 0 ? window.highestBidder : window.trickWinner;
 
-    // Find the index of the lead player
+    // Find the index of the lead player and set the current player
     window.currentPlayerIndex = window.players.indexOf(window.currentTrickLeadPlayer);
-
+    window.currentPlayer = window.players[window.currentPlayerIndex];
+    
+    // Reset trick-specific variables
     window.currentTrick = [];
     window.cardsInCurrentTrick = 0;
     window.leadSuitForTrick = null;
-
     window.displayMessage(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} leads the trick!`, "message-box");
+    
+    /// 4. Update the UI to reflect the current player
+    window.updatePlayerCardInteractions(window.currentPlayer);
 
-     // MODIFIED: Check if the lead player is an AI and trigger AI card play
-    if (window.gameMode === 'single-player' && (window.isAdminMode || window.currentTrickLeadPlayer !== window.loggedInPlayer)) {
-        // AI's turn to lead a trick
-        setTimeout(() => {
-            // Pass all required parameters to aiPlayCard
-            const cardToPlayElement = window.ai.aiPlayCard(
-                window.currentTrickLeadPlayer, 
-                window.hands[window.currentTrickLeadPlayer], 
-                window.currentTrick,
-                null, 
-                window.currentTrumpSuit
-            );
-            if (cardToPlayElement) {
-                
-                // console.log(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} plays ${cardToPlayElement.dataset.rank} of ${cardToPlayElement.dataset.suit}`);
-                // console.log("Card element to play:", cardToPlayElement);
-                window.animateCardToCenter(cardToPlayElement);
-                // window.playCardInTrick(cardToPlayElement, window.currentTrickLeadPlayer);
-            }
-        }, 1500); // Simulate AI thinking time
+    // 5. CRITICAL FIX: Handle the case where the bid winner is an AI player.
+    // If the current player is an AI, we must programmatically trigger their turn
+    // after a short delay to allow UI to render.
+    const isAIPlayer = window.currentPlayer !== window.loggedInPlayer;
+    if (isAIPlayer && window.gameMode === 'single-player') {
+        console.log(`[startTrick] Bid winner is an AI (${window.currentPlayer}). Initiating their turn...`);
+        // Use a single, controlled timeout to prevent race conditions.
+        // The timeout is to allow UI to update before the AI plays.
+        window.nextTurnTimeoutId = setTimeout(() => {
+            // This function call should be the sole way the AI plays its first card.
+            window.ai.playAiFirstCard(window.currentPlayer);
+        }, 1000); // 1000ms delay to be safe
     } else {
-        // Human player's turn to lead
-        console.log(`It's ${window.currentTrickLeadPlayer}'s turn to lead the trick.`);
-        window.updatePlayerCardInteractions(window.currentTrickLeadPlayer, null); // Enable human player's cards
+        // If the bid winner is the human player, no timeout is needed.
+        // The player's cards are already clickable due to updatePlayerCardInteractions.
+        console.log(`[startTrick] Bid winner is a human player (${window.currentPlayer}). Awaiting their card play.`);
     }
 }
 window.startTrick = startTrick;
@@ -805,51 +807,58 @@ window.determineTrickWinner = determineTrickWinner;
  * @returns {Array<Object>} - An array of playable card objects.
  */
 function getPlayableCards(playerHand, leadSuit, trumpSuit) {
+    // Rule 1 & 2: Logic for when the AI is leading the trick
     if (!leadSuit) {
-        // If the player is leading the trick, all cards are playable.
-        return playerHand;
+        // Find all non-trump cards in the hand
+        const nonTrumpCards = playerHand.filter(card => card.suit !== trumpSuit);
+
+        // Rule 2: If the AI has NO non-trump cards OR if trump is already broken,
+        // they can lead with any card.
+        if (nonTrumpCards.length === 0 || window.isTrumpBroken) {
+            return playerHand;
+        } else {
+            // Rule 1: Trump is not broken and the AI has non-trump cards,
+            // so they cannot lead with a trump.
+            return nonTrumpCards;
+        }
     }
 
+    // Rule 4: If the player has cards of the lead suit, they must follow suit.
     const cardsOfLeadSuit = playerHand.filter(card => card.suit === leadSuit);
     if (cardsOfLeadSuit.length > 0) {
-        // If the player has cards of the lead suit, they must play one.
         return cardsOfLeadSuit;
     }
 
-    // If the player does not have any cards of the lead suit...
-    const trumpCards = playerHand.filter(card => card.suit === trumpSuit);
-    
-    // Check if player has any trump cards
-    if (trumpCards.length > 0) {
-        // Check if the current trick contains any trump cards
-        const trickHasTrumps = window.currentTrick.some(trickCard => trickCard.suit === trumpSuit);
-        const playerIsBidWinnerTeam = window.bidWinningTeam.includes(window.players[window.currentPlayerIndex]);
+    // At this point, the AI does not have a card of the lead suit.
 
-        // "Ruffing" (playing a trump when out of the lead suit) is allowed, but must follow rules
-        if (trickHasTrumps) {
-            // If trick has trumps and you have trumps, you must play a trump higher than the highest one on the table, if possible.
-            // This is a simplified logic. You could add more complex rules.
-            const highestTrumpInTrick = window.getHighestCardInTrick(window.currentTrick, leadSuit, trumpSuit);
-            const canOverTrump = trumpCards.some(card => window.getCardValue(card, trumpSuit) > window.getCardValue(highestTrumpInTrick.card, trumpSuit));
-            
-            if (playerIsBidWinnerTeam && canOverTrump) {
-                // If on the bid-winning team and can over-trump, must do so.
-                return trumpCards.filter(card => window.getCardValue(card, trumpSuit) > window.getCardValue(highestTrumpInTrick.card, trumpSuit));
-            } else {
-                // Otherwise, can play any trump card.
-                return trumpCards;
-            }
+    // Bonus Ruffing Logic: Check if the trick already has a trump card.
+    const trickHasTrumps = window.currentTrick.some(trickCard => trickCard.suit === trumpSuit);
+
+    // If the trick has trumps and the player has trump cards...
+    if (trickHasTrumps) {
+        // You must play a trump higher than the highest one on the table, if possible.
+        const highestTrumpInTrick = window.getHighestCardInTrick(window.currentTrick, leadSuit, trumpSuit);
+
+        // Filter for trump cards that are higher than the highest trump already played.
+        const canOverTrump = playerHand.filter(card => 
+            card.suit === trumpSuit && window.getCardValue(card, trumpSuit) > window.getCardValue(highestTrumpInTrick.card, trumpSuit)
+        );
+        
+        // If there are higher trumps, return only those.
+        if (canOverTrump.length > 0) {
+            return canOverTrump;
         } else {
-            // The trick does not have a trump yet, and the player is out of the lead suit.
-            // They can play any card, including a trump card to win the trick.
-            return playerHand;
+            // If they can't over-trump, they can play any trump card.
+            const trumpCards = playerHand.filter(card => card.suit === trumpSuit);
+            return trumpCards;
         }
-    } else {
-        // The player has no cards of the lead suit and no trump cards.
-        // They can play any card (this is called "sloughing").
-        return playerHand;
     }
+
+    // Rule 3: If the player has no lead suit cards and no trumps have been played in the trick,
+    // they can play any card from their hand (a discard).
+    return playerHand;
 }
+
 window.getPlayableCards = getPlayableCards; // Expose globally
 
 /**

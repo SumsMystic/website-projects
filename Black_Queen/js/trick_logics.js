@@ -6,7 +6,7 @@
 function playCardInTrick(cardElem, player) {
     // console.log(`${window.formatPlayerDisplayName(player)} played: ${cardElem.dataset.rank} of ${cardElem.dataset.suit}`);
 
-    // CRITICAL: Call playCardToCenter from game_play.js to move the card
+    // Call playCardToCenter from game_play.js to move the card
     // from temporary body placement to the center played cards area
     // and apply its final styling (position: absolute, transforms).
     if (typeof window.playCardToCenter === 'function') {
@@ -25,8 +25,7 @@ function playCardInTrick(cardElem, player) {
             }
 
             // Now call playCardToCenter with the potentially revealed card
-            window.currentPlayer = window.players[window.currentPlayerIndex];
-            window.playCardToCenter(cardElem, window.currentPlayer);
+            window.playCardToCenter(cardElem, player);
         }
     } else {
         console.error("playCardToCenter function not found. Cannot place card on table.");
@@ -48,32 +47,19 @@ function playCardInTrick(cardElem, player) {
     }
 
     // Rule: Check if trump is broken
-    // Trump is broken if a trump card is played when the lead suit is NOT trump,
-    // and the player HAD a card of the lead suit but chose to play trump (sluffing trump).
-    // OR if a player *leads* with trump after it was previously broken.
     if (!window.trumpBroken) {
         if (playedCardSuit === window.currentTrumpSuit && window.leadSuitForTrick !== window.currentTrumpSuit) {
-            // If a trump card is played, and it's not the lead suit, trump is now broken.
-            // This assumes the play was valid (i.e., player didn't have lead suit, or it's allowed to play trump)
             window.trumpBroken = true;
             window.displayMessage("Trump has been broken!", "message-box");
         }
     }
 
-
-    // Remove the played card from the player's hand DOM
-    // cardElem.parentNode.removeChild(cardElem); // This line was causing the card to vanish.
-    // It's removed from the hand array below, which is sufficient.
-
     // Remove the played card from the player's hands array
-    // (This part is crucial for AI and game state accuracy)
-    // IMPORTANT: window.hands is assumed to be initialized in script.js
     if (window.hands && window.hands[player]) {
         window.hands[player] = window.hands[player].filter(card => !(card.rank === playedCardRank && card.suit === playedCardSuit));
     } else {
         console.warn(`window.hands or window.hands[${player}] is undefined. Cannot remove card from hand array.`);
     }
-
 
     // Add the card to the current trick's array
     window.currentTrick.push({
@@ -82,58 +68,124 @@ function playCardInTrick(cardElem, player) {
             suit: playedCardSuit
         },
         player: player,
-        element: cardElem // Keep a reference to the element for trick evaluation/collection
+        element: cardElem
     });
     window.cardsInCurrentTrick++;
-
-    // ADDED: Check if the played card is the partner card and reveal partner
-    if (!window.partnerRevealed &&
-        playedCardSuit === window.selectedPartnerSuit &&
-        playedCardRank === window.selectedPartnerRank) {
-        
-        window.partnerRevealed = true; // Set flag to true
-        // The player who played the partner card is the partner
-        // (This should match window.partnerPlayerName, which is identified in game_logic.js)
-        showPartnerRevealMessage();
-        window.displayMessage(`The partner card (${playedCardRank} of ${playedCardSuit}) has been played!`, "message-box");
-    }
 
     // Disable current player's cards immediately after playing
     window.updatePlayerCardInteractions(null, null);
 
-    // Check if the trick is complete (all 4 players have played)
+    // CRITICAL FIX: The turn progression is now managed by a single function
+    // that is called after a card is played.
+    window.advanceTurnInTrick(); 
+}
+window.playCardInTrick = playCardInTrick; // Expose globally
+
+
+/**
+ * The new function to manage the flow of the trick.
+ * This is the sole function that manages turn progression.
+ */
+// A new global variable to store the timeout ID for the next player's turn
+
+let nextTurnTimeoutId = null;
+window.nextTurnTimeoutId = nextTurnTimeoutId; // Expose globally
+
+/**
+ * The sole function to manage the flow of the trick, called after a card is played.
+ */
+function advanceTurnInTrick() {
+    // CRITICAL FIX: Clear any pending timeouts from previous turns to prevent race conditions
+    if (window.nextTurnTimeoutId) {
+        clearTimeout(window.nextTurnTimeoutId);
+        window.nextTurnTimeoutId = null;
+    }
+
+    // Check if the trick is complete (all players have played their cards).
     if (window.cardsInCurrentTrick === window.players.length) {
         window.displayMessage("All cards played for the trick!", "message-box");
         // Evaluate trick winner after a short delay
-        setTimeout(evaluateTrick, 700);
+        // window.nextTurnTimeoutId = setTimeout(evaluateTrick, 700);
+        evaluateTrick();
+        console.log(`${window.formatPlayerDisplayName(window.trickWinner)} won the trick!`);
+
+        // Use a setTimeout to allow for trick animations and card clearing
+        window.nextTurnTimeoutId = setTimeout(() => {
+
+            // Clear the center played cards area
+            window.clearCenterPlayedCards();
+            
+            // Check if game is over
+            if (window.trickCount < window.cardsPerPlayer) {
+                // Number of tricks for this round not completed, so start a new trick remembering that window.trickWinner is the lead player
+                window.startTrick();
+            } else {
+                 window.endRound(); 
+            }
+        }, 1500); // Wait for the highlight animation and card clearing
     } else {
-        // Advance to the next player's turn in the trick
+        // This is the missing logic for advancing the turn within a trick
         window.currentPlayerIndex = (window.currentPlayerIndex + 1) % window.players.length;
         window.currentPlayer = window.players[window.currentPlayerIndex];
-        
-        window.displayMessage(`${window.formatPlayerDisplayName(window.currentPlayer)}'s turn to play.`, "message-box");
+        console.log(`It's now ${window.formatPlayerDisplayName(window.currentPlayer)}'s turn to play.`);
 
-        // Check if the next player is an AI and trigger their turn.
-        if (window.currentPlayer !== window.loggedInPlayer) {
-            setTimeout(() => {
-                const cardElem = window.ai.aiPlayCard(
-                    window.currentPlayer,
-                    window.hands[window.currentPlayer],
-                    window.currentTrick,
-                    window.leadSuitForTrick,
-                    window.currentTrumpSuit
-                );
-                if (cardElem) {
-                    window.playCardInTrick(cardElem, window.currentPlayer);
-                }
-            }, 1500); // Simulate AI thinking time
+        // Check if the next player is an AI
+        const isAIPlayer = window.currentPlayer !== window.loggedInPlayer;
+
+        if (isAIPlayer) {
+            // Handle single-player vs. admin mode logic.
+            if (window.gameMode === 'single-player' && (window.isAdminMode || window.currentPlayer !== window.loggedInPlayer)) {
+                // It's a non-human player's turn in a single-player game, or admin mode is enabled.
+                window.displayMessage(`${window.formatPlayerDisplayName(window.currentPlayer)} is thinking...`, "message-box");
+                window.nextTurnTimeoutId = setTimeout(() => {
+                    const cardElem = window.ai.aiPlayCard(
+                        window.currentPlayer,
+                        window.hands[window.currentPlayer],
+                        window.currentTrick,
+                        window.leadSuitForTrick,
+                        window.currentTrumpSuit
+                    );
+                    if (cardElem) {
+                        // Final check to prevent race condition if a human plays before AI turn fires
+                        if (window.currentPlayer === window.players[window.currentPlayerIndex]) {
+                            // NEW: Apply the highlight now that the AI's turn is in motion
+                            window.updatePlayerCardInteractions(window.currentPlayer);
+                            window.playCardInTrick(cardElem, window.currentPlayer);
+                        }
+                    }
+                }, 1500); // Simulate AI thinking time
+            }
         } else {
-            // It's the human player's turn
-            window.updatePlayerCardInteractions(window.currentPlayer, window.leadSuitForTrick);
+            // It's the human player's turn (South).
+            window.displayMessage(`It's the human player's turn (South)`, "message-box");
+            // Animate the next player's indicator
+            window.updatePlayerCardInteractions(window.currentPlayer);
         }
     }
+    
+    
 }
+window.advanceTurnInTrick = advanceTurnInTrick;
 
+// A new function to properly start the next trick
+function startNextTrick(winner) {
+    // Reset trick variables for the new trick
+    window.currentTrick = [];
+    window.cardsInCurrentTrick = 0;
+    window.leadSuitForTrick = null;
+
+    // Set the winner of the previous trick as the lead player
+    window.currentPlayer = winner;
+    window.currentPlayerIndex = window.players.indexOf(winner);
+
+    // Now, trigger the AI's turn if the winner is an AI, or enable human player interaction
+    const isAIPlayer = window.currentPlayer !== window.loggedInPlayer;
+    if (isAIPlayer) {
+        window.ai.playAiFirstCard(window.currentPlayer);
+    } else {
+        window.updatePlayerCardInteractions(window.currentPlayer);
+    }
+}
 
 /**
  * Evaluates the current trick to determine the winner based on Black Queen rules.
@@ -167,7 +219,7 @@ function evaluateTrick() {
             // No change needed
         } else if (isCurrentTrump && isWinningTrump) {
             // Both are trump => Compare ranks
-            if (getCardRankValue[currentCard.rank] > getCardRankValue[winningCard.rank]) {
+            if (window.getCardRankValue(currentCard.rank) > window.getCardRankValue(winningCard.rank)) {
                 winningCardInfo = currentCardInfo;
             }
         } else { // Neither are trump
@@ -183,7 +235,7 @@ function evaluateTrick() {
                 // No change needed
             } else if (isCurrentLeadSuit && isWinningLeadSuit) {
                 // Both follow lead suit => Compare ranks
-                if (getCardRankValue[currentCard.rank] > getCardRankValue[winningCard.rank]) {
+                if (window.getCardRankValue(currentCard.rank) > window.getCardRankValue(winningCard.rank)) {
                     winningCardInfo = currentCardInfo;
                 }
             }
@@ -194,7 +246,9 @@ function evaluateTrick() {
         }
     }
 
+    // CRITICAL FIX: Add this line to set the global winner for the next trick to use
     window.trickWinner = winningCardInfo.player;
+
     let trickPointsEarned = 0; // Initialize points for this trick
 
     // Calculate total points from all cards in the current trick
@@ -209,21 +263,6 @@ function evaluateTrick() {
     window.trickCount++;
 
     window.updateScoresDisplay();
-
-    // Clear center cards (face down) and start next trick after a delay
-    setTimeout(() => {
-        if (typeof window.clearCenterPlayedCards === 'function') {
-            window.clearCenterPlayedCards(true);
-        }
-
-        // CRITICAL FIX: Change 13 to window.cardsPerPlayer to correctly identify end of round
-        if (window.trickCount < window.cardsPerPlayer) { 
-            window.startTrick(); // Call the global startTrick
-        } else {
-            // CRITICAL FIX: Call endRound() here instead of endGame()
-            window.endRound(); 
-        }
-    }, 1000);
 }
 
 /**
