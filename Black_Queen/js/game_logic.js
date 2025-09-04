@@ -452,49 +452,48 @@ function hideTrumpSelectionModal() {
  * Initiates the trump selection phase.
  * @param {string} bidWinner - The player who won the bid.
  */
-function startTrumpSelection(bidWinner) {
+async function startTrumpSelection(bidWinner) {
     window.currentPlayerIndex = window.players.indexOf(bidWinner); // Set current player to bid winner
     window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)}, choose the trump suit.`, "message-box");
-    
-    // MODIFIED: Check if bid winner is AI and trigger AI trump choice AND partner choice
+
     if (window.gameMode === 'single-player' && bidWinner !== window.loggedInPlayer) {
-        setTimeout(() => {
-            // 1. AI chooses Trump
-            const aiChosenTrump = window.ai.aiChooseTrump(bidWinner, window.hands[bidWinner]);
-            window.currentTrumpSuit = aiChosenTrump;
-            window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)} has selected ${aiChosenTrump} as trump!`, "message-box");
-            
-            // 2. AI chooses Partner (NEW)
-            const aiPartnerCard = window.ai.aiChoosePartner(bidWinner, window.hands[bidWinner]);
-            window.selectedPartnerSuit = aiPartnerCard.suit;
-            window.selectedPartnerRank = aiPartnerCard.rank;
-            
-            // 3. Identify the actual partner player (will also set up teams: bidWinningTeam, opponentTeam)
-            // This function is in partner_selection.js and needs to be exposed if not already
-            window.identifyPartnerPlayer(); // Ensure this function is called
-            
-            // 4. Show partner reveal message (visual feedback)
-            // window.showPartnerRevealMessage();  This function should be in trick_logics.js or game_play.js
+        // Fix: Use await delay() to pause the game for the AI "thinking" delay
+        await window.delay(1500);
 
-            // 5. Proceed to start the trick after AI trump/partner selection and brief display
-            setTimeout(() => {
-                // Hide bidding interface (and partner reveal message if still visible)
-                if (window.biddingInterface) {
-                    window.biddingInterface.style.display = 'none';
-                }
-                window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
+        // 1. AI chooses Trump
+        const aiChosenTrump = window.ai.aiChooseTrump(bidWinner, window.hands[bidWinner]);
+        window.currentTrumpSuit = aiChosenTrump;
+        window.displayMessage(`${window.formatPlayerDisplayName(bidWinner)} has selected ${aiChosenTrump} as trump!`, "message-box");
+        
+        // 2. AI chooses Partner (NEW)
+        const aiPartnerCard = window.ai.aiChoosePartner(bidWinner, window.hands[bidWinner]);
+        window.selectedPartnerSuit = aiPartnerCard.suit;
+        window.selectedPartnerRank = aiPartnerCard.rank;
+        
+        // 3. Identify the actual partner player (will also set up teams: bidWinningTeam, opponentTeam)
+        window.identifyPartnerPlayer(); 
+        
+        // 4. Show partner reveal message (visual feedback)
+        await window.showPartnerRevealMessage();
 
-                if (typeof window.startTrick === 'function') {
-                    // AI's turn to play first card after bidding
-                    // Explicitly set the current player to the highest bidder before starting the trick
-                    window.currentPlayerIndex = window.players.indexOf(window.highestBidder);
-                    window.currentPlayer = window.highestBidder;
-                    window.startTrick();
-                } else {
-                    console.error("startTrick function not found. Cannot begin game play after AI trump/partner selection.");
-                }
-            }, 2500); // Longer delay to allow human to read trump and partner reveal messages
-        }, 1500); // AI "thinking" delay for trump selection
+        // 5. Proceed to start the trick after AI trump/partner selection and brief display
+        // Fix: Use await delay() to pause the game
+        await window.delay(2500);
+
+        // Hide bidding interface (and partner reveal message if still visible)
+        if (window.biddingInterface) {
+            window.biddingInterface.style.display = 'none';
+        }
+        window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
+
+        if (typeof window.startTrick === 'function') {
+            // AI's turn to play first card after bidding
+            window.currentPlayerIndex = window.players.indexOf(window.highestBidder);
+            window.currentPlayer = window.highestBidder;
+            window.startTrick();
+        } else {
+            console.error("startTrick function not found. Cannot begin game play after AI trump/partner selection.");
+        }
     } else {
         // Human player (or multiplayer)
         window.showTrumpSelectionModal(); // Show the human UI for trump selection
@@ -561,18 +560,20 @@ window.passBid = passBid;
  * Handles the current player's turn (human or AI).
  * This function will be called whenever the turn changes.
  */
-function handleCurrentPlayerTurn() {
+async function handleCurrentPlayerTurn() {
     const currentPlayer = window.players[window.currentPlayerIndex];
     window.updatePlayerBidControls(currentPlayer); // Always update controls
 
     // If it's a single-player game AND the current player is an AI bot
     if (window.gameMode === 'single-player' && (window.isAdminMode || currentPlayer !== window.loggedInPlayer)) {
         window.displayMessage(`${window.formatPlayerDisplayName(currentPlayer)} is thinking...`, "message-box");
-        setTimeout(() => {
-            // Trigger AI to make a bid
-            const aiBid = window.ai.aiMakeBid(currentPlayer, window.highestBid, window.hands[currentPlayer]);
-            window.placeBid(currentPlayer, aiBid); // AI makes its bid
-        }, 1500); // Simulate AI thinking time
+
+        // Use await window.delay() to pause the game for the AI "thinking" time
+        await window.delay(1500);
+
+        // Trigger AI to make a bid after the delay
+        const aiBid = window.ai.aiMakeBid(currentPlayer, window.highestBid, window.hands[currentPlayer]);
+        window.placeBid(currentPlayer, aiBid); // AI makes its bid
     } else {
         // It's a human player's turn (or multiplayer setup)
         window.displayMessage(`${window.formatPlayerDisplayName(currentPlayer)}'s turn to bid.`, "message-box");
@@ -633,7 +634,7 @@ window.identifyPartnerPlayer = identifyPartnerPlayer; // Expose globally
 /**
  * Starts a new trick. Determines the lead player and prepares the UI.
  */
-function startTrick() {
+async function startTrick() {
     console.log("Starting a new trick...");
 
     // Hide the bidding interface
@@ -662,26 +663,10 @@ function startTrick() {
     window.leadSuitForTrick = null;
     window.displayMessage(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} leads the trick!`, "message-box");
     
-    /// 4. Update the UI to reflect the current player
-    window.updatePlayerCardInteractions(window.currentPlayer);
+    // 4. Update the UI to reflect the current player
+    // window.updatePlayerCardInteractions(window.currentPlayer);
 
-    // 5. CRITICAL FIX: Handle the case where the bid winner is an AI player.
-    // If the current player is an AI, we must programmatically trigger their turn
-    // after a short delay to allow UI to render.
-    const isAIPlayer = window.currentPlayer !== window.loggedInPlayer;
-    if (isAIPlayer && window.gameMode === 'single-player') {
-        console.log(`[startTrick] Bid winner is an AI (${window.currentPlayer}). Initiating their turn...`);
-        // Use a single, controlled timeout to prevent race conditions.
-        // The timeout is to allow UI to update before the AI plays.
-        window.nextTurnTimeoutId = setTimeout(() => {
-            // This function call should be the sole way the AI plays its first card.
-            window.ai.playAiFirstCard(window.currentPlayer);
-        }, 1000); // 1000ms delay to be safe
-    } else {
-        // If the bid winner is the human player, no timeout is needed.
-        // The player's cards are already clickable due to updatePlayerCardInteractions.
-        console.log(`[startTrick] Bid winner is a human player (${window.currentPlayer}). Awaiting their card play.`);
-    }
+    await window.advanceTurnInTrick();
 }
 window.startTrick = startTrick;
 
@@ -865,19 +850,19 @@ window.getPlayableCards = getPlayableCards; // Expose globally
  * Ends the bidding round.
  * @param {boolean} [redeal=false] - Optional. If true, indicates cards need to be redealt.
  */
-function endBiddingRound(redeal = false) {
+async function endBiddingRound(redeal = false) {
     console.log("Bidding round ended. Winner:", window.highestBidder);
     window.updatePlayerBidControls(null);
     if (redeal) {
-        setTimeout(() => {
-            window.displayMessage("All players passed on minimum bid. Redealing cards!", "message-box");
-            if (typeof window.dealCards === 'function') { // dealCards is in script.js, now globally exposed
-                window.dealCards();
-                window.startBidding(0);
-            } else {
-                console.error("dealCards function not found. Cannot redeal.");
-            }
-        }, 1500);
+        window.displayMessage("All players passed on minimum bid. Redealing cards!", "message-box");
+        // FIX: Use await window.delay() to show the message before redealing
+        await window.delay(1500); 
+        if (typeof window.dealCards === 'function') { // dealCards is in script.js, now globally exposed
+            window.dealCards();
+            window.startBidding(0);
+        } else {
+            console.error("dealCards function not found. Cannot redeal.");
+        }
     } else {
         biddingStatusDisplay.textContent = `Bidding Concluded!`;
         if (window.highestBidder) {
@@ -964,11 +949,11 @@ function endOfRoundScoring() {
  * Handles the end of a single game round (after all tricks for that round are played).
  * This function determines if the entire game is over or if another round should start.
  */
-function endRound() {
+async function endRound() {
     console.log("End of Round detected.");
 
     // Call the endOfRoundScoring function to calculate scores for this round
-    endOfRoundScoring();
+    window.endOfRoundScoring();
 
     // Add current round's scores to total game scores and record history
     const currentRoundScores = { round: window.currentRound };
@@ -990,23 +975,25 @@ function endRound() {
 
     window.currentRound++; // Increment game round number for the *next* round
 
+    // FIX: Replace setTimeout with async/await for better flow control
+    // Give time for final message to be read before showing table
+    await window.delay(3000);
+    
     // Clear the center played cards and show score table
-    setTimeout(() => {
-        if (typeof window.clearCenterPlayedCards === 'function') {
-            window.clearCenterPlayedCards(false); // Clear without face down animation
-        }
+    if (typeof window.clearCenterPlayedCards === 'function') {
+        window.clearCenterPlayedCards(false); // Clear without face down animation
+    }
 
-        // Check if the entire game is over (if the *incremented* currentRound is now greater than totalRounds)
-        if (window.currentRound > window.totalRounds) { 
-            window.endGame(); // Call the game over function
-        } else {
-            window.showRoundScoreTable(); // Show round scores table for intermediate rounds
-        }
+    // Check if the entire game is over (if the *incremented* currentRound is now greater than totalRounds)
+    if (window.currentRound > window.totalRounds) { 
+        window.endGame(); // Call the game over function
+    } else {
+        window.showRoundScoreTable(); // Show round scores table for intermediate rounds
+    }
 
-        // Hide main game controls/messages while score table is up (or before next deal)
-        document.getElementById('deal-cards-btn').style.display = 'none';
-        window.updatePlayerBidControls(null);
-    }, 3000); // Give time for final message to be read before showing table
+    // Hide main game controls/messages while score table is up (or before next deal)
+    document.getElementById('deal-cards-btn').style.display = 'none';
+    window.updatePlayerBidControls(null);
 }
 window.endRound = endRound; // Expose globally
 
@@ -1014,7 +1001,7 @@ window.endRound = endRound; // Expose globally
 /**
  * Handles the end of the entire game (after all totalRounds are played).
  */
-function endGame() {
+async function endGame() {
     window.displayMessage("Game Over!", "message-box");
     
     // Determine overall winner based on gameTotalScores
@@ -1042,10 +1029,12 @@ function endGame() {
     // Show final score table (it should already be visible from endRound if it was the last round)
     // Or display a dedicated "Game Over" screen/modal.
     // For now, we'll ensure the score table is shown and just has the restart button.
-    setTimeout(() => {
-        window.showRoundScoreTable(); // Display the score table modal with final scores
-        // The showRoundScoreTable function already handles showing/hiding buttons based on currentRound vs totalRounds
-    }, 2000); // Give time to read end game message
+    
+    // FIX: Use await window.delay() to show the message before showing the table
+    await window.delay(2000); // Give time to read end game message
+
+    window.showRoundScoreTable(); // Display the score table modal with final scores
+    // The showRoundScoreTable function already handles showing/hiding buttons based on currentRound vs totalRounds
 }
 window.endGame = endGame; // Expose globally
 
@@ -1325,15 +1314,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (confirmTrumpBtn) {
-        confirmTrumpBtn.addEventListener('click', () => {
+        confirmTrumpBtn.addEventListener('click', async () => {
             if (window.currentTrumpSuit) {
                 window.displayMessage(`${window.formatPlayerDisplayName(window.highestBidder)} has selected ${window.currentTrumpSuit} as trump!`, "message-box");
                 hideTrumpSelectionModal();
                 
+                // Fix: Use await delay() to ensure the game waits before showing the next modal
+                await window.delay(1000); 
+
                 // Show partner selection modal after a brief delay
-                setTimeout(() => {
-                    window.showPartnerSelectionModal(); // This function is in partner_selection.js
-                }, 1000);
+                window.showPartnerSelectionModal();
             } else {
                 window.displayMessage("Please select a trump suit.", "message-box");
             }

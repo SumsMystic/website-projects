@@ -300,7 +300,7 @@ window.ai.aiPlayCard = function(player, playerHand, currentTrick, leadSuit, trum
                 }
             } else { // No cards of lead suit, no trumps - must slough
                 // Play the lowest value card (non-scoring if possible)
-                cardToPlay = playableCards.sort((a, b) => window.getCardPoints(getCardElement(a)) - window.getCardPoints(getCardElement(b)))[0];
+                cardToPlay = playableCards.sort((a, b) => window.getCardPoints(a) - window.getCardPoints(b))[0];
             }
         }
     }
@@ -321,27 +321,5 @@ window.ai.aiPlayCard = function(player, playerHand, currentTrick, leadSuit, trum
         console.warn("AI tried to play a card not found in hand:", cardToPlay);
     }
     
-};
-
-// New function to handle the entire AI card play process
-window.ai.playAiFirstCard = function(player) {
-    // 1. Get the card element the AI has chosen
-    // The aiPlayCard function should now return the HTML element
-    const cardToPlay = window.ai.aiPlayCard(player, window.hands[player], window.currentTrick, null, window.currentTrumpSuit);
-    
-    if (cardToPlay) {
-        // 2. Animate the card to the center.
-        // This function will automatically call playCardInTrick() upon completion.
-        window.animateCardToCenter(cardToPlay);
-        
-        // 3. CRITICAL: Remove the card from the AI's hand array.
-        // This is not handled anywhere else and is essential for game logic.
-        const playerHand = window.hands[player];
-        window.hands[player] = playerHand.filter(card => card.element !== cardToPlay.element);
-        console.log(`${window.formatPlayerDisplayName(player)} played ${cardToPlay.dataset.rank} of ${cardToPlay.dataset.suit}. Updated hand:`, window.hands[player]);
-
-    } else {
-        console.error(`AI player ${player} failed to select a card to play.`);
-    }
 };
 
