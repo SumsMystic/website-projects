@@ -160,6 +160,14 @@ async function advanceTurnInTrick() {
             if (clickedCard) {
                 // The next function in the chain is called here
                 await window.playCardInTrick(clickedCard, window.currentPlayer);
+                // Check if the selected card is the Bid partner card
+                if (clickedCard.dataset.rank === window.selectedPartnerRank && clickedCard.dataset.suit === window.selectedPartnerSuit) {
+                    window.partnerPlayerName = window.currentPlayer;
+                    console.log(`Partner identified: ${window.partnerPlayerName} with rank ${window.selectedPartnerRank}`);
+                    await window.showPartnerRevealMessage()
+                    await window.delay(500); // Slight delay to ensure message is seen before proceeding
+                    window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
+                }
             } else {
                 console.error("Human player card click promise resolved with null. Check for errors.");
             }
@@ -178,6 +186,13 @@ async function advanceTurnInTrick() {
             if (cardElem) {
                 window.updatePlayerCardInteractions(window.currentPlayer);
                 await window.playCardInTrick(cardElem, window.currentPlayer);
+                if (cardElem.dataset.rank === window.selectedPartnerRank && cardElem.dataset.suit === window.selectedPartnerSuit) {
+                    window.partnerPlayerName = window.currentPlayer;
+                    console.log(`Partner identified: ${window.partnerPlayerName} with rank ${window.selectedPartnerRank}`);
+                    await window.showPartnerRevealMessage()
+                    await window.delay(500); // Slight delay to ensure message is seen before proceeding
+                    window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
+                }
             }
         }
         
@@ -201,7 +216,7 @@ async function advanceTurnInTrick() {
         }
 
         await window.delay(1500);
-        window.clearCenterPlayedCards();
+        window.clearCenterPlayedCards(true);
         if (window.trickCount < window.cardsPerPlayer) {
             window.cardsInCurrentTrick = 0;
             window.startTrick(window.trickWinner);
@@ -391,7 +406,7 @@ async function showPartnerRevealMessage() {
     const mobileTrumpSuitSpan = document.getElementById('mobile-trump-suit');
 
     if (partnerRevealMessageDiv && partnerRevealNameSpan && window.partnerPlayerName) {
-        partnerRevealNameSpan.textContent = window.formatPlayerDisplayName(window.partnerPlayerName);
+        partnerRevealNameSpan.textContent = " " + window.formatPlayerDisplayName(window.partnerPlayerName);
         partnerRevealMessageDiv.classList.add('visible'); // Show the message
 
         // NEW: Update persistent game info displays with team details
@@ -416,7 +431,8 @@ async function showPartnerRevealMessage() {
             }
 
             if (desktopTrumpSuitSpan) {
-                desktopTrumpSuitSpan.textContent = window.currentTrumpSuit;
+                // Make trump suit first letter uppercase for display. e.g. 'hearts' -> 'Hearts'
+                desktopTrumpSuitSpan.textContent = window.currentTrumpSuit.charAt(0).toUpperCase() + window.currentTrumpSuit.slice(1);
             }
 
             // Update mobile display
@@ -427,7 +443,7 @@ async function showPartnerRevealMessage() {
                 mobileOpponentTeamSpan.textContent = opponentTeamNames;
             }
             if (mobileTrumpSuitSpan) {
-                mobileTrumpSuitSpan.textContent = window.currentTrumpSuit;
+                mobileTrumpSuitSpan.textContent = window.currentTrumpSuit.charAt(0).toUpperCase() + window.currentTrumpSuit.slice(1);
             }
 
         } else {
@@ -439,6 +455,8 @@ async function showPartnerRevealMessage() {
 
         partnerRevealMessageDiv.classList.remove('visible'); // Hide after the delay
     } else {
+        console.log("Bid Winning Team:", window.bidWinningTeam ? window.bidWinningTeam.map(window.formatPlayerDisplayName).join(', ') : "N/A");
+        console.log("Opponent Team:", window.opponentTeam ? window.opponentTeam.map(window.formatPlayerDisplayName).join(', ') : "N/A");
         console.warn("showPartnerRevealMessage() called but partner reveal message elements or partnerPlayerName not found.");
         console.log("Elements:", partnerRevealMessageDiv, partnerRevealNameSpan, window.partnerPlayerName);
     }

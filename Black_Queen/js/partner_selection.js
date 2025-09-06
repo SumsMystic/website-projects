@@ -188,7 +188,9 @@ function identifyPartnerPlayer() {
             );
             if (hasPartnerCard) {
                 window.partnerPlayerName = player;
-                console.log(`Identified player holding partner card: ${window.partnerPlayerName}`);
+                if (window.isAdminMode) {
+                    console.log(`Identified player holding partner card: ${window.partnerPlayerName}`);
+                }
                 break; // Found the player, no need to continue
             }
         }
@@ -205,13 +207,18 @@ function identifyPartnerPlayer() {
         window.bidWinningTeam = [window.bidWinnerName];
         window.partnerRevealed = true; // For solo, assume partner is "revealed" as yourself
         window.opponentTeam = window.players.filter(player => player !== window.bidWinnerName);
-        console.log("Team setup: SOLO. Bid Winning Team:", window.bidWinningTeam, "Opponent Team:", window.opponentTeam);
+        if (window.isAdminMode) {
+            console.log("Team setup: SOLO. Bid Winning Team:", window.bidWinningTeam, "Opponent Team:", window.opponentTeam);
+        }
 
     } else {
         // Normal partner play: bid winner and the card holder form a team
         window.bidWinningTeam = [window.bidWinnerName, window.partnerPlayerName];
         window.opponentTeam = window.players.filter(player => !window.bidWinningTeam.includes(player));
-        console.log("Team setup: PARTNER. Bid Winning Team:", window.bidWinningTeam, "Opponent Team:", window.opponentTeam);
+        // Display this console log only if in Admin mode for debugging
+        if (window.isAdminMode) {
+            console.log("Team setup: PARTNER. Bid Winning Team:", window.bidWinningTeam, "Opponent Team:", window.opponentTeam);
+        }
     }
 }
 window.identifyPartnerPlayer = identifyPartnerPlayer; // Expose globally

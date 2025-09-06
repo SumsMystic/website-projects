@@ -40,7 +40,9 @@ function getHandStrength(hand) {
  */
 window.ai.aiMakeBid = function(player, currentHighestBid, playerHand) {
     const handStrength = getHandStrength(playerHand);
-    console.log(`${window.formatPlayerDisplayName(player)}'s hand strength: ${handStrength}`);
+    if (window.isAdminMode) {
+        console.log(`${window.formatPlayerDisplayName(player)}'s hand strength: ${handStrength}`);
+    }
 
     const MIN_BID = window.MIN_BID || 170; // Use global MIN_BID from game_logic.js
     const BID_INCREMENT = window.BID_INCREMENT || 5; // Use global BID_INCREMENT
@@ -96,8 +98,9 @@ window.ai.aiMakeBid = function(player, currentHighestBid, playerHand) {
         return MIN_BID;
     }
 
-
-    console.log(`${window.formatPlayerDisplayName(player)} decided to bid: ${desiredBid}`);
+    if (window.isAdminMode) {
+        console.log(`${window.formatPlayerDisplayName(player)} decided to bid: ${desiredBid}`);
+    }
     return desiredBid;
 };
 

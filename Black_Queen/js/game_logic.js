@@ -247,7 +247,10 @@ function startBidding(initialBidderIndex) {
     window.highestBid = 0;
     window.highestBidder = null;
     window.passedPlayers.clear();
-    window.currentPlayerIndex = initialBidderIndex;
+    // Set the current player index to the initial bidder IFF number of rounds is 1 (first round), else keep current index
+    if (window.currentRound === 1){
+        window.currentPlayerIndex = initialBidderIndex;
+    }
 
     // --- CRITICAL: Ensure ALL trick-related game state is reset for a NEW ROUND ---
     window.trumpBroken = false;
@@ -289,7 +292,7 @@ function startBidding(initialBidderIndex) {
 
     // --- CRITICAL FIX: Ensure the center playing area is cleared for a new round's cards ---
     if (typeof window.clearCenterPlayedCards === 'function') {
-        window.clearCenterPlayedCards(false); // Clear any lingering played cards instantly
+        window.clearCenterPlayedCards(false);
     }
 
     // Ensure bidding interface is visible at the start of bidding (if it's not already)
@@ -310,7 +313,7 @@ function startBidding(initialBidderIndex) {
     window.updateGameInfoDisplays();
 
     // MODIFIED: Check if current player is AI and trigger AI bid
-    window.handleCurrentPlayerTurn(); // This function will now handle AI turns
+    window.handleCurrentPlayerTurnInBid(); // This function will now handle AI turns
 }
 window.startBidding = startBidding; // Expose globally
 
@@ -474,7 +477,7 @@ async function startTrumpSelection(bidWinner) {
         window.identifyPartnerPlayer(); 
         
         // 4. Show partner reveal message (visual feedback)
-        await window.showPartnerRevealMessage();
+        // await window.showPartnerRevealMessage();
 
         // 5. Proceed to start the trick after AI trump/partner selection and brief display
         // Fix: Use await delay() to pause the game
@@ -484,7 +487,6 @@ async function startTrumpSelection(bidWinner) {
         if (window.biddingInterface) {
             window.biddingInterface.style.display = 'none';
         }
-        window.hideMessage('partner-reveal-message'); // Explicitly hide after display duration
 
         if (typeof window.startTrick === 'function') {
             // AI's turn to play first card after bidding
@@ -512,7 +514,7 @@ function placeBid(player, bidAmount) {
         window.highestBidder = player;
         window.displayMessage(`${window.formatPlayerDisplayName(player)} bids ${bidAmount}!`, "message-box");
         updateGameInfoDisplays(); // Update game info after bid
-        advanceTurn();
+        advanceTurnInBid();
     } else {
         window.displayMessage("Bid must be higher than current highest bid.", "message-box");
         
@@ -550,7 +552,7 @@ function passBid(player) {
         window.displayMessage("All players passed on the minimum bid. Redealing cards...", "message-box");
         endBiddingRound(true);
     } else {
-        advanceTurn();
+        advanceTurnInBid();
     }
 }
 window.passBid = passBid;
@@ -560,7 +562,7 @@ window.passBid = passBid;
  * Handles the current player's turn (human or AI).
  * This function will be called whenever the turn changes.
  */
-async function handleCurrentPlayerTurn() {
+async function handleCurrentPlayerTurnInBid() {
     const currentPlayer = window.players[window.currentPlayerIndex];
     window.updatePlayerBidControls(currentPlayer); // Always update controls
 
@@ -589,7 +591,7 @@ window.handleCurrentPlayerTurn = handleCurrentPlayerTurn; // Expose globally
 /**
  * Advances the turn to the next player in the bidding sequence.
  */
-function advanceTurn() {
+function advanceTurnInBid() {
         const activePlayers = window.players.filter(player => !window.passedPlayers.has(player));
         const nextPlayerIndex = (window.players.indexOf(window.players[window.currentPlayerIndex]) + 1) % window.players.length;
         let nextPlayerId = window.players[nextPlayerIndex];
@@ -604,43 +606,15 @@ function advanceTurn() {
             window.currentPlayerIndex = window.players.indexOf(nextPlayerId);
             updateBiddingUI();
             updatePlayerBidControls(window.players[window.currentPlayerIndex]);
-            window.handleCurrentPlayerTurn(); 
+            window.handleCurrentPlayerTurnInBid(); 
         }
 }
-
-/**
- * Identifies the partner player based on the selected partner card.
- * This should be called after `confirmPartnerCard` in `partner_selection.js`.
- 
-function identifyPartnerPlayer() {
-    // Iterate through all players' hands to find the selected partner card
-    for (const player in window.hands) {
-        const hand = window.hands[player];
-        const foundCard = hand.find(card => 
-            card.suit === window.selectedPartnerSuit && card.rank === window.selectedPartnerRank
-        );
-
-        if (foundCard) {
-            window.partnerPlayerName = player; // Set the global partner player name
-            window.displayMessage(`${window.formatPlayerDisplayName(player)} is your partner!`, "message-box");
-            console.log(`Partner is: ${player}`);
-            break; // Found the partner, exit loop
-        }
-    }
-}
-window.identifyPartnerPlayer = identifyPartnerPlayer; // Expose globally
-*/
 
 /**
  * Starts a new trick. Determines the lead player and prepares the UI.
  */
 async function startTrick() {
     console.log("Starting a new trick...");
-
-    // Hide the bidding interface
-    if (window.biddingInterface) {
-        window.biddingInterface.style.display = 'none';
-    }
 
     // Make the new played cards area visible and interactive
     if (window.centerPlayedCards) {
@@ -662,9 +636,9 @@ async function startTrick() {
     window.cardsInCurrentTrick = 0;
     window.leadSuitForTrick = null;
     window.displayMessage(`${window.formatPlayerDisplayName(window.currentTrickLeadPlayer)} leads the trick!`, "message-box");
-    
-    // 4. Update the UI to reflect the current player
-    // window.updatePlayerCardInteractions(window.currentPlayer);
+
+    // Update Current Round Info Display
+    window.updateGameInfoDisplays();
 
     await window.advanceTurnInTrick();
 }
@@ -981,7 +955,7 @@ async function endRound() {
     
     // Clear the center played cards and show score table
     if (typeof window.clearCenterPlayedCards === 'function') {
-        window.clearCenterPlayedCards(false); // Clear without face down animation
+        window.clearCenterPlayedCards(true); 
     }
 
     // Check if the entire game is over (if the *incremented* currentRound is now greater than totalRounds)

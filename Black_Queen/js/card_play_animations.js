@@ -127,11 +127,6 @@ window.animateCardToCenter = animateCardToCenter;
 function enableCardAnimations() {
   document.querySelectorAll('.hand .card').forEach(card => {
     card.classList.add('card-pop-hover'); // Add hover effect
-    /*
-    card.addEventListener('click', function() {
-      animateCardToCenter(card); // Trigger the animation on click
-    });
-    */
   });
 }
 
@@ -147,8 +142,14 @@ function clearCenterPlayedCards(faceDown = false) {
             playedCards.forEach((cardElem, index) => {
                 // Temporarily reset position for animation to work from current spot
                 cardElem.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
-                // Change card image to back-side
-                cardElem.style.backgroundImage = `url('./img/black_queen_backside_default.webp')`; // Use your card back image
+                // Use theme-based card back image if available
+                const theme = window.cardTheme || 'default';
+                if (theme === 'def') {
+                    cardElem.style.backgroundImage = `url('./img/black_queen_backside_default.webp')`;
+                } else {
+                    cardElem.style.backgroundImage = `url('./img/black_queen_backside_${theme}.webp')`;
+                }
+                cardElem.classList.add('card-back', 'card-back-theme');
                 // Adjust transform to make them stack tightly and fade
                 cardElem.style.transform = `translate(0px, 0px) scale(0.7)`; // Stack closer
                 cardElem.style.opacity = '0'; // Fade out

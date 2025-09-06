@@ -236,6 +236,12 @@
     font-size: 0.8rem;
     color: #ffcc00;
     min-height: 1.2rem; /* Ensure space even if no message */
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: flex-start; /* Align to top vertically */
+    margin-top: 3px; /* Small margin from top */
+    position: relative;
 }
 
 /* Styles for the Partner Reveal Message */
@@ -449,6 +455,12 @@
     .message-box {
         font-size: 1.87vw !important; /* Increased from 1.7vw by ~10% */
         min-height: 2.2vw !important; /* Increased from 2vw by ~10% */
+        width: 100%;
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: flex-start; /* Align to top vertically */
+        margin-top: 0.8vw !important; /* Small margin from top */
+        position: relative;
     }
 
 
