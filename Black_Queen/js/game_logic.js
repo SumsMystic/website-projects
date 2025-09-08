@@ -248,9 +248,17 @@ function startBidding(initialBidderIndex) {
     window.highestBidder = null;
     window.passedPlayers.clear();
     // Set the current player index to the initial bidder IFF number of rounds is 1 (first round), else keep current index
-    if (window.currentRound === 1){
+    if (window.currentRound >= 1 && initialBidderIndex <= window.players.length) {
         window.currentPlayerIndex = initialBidderIndex;
     }
+    else if (window.currentRound === 0) { // Very first time starting the game
+        window.currentPlayerIndex = 2; // Default to third player (South) if out of bounds
+    }
+    else{
+        console.warn("Initial bidder index out of bounds, defaulting to 0 (North).");
+        return; // Exit function to avoid invalid index
+    }
+    window.currentPlayer = window.players[window.currentPlayerIndex];
 
     // --- CRITICAL: Ensure ALL trick-related game state is reset for a NEW ROUND ---
     window.trumpBroken = false;
@@ -586,7 +594,7 @@ async function handleCurrentPlayerTurnInBid() {
         } */
     }
 }
-window.handleCurrentPlayerTurn = handleCurrentPlayerTurn; // Expose globally
+window.handleCurrentPlayerTurnInBid = handleCurrentPlayerTurnInBid; // Expose globally
 
 /**
  * Advances the turn to the next player in the bidding sequence.
@@ -966,7 +974,6 @@ async function endRound() {
     }
 
     // Hide main game controls/messages while score table is up (or before next deal)
-    document.getElementById('deal-cards-btn').style.display = 'none';
     window.updatePlayerBidControls(null);
 }
 window.endRound = endRound; // Expose globally

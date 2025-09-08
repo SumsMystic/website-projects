@@ -147,7 +147,7 @@ window.displayCards = displayCards; // Expose globally
 
 // Main game flow function
 function dealAndStartGame() {
-    console.log("Deal and Start Game button clicked!");
+    console.log("Shuffling and dealing cards to start a new GAME!");
     initializeDeck();
     shuffleDeck();
     dealCards();
@@ -170,16 +170,10 @@ function updateScoresDisplay() {
 }
 window.updateScoresDisplay = updateScoresDisplay; // Expose globally
 
-// Event listener for the "Deal and Start Game" button
+// Automatically start the game after a slight delay once DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    dealButton = document.getElementById('deal-cards-btn');
     playArea = document.getElementById('play-area');
-
-    if (dealButton) {
-        dealButton.addEventListener('click', dealAndStartGame);
-    } else {
-        console.error("Deal button not found!");
-    }
+    setTimeout(dealAndStartGame, 1000); // 1000ms delay
 });
 
 window.addEventListener('beforeunload', function(event) {
