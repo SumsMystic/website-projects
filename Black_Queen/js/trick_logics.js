@@ -400,10 +400,10 @@ async function showPartnerRevealMessage() {
     // NEW: Get references to the persistent game info display spans
     const desktopBidWinningTeamSpan = document.getElementById('desktop-bid-winner-team');
     const desktopOpponentTeamSpan = document.getElementById('desktop-opponent-team');
-    const desktopTrumpSuitSpan = document.getElementById('desktop-trump-suit');
+    // const desktopTrumpSuitSpan = document.getElementById('desktop-trump-suit');
     const mobileBidWinningTeamSpan = document.getElementById('mobile-bid-winner-team');
     const mobileOpponentTeamSpan = document.getElementById('mobile-opponent-team');
-    const mobileTrumpSuitSpan = document.getElementById('mobile-trump-suit');
+    // const mobileTrumpSuitSpan = document.getElementById('mobile-trump-suit');
 
     if (partnerRevealMessageDiv && partnerRevealNameSpan && window.partnerPlayerName) {
         partnerRevealNameSpan.textContent = " " + window.formatPlayerDisplayName(window.partnerPlayerName);
@@ -430,10 +430,12 @@ async function showPartnerRevealMessage() {
                 desktopOpponentTeamSpan.textContent = opponentTeamNames;
             }
 
+            /*
             if (desktopTrumpSuitSpan) {
                 // Make trump suit first letter uppercase for display. e.g. 'hearts' -> 'Hearts'
                 desktopTrumpSuitSpan.textContent = window.currentTrumpSuit.charAt(0).toUpperCase() + window.currentTrumpSuit.slice(1);
             }
+                */
 
             // Update mobile display
             if (mobileBidWinningTeamSpan) {
@@ -442,9 +444,12 @@ async function showPartnerRevealMessage() {
             if (mobileOpponentTeamSpan) {
                 mobileOpponentTeamSpan.textContent = opponentTeamNames;
             }
+
+            /*
             if (mobileTrumpSuitSpan) {
                 mobileTrumpSuitSpan.textContent = window.currentTrumpSuit.charAt(0).toUpperCase() + window.currentTrumpSuit.slice(1);
             }
+                */
 
         } else {
             console.warn("showPartnerRevealMessage: Team arrays (bidWinningTeam or opponentTeam) are not available.");

@@ -222,23 +222,28 @@ function updateGameInfoDisplays() {
     const desktopBidWinner = document.getElementById('desktop-bid-winner');
     const desktopFinalBid = document.getElementById('desktop-final-bid');
     const desktopPartnerCard = document.getElementById('desktop-partner-card');
+    const desktopTrumpSuitSpan = document.getElementById('desktop-trump-suit');
 
     const mobileBidWinner = document.getElementById('mobile-bid-winner');
     const mobileFinalBid = document.getElementById('mobile-final-bid');
     const mobilePartnerCard = document.getElementById('mobile-partner-card');
+    const mobileTrumpSuitSpan = document.getElementById('mobile-trump-suit');
 
     const bidWinnerText = window.bidWinnerName ? window.formatPlayerDisplayName(window.bidWinnerName) : 'N/A';
     const finalBidText = window.finalBidAmount ? window.finalBidAmount.toString() : 'N/A';
     const partnerCardText = (window.selectedPartnerRank && window.selectedPartnerSuit) ? 
                             `${window.selectedPartnerRank.toUpperCase()} of ${window.selectedPartnerSuit.toUpperCase()}` : 'N/A';
+    const trumpSuitText = window.currentTrumpSuit ? window.currentTrumpSuit.charAt(0).toUpperCase() + window.currentTrumpSuit.slice(1) : 'N/A'; 
 
     if (desktopBidWinner) desktopBidWinner.textContent = bidWinnerText;
     if (desktopFinalBid) desktopFinalBid.textContent = finalBidText;
     if (desktopPartnerCard) desktopPartnerCard.textContent = partnerCardText;
+    if (desktopTrumpSuitSpan) desktopTrumpSuitSpan.textContent = trumpSuitText;
 
     if (mobileBidWinner) mobileBidWinner.textContent = bidWinnerText;
     if (mobileFinalBid) mobileFinalBid.textContent = finalBidText;
     if (mobilePartnerCard) mobilePartnerCard.textContent = partnerCardText;
+    if (mobileTrumpSuitSpan) mobileTrumpSuitSpan.textContent = trumpSuitText;
 }
 window.updateGameInfoDisplays = updateGameInfoDisplays; // Expose globally
 

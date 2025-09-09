@@ -86,9 +86,18 @@ window.dealCards = dealCards; // Expose globally
 // Function to display cards for each player
 function displayCards() {
     for (const player of window.players) {
-        const handElement = document.querySelector(`.${player}-cards .hand`);
         const playerCardArea = document.querySelector(`.${player}-cards`); // Get the outer container
+        
+        // ADDED: Create or get the handElement
+        let handElement = document.querySelector(`.${player}-cards .hand`);
 
+        // If the hand element doesn't exist (because it was removed by dealCards), create it
+        if (!handElement && playerCardArea) {
+            handElement = document.createElement('div');
+            handElement.classList.add('hand');
+            playerCardArea.appendChild(handElement); // Append it back to the playerCardArea
+        }
+        
         if (handElement) {
             handElement.innerHTML = ''; // Clear existing cards before re-displaying
 
