@@ -1107,10 +1107,9 @@ function showRoundScoreTable() {
     nextRoundBtn.onclick = () => {
         console.log("Proceeding to next round...");
         scoreTableModal.style.display = 'none';
-        
-        // window.playersScores is already reset in startBidding, but ensure the UI reflects it.
-        // The game state resets are now primarily handled by startBidding,
-        // which will be called right after dealing.
+
+        // The deck is empty after the previous round.
+        window.initializeDeck(); 
         
         window.shuffleDeck();
         window.dealCards(); // This will also call displayCards()
