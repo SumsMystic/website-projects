@@ -12,40 +12,135 @@ window.delay = delay;   // Expose globally
 /**
  * A Promise-based function that waits for a human player to click a card.
  * This is crucial for correctly pausing the game flow for human interaction.
+ * MODIFIED: Now disables unplayable cards based on game rules.
  * @returns {Promise<HTMLElement>} - A Promise that resolves with the HTML element of the card that was clicked.
  */
 function waitForHumanCardClick() {
     return new Promise(resolve => {
-        // Correctly gets the player's hand container by its ID.
-        // const humanPlayerHand = document.getElementById('player-hand');
         const humanPlayerHand = document.querySelector(`.${window.loggedInPlayer}-cards .hand`);
         if (!humanPlayerHand) {
             console.error("Human player hand element not found.");
-            // Resolve immediately to prevent an infinite loop in case of a missing element
-            resolve(null); 
+            resolve(null);
             return;
         }
+        
+        // --- NEW LOGIC: Determine and apply playable/disabled cards ---
+        const playerHand = window.hands[window.loggedInPlayer];
+        const leadSuit = window.currentTrick.length > 0 ? window.currentTrick[0].card.suit : null;
+        const trumpSuit = window.currentTrumpSuit;
+        const trumpBroken = window.trumpBroken;
+        const playableCards = getHumanPlayableCards(playerHand, leadSuit, trumpSuit, trumpBroken);
+        
+        // Get all card elements in the human player's hand
+        const allCardElements = humanPlayerHand.querySelectorAll('.card');
 
-        // Event listener to wait for a valid card click
+        // Loop through all cards and apply a disabled class to non-playable ones
+        allCardElements.forEach(cardElem => {
+            const cardRank = cardElem.dataset.rank;
+            const cardSuit = cardElem.dataset.suit;
+            const isPlayable = playableCards.some(pc => pc.rank === cardRank && pc.suit === cardSuit);
+
+            if (isPlayable) {
+                // Ensure playable cards have hover effects and are clickable
+                cardElem.classList.remove('disabled');
+                // Re-enables the card's original hover animation
+                cardElem.style.pointerEvents = 'auto'; 
+                cardElem.style.opacity = '1';
+                cardElem.style.cursor = 'pointer';
+
+            } else {
+                // Disable non-playable cards visually and functionally
+                cardElem.classList.add('disabled');
+                cardElem.style.pointerEvents = 'none'; // Prevents click events
+                //cardElem.style.opacity = '0.5'; // Visually indicate it's disabled
+            }
+        });
+        
+        // --- Existing Event Listener Logic (Modified to check for .disabled class) ---
         const clickHandler = (event) => {
-            // .closest('.card:not(.disabled)') correctly ensures it only
-            // resolves if a valid, non-disabled card was clicked.
-            const clickedCard = event.target.closest('.card:not(.disabled)');
-            if (clickedCard) {
-                console.log("Card clicked player name:", clickedCard.dataset.player);
-                console.log("Card clicked:", clickedCard.dataset.rank, "of", clickedCard.dataset.suit);
-                // Remove the listener after the first valid click
+            const cardElem = event.target.closest('.card:not(.disabled)');
+            if (cardElem) {
+                // Remove the click handler to prevent multiple clicks
                 humanPlayerHand.removeEventListener('click', clickHandler);
-                // Resolve the promise with the clicked card element
-                resolve(clickedCard);
+                
+                // CRITICAL: Clean up disabled styles from all cards
+                allCardElements.forEach(card => {
+                    card.classList.remove('disabled');
+                    card.style.pointerEvents = 'auto';
+                    card.style.opacity = '1';
+                    card.style.cursor = 'pointer';
+                });
+
+                resolve(cardElem);
             }
         };
 
-        // Attach the listener to the hand container
+        // Add the single event listener to the hand container
         humanPlayerHand.addEventListener('click', clickHandler);
     });
 }
 window.waitForHumanCardClick = waitForHumanCardClick; // Expose globally
+
+/**
+ * Determines which cards are valid to play for the human player based on game rules.
+ * This is the counterpart to the AI's playable card logic.
+ * @param {Array<Object>} playerHand - The hand of the current player.
+ * @param {string} leadSuit - The suit of the first card played in the trick.
+ * @param {string} trumpSuit - The current trump suit.
+ * @param {boolean} trumpBroken - A flag indicating if the trump suit has been played on a previous trick.
+ * @returns {Array<Object>} An array of playable card objects.
+ */
+function getHumanPlayableCards(playerHand, leadSuit, trumpSuit, trumpBroken) {
+    // Rule 1 & 2: Not the lead player
+    if (leadSuit) {
+        const leadSuitCards = playerHand.filter(card => card.suit === leadSuit);
+        const trumpCards = playerHand.filter(card => card.suit === trumpSuit);
+
+        // Rule 1: Human has lead suit cards. Must follow suit.
+        if (leadSuitCards.length > 0) {
+            // console.log("Human player must follow suit.");
+            return leadSuitCards;
+        }
+
+        // Rule 5: Human has no lead suit cards, but only has trumps. All trumps are playable.
+        if (trumpCards.length > 0 && playerHand.length === trumpCards.length) {
+            console.log("Human player can only play trump cards.");
+            return trumpCards;
+        }
+
+        // Rule 2: Human has no lead suit cards. Can play any other card (slough or trump).
+        console.log("Human player has no lead suit cards. Can play any card.");
+        return playerHand;
+    } 
+    
+    // Rule 3, 4 & 5: Human is the lead player
+    else {
+        const trumpCards = playerHand.filter(card => card.suit === trumpSuit);
+
+        // Rule 5: Human has only trumps. All trumps are playable.
+        if (trumpCards.length > 0 && playerHand.length === trumpCards.length) {
+            console.log("Human player is leading and can only play trump cards.");
+            return trumpCards;
+        }
+
+        // Rule 3: Trump is broken, any card can be led.
+        if (trumpBroken) {
+            console.log("Human player is leading. Trump is broken. All cards are playable.");
+            return playerHand;
+        }
+
+        // Rule 4: Trump is NOT broken. Cannot lead with trump unless it's the only suit.
+        const nonTrumpCards = playerHand.filter(card => card.suit !== trumpSuit);
+        if (nonTrumpCards.length > 0) {
+            console.log("Human player is leading. Trump is not broken. Cannot lead with trump.");
+            return nonTrumpCards;
+        }
+        
+        // This case is already handled by rule 5's check at the top of the 'else' block
+        console.log("Human player is leading and has only trump cards.");
+        return playerHand;
+    }
+}
 
 /**
  * Handles a player playing a card during a trick.
