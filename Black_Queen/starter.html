@@ -71,6 +71,7 @@
             <!-- Center Playing Area -->
             <div class="table-item center-area">
                 <!-- Bidding Interface (central display) -->
+                <div id="message-box" class="message-box"></div>
                 <div id="bidding-interface" class="bidding-interface">
                     <!-- This div is to be displayed for showing bidding details, trump selection & partner selection -->
                     <h2 id="bidding-status" class="bidding-status">Bidding Starts!</h2>
@@ -81,14 +82,10 @@
                         <span id="highest-bidder-name" class="highest-bidder-name"></span>
                     </div>
                 </div>
-                <p id="message-box" class="message-box"></p>
                 <!-- NEW: Partner Revealed Message Box (initially hidden) -->
-                <div id="partner-reveal-message" class="message-box partner-reveal-message hidden">
-                    🎉 Partner Revealed! <span id="partner-reveal-name"></span> 🎉
-                </div>
+                <div id="partner-reveal-message" class="message-box partner-reveal-message hidden"> 🎉 Partner Revealed! <span id="partner-reveal-name"></span> 🎉 </div>
                 <!-- This div is to be displayed once the partner selection is done to display only played cards -->
-                <div id="center-played-cards">
-                </div>
+                <div id="center-played-cards"></div>
             </div>
 
             <!-- West Player Name Area -->

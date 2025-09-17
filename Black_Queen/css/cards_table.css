@@ -147,14 +147,15 @@
     color: rgba(255, 255, 255, 0.7);
     display: flex; /* Ensure center area is a flex container */
     flex-direction: column; /* Stack content vertically */
-    justify-content: center; /* Center content vertically */
+    justify-content: flex-start; /* Aligns children to the top */
     align-items: center; /* Center content horizontally */
 }
 
 #center-played-cards {
-    grid-area: 3 / 2 / 5 / 3; /* Position in the center of the 3x3 grid */
-    position: relative; /* CRITICAL: Enables absolute positioning of children */
-    display: flex; /* Use flexbox for initial centering of absolute children */
+    grid-area: unset;
+    flex-grow: 1; /* Use flex-grow to make it expand and fill available space */
+    width: 100%;
+    display: flex;  /* Use flexbox for initial centering of absolute children */
     justify-content: center;
     align-items: center;
     overflow: visible; /* Ensure cards don't spill outside the container */
@@ -240,8 +241,8 @@
     display: flex;
     justify-content: center; /* Center horizontally */
     align-items: flex-start; /* Align to top vertically */
-    margin-top: 3px; /* Small margin from top */
-    position: relative;
+    margin-bottom: 3px; /* Adds space between the message box and the next element */
+    flex-shrink: 0; /* Prevents it from shrinking */
 }
 
 /* Styles for the Partner Reveal Message */
@@ -262,6 +263,9 @@
     opacity: 0; /* Initially hidden */
     transition: opacity 0.5s ease-out; /* Smooth fade-in/out */
     pointer-events: none; /* Make it non-clickable */
+    display: flex; 
+    align-items: center; /* This line will fix the vertical alignment */
+    justify-content: center; 
 }
 
 .partner-reveal-message.visible {
@@ -459,8 +463,7 @@
         display: flex;
         justify-content: center; /* Center horizontally */
         align-items: flex-start; /* Align to top vertically */
-        margin-top: 0.8vw !important; /* Small margin from top */
-        position: relative;
+        margin-top: 1vw !important; /* Small margin from top */
     }
 
 
